@@ -1,0 +1,20 @@
+logging:
+  file: log/gazpar2mqtt.log
+  console: true
+  level: debug
+  format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
+
+grdf:
+  scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  devices:
+  - name: gazpar_card
+    username: "!secret grdf.username"
+    password: "!secret grdf.password"
+    pce_identifier: "!secret grdf.pce_identifier"
+    timezone: Europe/Paris
+    last_days: 365 # Number of days of data to retrieve
+
+homeassistant:
+  host: "!secret homeassistant.host"
+  port: "!secret homeassistant.port"
+  token: "!secret homeassistant.token"
