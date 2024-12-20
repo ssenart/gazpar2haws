@@ -1,5 +1,5 @@
 logging:
-  file: log/gazpar2mqtt.log
+  file: log/gazpar2haws.log
   console: true
   level: debug
   format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
@@ -7,7 +7,7 @@ logging:
 grdf:
   scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-  - name: gazpar_card
+  - name: gazpar2haws
     username: "!secret grdf.username"
     password: "!secret grdf.password"
     pce_identifier: "!secret grdf.pce_identifier"

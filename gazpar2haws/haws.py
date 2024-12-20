@@ -1,6 +1,6 @@
 import websockets
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 
@@ -82,6 +82,40 @@ class HomeAssistantWS:
         return response_data.get("result")
 
     # ----------------------------------
+    async def list_statistic_ids(self, statistic_type: str = None) -> list[str]:
+
+        logging.debug("Listing statistics IDs...")
+
+        # List statistics IDs message
+        list_statistic_ids_message = {
+            "type": "recorder/list_statistic_ids"
+        }
+
+        if statistic_type is not None:
+            list_statistic_ids_message["statistic_type"] = statistic_type
+
+        response = await self.send_message(list_statistic_ids_message)
+
+        logging.debug(f"Listed statistics IDs: {len(response)} ids")
+
+        return response
+
+    # ----------------------------------
+    async def exists_statistic_id(self, entity_id: str, statistic_type: str = None) -> bool:
+
+        logging.debug(f"Checking if {entity_id} exists...")
+
+        statistic_ids = await self.list_statistic_ids(statistic_type)
+
+        entity_ids = [statistic_id.get("statistic_id") for statistic_id in statistic_ids]
+
+        exists_statistic = entity_id in entity_ids
+
+        logging.debug(f"{entity_id} exists: {exists_statistic}")
+
+        return exists_statistic
+
+    # ----------------------------------
     async def statistics_during_period(self, entity_ids: list[str], start_time: datetime, end_time: datetime) -> dict:
 
         logging.debug(f"Getting {entity_ids} statistics during period from {start_time} to {end_time}...")
@@ -106,14 +140,14 @@ class HomeAssistantWS:
 
         logging.debug(f"Getting last statistic for {entity_id}...")
 
-        statistics = await self.statistics_during_period([entity_id], datetime.now() - datetime.timedelta(days=30), datetime.now())
+        statistics = await self.statistics_during_period([entity_id], datetime.now() - timedelta(days=30), datetime.now())
 
         logging.debug(f"Last statistic for {entity_id}: {statistics[entity_id][-1]}")
 
         return statistics[entity_id][-1]
 
     # ----------------------------------
-    async def import_statistics(self, entity_id: str, source: str, name: str, statistics: list[dict]):
+    async def import_statistics(self, entity_id: str, source: str, name: str, unit_of_measurement: str, statistics: list[dict]):
 
         logging.debug(f"Importing {len(statistics)} statistics for {entity_id} from {source}...")
 
@@ -126,7 +160,7 @@ class HomeAssistantWS:
                     "statistic_id": entity_id,
                     "source": source,
                     "name": name,
-                    "unit_of_measurement": 'kWh',
+                    "unit_of_measurement": unit_of_measurement,
             },
             "stats": statistics
         }

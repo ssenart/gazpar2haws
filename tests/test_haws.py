@@ -27,6 +27,54 @@ async def test_connect():
 
 # ----------------------------------
 @pytest.mark.asyncio
+async def test_list_statistic_ids():
+
+    # Load configuration
+    config = config_utils.ConfigLoader("config/configuration.yaml", "config/secrets.yaml")
+    config.load_secrets()
+    config.load_config()
+
+    ha_host = config.get("homeassistant.host")
+    ha_port = config.get("homeassistant.port")
+    ha_token = config.get("homeassistant.token")
+
+    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+
+    await haws.connect()
+
+    statistics = await haws.list_statistic_ids("sum")
+
+    assert statistics is not None
+
+    await haws.disconnect()
+
+
+# ----------------------------------
+@pytest.mark.asyncio
+async def test_exists_statistic_id():
+
+    # Load configuration
+    config = config_utils.ConfigLoader("config/configuration.yaml", "config/secrets.yaml")
+    config.load_secrets()
+    config.load_config()
+
+    ha_host = config.get("homeassistant.host")
+    ha_port = config.get("homeassistant.port")
+    ha_token = config.get("homeassistant.token")
+
+    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+
+    await haws.connect()
+
+    exists_statistic_id = await haws.exists_statistic_id("sensor.gazpar2haws")
+
+    assert exists_statistic_id is not None
+
+    await haws.disconnect()
+
+
+# ----------------------------------
+@pytest.mark.asyncio
 async def test_get_last_statistic():
 
     # Load configuration
@@ -42,7 +90,7 @@ async def test_get_last_statistic():
 
     await haws.connect()
 
-    statistics = await haws.get_last_statistic("sensor.gazpar")
+    statistics = await haws.get_last_statistic("sensor.gazpar2haws")
 
     assert statistics is not None
 
@@ -84,7 +132,7 @@ async def test_import_statistics():
         }
     ]
 
-    await haws.import_statistics("sensor.gazpar_card", "recorder", "test", statistics)
+    await haws.import_statistics("sensor.gazpar2haws", "recorder", "test", "m³", statistics)
 
     await haws.disconnect()
 
@@ -106,6 +154,6 @@ async def test_clear_statistics():
 
     await haws.connect()
 
-    await haws.clear_statistics(["sensor.gazpar_card"])
+    await haws.clear_statistics(["sensor.gazpar2haws"])
 
     await haws.disconnect()

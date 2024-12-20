@@ -53,7 +53,7 @@ class Bridge:
 
         try:
             while self._running:
-                # Publish Gazpar data to MQTT
+                # Publish Gazpar data to Home Assistant WS
                 logging.info("Publishing Gazpar data to Home Assistant WS...")
 
                 for gazpar in self._gazpar:
