@@ -9,7 +9,7 @@ include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pygazpar = "^1.2.4"
+pygazpar = "==1.2.5"
 websockets = "^14.1"
 pytest-asyncio = "^0.25.0"
 pyyaml = "^6.0.2"

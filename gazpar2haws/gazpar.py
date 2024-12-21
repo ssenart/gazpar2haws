@@ -3,7 +3,7 @@ import traceback
 import logging
 import pytz
 from typing import Any
-from datetime import datetime
+from datetime import datetime, timedelta
 from gazpar2haws.haws import HomeAssistantWS
 
 
@@ -22,6 +22,7 @@ class Gazpar:
         self._pce_identifier = str(config.get("pce_identifier"))
         self._last_days = int(config.get("last_days"))
         self._timezone = config.get("timezone")
+        self._reset = bool(config.get("reset"))
 
     # ----------------------------------
     def name(self):
@@ -30,6 +31,15 @@ class Gazpar:
     # ----------------------------------
     # Publish Gaspar data to Home Assistant WS
     async def publish(self):
+
+        # Eventually reset the sensor in Home Assistant
+        if self._reset:
+            try:
+                await self._homeassistant.clear_statistics([f"sensor.{self._name}"])
+            except Exception:
+                errorMessage = f"Error while resetting the sensor in Home Assistant: {traceback.format_exc()}"
+                logging.warning(errorMessage)
+                raise Exception(errorMessage)
 
         # Check the existence of the sensor in Home Assistant
         try:
@@ -57,6 +67,9 @@ class Gazpar:
             # If the sensor does not exist in Home Assistant, fetch the last days defined in the configuration
             last_days = self._last_days
 
+            # Compute the corresponding last_date
+            last_date = datetime.now() - timedelta(days=last_days)
+
         # Initialize PyGazpar client
         client = pygazpar.Client(pygazpar.JsonWebDataSource(username=self._username, password=self._password))
 
@@ -76,7 +89,14 @@ class Gazpar:
         for reading in daily:
             # Parse date format DD/MM/YYYY into datetime.
             date = datetime.strptime(reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y")
+
+            # Skip all readings before the last statistic date.
+            if date.date() < last_date.date():
+                continue
+
+            # Set the timezone
             date = timezone.localize(date)
+
             statistics.append({
                 "start": date.isoformat(),
                 "state": reading[pygazpar.PropertyName.END_INDEX.value],

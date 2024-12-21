@@ -13,8 +13,10 @@ grdf:
     pce_identifier: "!secret grdf.pce_identifier"
     timezone: Europe/Paris
     last_days: 365 # Number of days of data to retrieve
+    reset: true # If true, the data will be reset before the first data retrieval
 
 homeassistant:
   host: "!secret homeassistant.host"
   port: "!secret homeassistant.port"
   token: "!secret homeassistant.token"
+

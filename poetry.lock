@@ -360,18 +360,18 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pygazpar"
-version = "1.2.4"
+version = "1.2.5"
 description = "Retrieve gas consumption from GrDF web site (French Gas Company)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pygazpar-1.2.4-py310-none-any.whl", hash = "sha256:647ae616d9d4cdfd7448e1f539fd2a26a1dd75d9075073669abbcff2883200a7"},
-    {file = "pygazpar-1.2.4-py311-none-any.whl", hash = "sha256:8b483372bde14731a58407e7caa90aa97f845372f470c5b50293fb478b29951f"},
-    {file = "pygazpar-1.2.4-py312-none-any.whl", hash = "sha256:24401ed32003c89821ffd2bc8a9f6522c67f2586a17bfbee5c11d085cb1af6ae"},
-    {file = "pygazpar-1.2.4-py37-none-any.whl", hash = "sha256:31dfd77bd5cb6a83e57ecc4aa6c64dd6927cb4b5dc75c91a2f41788cc5168d19"},
-    {file = "pygazpar-1.2.4-py38-none-any.whl", hash = "sha256:bdd613463e907dddfeef35013113d5fd62cdb1d5ff2c517b3379db876a810f00"},
-    {file = "pygazpar-1.2.4-py39-none-any.whl", hash = "sha256:d1aa08e014f9dabb1bf2dfb3850dcfa3015ab83fd40c92ab37f843be67bdaa6e"},
-    {file = "pygazpar-1.2.4.tar.gz", hash = "sha256:8ce169894b6dc11f198d34cdd10ef8cfa806684231c436e3f7f51050a0c4d060"},
+    {file = "pygazpar-1.2.5-py310-none-any.whl", hash = "sha256:19be93ded4f62b533745014492dfa8b0f7265dc445ebd4b9cc383422768199c7"},
+    {file = "pygazpar-1.2.5-py311-none-any.whl", hash = "sha256:4cbff86ff5011495cd01a7582a55be72f2dfc5d1fa58cc73c00c8a6ffbd1f9d2"},
+    {file = "pygazpar-1.2.5-py312-none-any.whl", hash = "sha256:213b1f740268e26fb7f84b145333c067214df1929f2d69de4b7be2a9813529e0"},
+    {file = "pygazpar-1.2.5-py37-none-any.whl", hash = "sha256:2d0a334ac4fc293439d13ed00f35782e625830475c968396facdb75b77d8a3fe"},
+    {file = "pygazpar-1.2.5-py38-none-any.whl", hash = "sha256:4d248112541f39d64b421f2bd4c612a32cc2d92d9e330fdffb570c45594970d4"},
+    {file = "pygazpar-1.2.5-py39-none-any.whl", hash = "sha256:4b82389b98f375e740b57b2d358468af263b1f5d2344a891456d8f6df727cf04"},
+    {file = "pygazpar-1.2.5.tar.gz", hash = "sha256:14d8700d2e1eca0b0f029bc462742b4fa0f69448c33ac2935dd7d72d5e52dd13"},
 ]
 
 [package.dependencies]
@@ -645,4 +645,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "f604a980838f1b6e915d7a3efed199305dde47b2e2087b584332e2f1d81142b8"
+content-hash = "46638eb1bbca2863092db05c5ae51e59ea71cf43d727b79a624faa9c66204105"

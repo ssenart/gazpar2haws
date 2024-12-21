@@ -151,6 +151,10 @@ class HomeAssistantWS:
 
         logging.debug(f"Importing {len(statistics)} statistics for {entity_id} from {source}...")
 
+        if len(statistics) == 0:
+            logging.debug("No statistics to import")
+            return
+
         # Import statistics message
         import_statistics_message = {
             "type": "recorder/import_statistics",
