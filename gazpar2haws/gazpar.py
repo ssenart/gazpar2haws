@@ -6,6 +6,8 @@ from typing import Any
 from datetime import datetime, timedelta
 from gazpar2haws.haws import HomeAssistantWS
 
+Logger = logging.getLogger(__name__)
+
 
 # ----------------------------------
 class Gazpar:
@@ -38,7 +40,7 @@ class Gazpar:
                 await self._homeassistant.clear_statistics([f"sensor.{self._name}"])
             except Exception:
                 errorMessage = f"Error while resetting the sensor in Home Assistant: {traceback.format_exc()}"
-                logging.warning(errorMessage)
+                Logger.warning(errorMessage)
                 raise Exception(errorMessage)
 
         # Check the existence of the sensor in Home Assistant
@@ -46,7 +48,7 @@ class Gazpar:
             exists_statistic_id = await self._homeassistant.exists_statistic_id(f"sensor.{self._name}", "sum")
         except Exception:
             errorMessage = f"Error while checking the existence of the sensor in Home Assistant: {traceback.format_exc()}"
-            logging.warning(errorMessage)
+            Logger.warning(errorMessage)
             raise Exception(errorMessage)
 
         if exists_statistic_id:
@@ -55,7 +57,7 @@ class Gazpar:
                 last_statistics = await self._homeassistant.get_last_statistic(f"sensor.{self._name}")
             except Exception:
                 errorMessage = f"Error while fetching last statistics from Home Assistant: {traceback.format_exc()}"
-                logging.warning(errorMessage)
+                Logger.warning(errorMessage)
                 raise Exception(errorMessage)
 
             # Extract the end date of the last statistics from the unix timestamp
@@ -77,7 +79,7 @@ class Gazpar:
             data = client.loadSince(pceIdentifier=self._pce_identifier, lastNDays=last_days, frequencies=[pygazpar.Frequency.DAILY])
         except Exception:
             errorMessage = f"Error while fetching data from GrDF: {traceback.format_exc()}"
-            logging.warning(errorMessage)
+            Logger.warning(errorMessage)
             data = {}
 
         # Timezone
@@ -108,5 +110,5 @@ class Gazpar:
             await self._homeassistant.import_statistics(f"sensor.{self._name}", "recorder", "gazpar2haws", "m³", statistics)
         except Exception:
             errorMessage = f"Error while importing statistics to Home Assistant: {traceback.format_exc()}"
-            logging.warning(errorMessage)
+            Logger.warning(errorMessage)
             raise Exception(errorMessage)

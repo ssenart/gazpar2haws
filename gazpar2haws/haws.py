@@ -3,6 +3,8 @@ import json
 from datetime import datetime, timedelta
 import logging
 
+Logger = logging.getLogger(__name__)
+
 
 # ----------------------------------
 class HomeAssistantWS:
@@ -16,7 +18,7 @@ class HomeAssistantWS:
     # ----------------------------------
     async def connect(self):
 
-        logging.debug(f"Connecting to Home Assistant at {self._host}:{self._port}")
+        Logger.debug(f"Connecting to Home Assistant at {self._host}:{self._port}")
 
         ws_url = f"ws://{self._host}:{self._port}/api/websocket"
 
@@ -29,7 +31,7 @@ class HomeAssistantWS:
 
         if connect_response_data.get("type") != "auth_required":
             message = f"Authentication failed: auth_required not received {connect_response_data.get('messsage')}"
-            logging.warning(message)
+            Logger.warning(message)
             raise Exception(message)
 
         # The first message from the client should be an auth message. You can authorize with an access token.
@@ -42,24 +44,24 @@ class HomeAssistantWS:
 
         if auth_response_data.get("type") == "auth_invalid":
             message = f"Authentication failed: {auth_response_data.get('messsage')}"
-            logging.warning(message)
+            Logger.warning(message)
             raise Exception(message)
 
-        logging.debug("Connected to Home Assistant")
+        Logger.debug("Connected to Home Assistant")
 
     # ----------------------------------
     async def disconnect(self):
 
-        logging.debug("Disconnecting from Home Assistant...")
+        Logger.debug("Disconnecting from Home Assistant...")
 
         await self._websocket.close()
 
-        logging.debug("Disconnected from Home Assistant")
+        Logger.debug("Disconnected from Home Assistant")
 
     # ----------------------------------
     async def send_message(self, message: dict) -> dict:
 
-        logging.debug("Sending a message...")
+        Logger.debug("Sending a message...")
 
         message["id"] = self._message_id
 
@@ -71,7 +73,7 @@ class HomeAssistantWS:
 
         response_data = json.loads(response)
 
-        logging.debug(f"Received response: {response_data}")
+        Logger.debug(f"Received response: {response_data}")
 
         if response_data.get("type") != "result":
             raise Exception(f"Invalid response message: {response_data}")
@@ -84,7 +86,7 @@ class HomeAssistantWS:
     # ----------------------------------
     async def list_statistic_ids(self, statistic_type: str = None) -> list[str]:
 
-        logging.debug("Listing statistics IDs...")
+        Logger.debug("Listing statistics IDs...")
 
         # List statistics IDs message
         list_statistic_ids_message = {
@@ -96,14 +98,14 @@ class HomeAssistantWS:
 
         response = await self.send_message(list_statistic_ids_message)
 
-        logging.debug(f"Listed statistics IDs: {len(response)} ids")
+        Logger.debug(f"Listed statistics IDs: {len(response)} ids")
 
         return response
 
     # ----------------------------------
     async def exists_statistic_id(self, entity_id: str, statistic_type: str = None) -> bool:
 
-        logging.debug(f"Checking if {entity_id} exists...")
+        Logger.debug(f"Checking if {entity_id} exists...")
 
         statistic_ids = await self.list_statistic_ids(statistic_type)
 
@@ -111,14 +113,14 @@ class HomeAssistantWS:
 
         exists_statistic = entity_id in entity_ids
 
-        logging.debug(f"{entity_id} exists: {exists_statistic}")
+        Logger.debug(f"{entity_id} exists: {exists_statistic}")
 
         return exists_statistic
 
     # ----------------------------------
     async def statistics_during_period(self, entity_ids: list[str], start_time: datetime, end_time: datetime) -> dict:
 
-        logging.debug(f"Getting {entity_ids} statistics during period from {start_time} to {end_time}...")
+        Logger.debug(f"Getting {entity_ids} statistics during period from {start_time} to {end_time}...")
 
         # Subscribe to statistics
         statistics_message = {
@@ -131,28 +133,28 @@ class HomeAssistantWS:
 
         response = await self.send_message(statistics_message)
 
-        logging.debug(f"Received {entity_ids} statistics during period from {start_time} to {end_time}")
+        Logger.debug(f"Received {entity_ids} statistics during period from {start_time} to {end_time}")
 
         return response
 
     # ----------------------------------
     async def get_last_statistic(self, entity_id: str) -> dict:
 
-        logging.debug(f"Getting last statistic for {entity_id}...")
+        Logger.debug(f"Getting last statistic for {entity_id}...")
 
         statistics = await self.statistics_during_period([entity_id], datetime.now() - timedelta(days=30), datetime.now())
 
-        logging.debug(f"Last statistic for {entity_id}: {statistics[entity_id][-1]}")
+        Logger.debug(f"Last statistic for {entity_id}: {statistics[entity_id][-1]}")
 
         return statistics[entity_id][-1]
 
     # ----------------------------------
     async def import_statistics(self, entity_id: str, source: str, name: str, unit_of_measurement: str, statistics: list[dict]):
 
-        logging.debug(f"Importing {len(statistics)} statistics for {entity_id} from {source}...")
+        Logger.debug(f"Importing {len(statistics)} statistics for {entity_id} from {source}...")
 
         if len(statistics) == 0:
-            logging.debug("No statistics to import")
+            Logger.debug("No statistics to import")
             return
 
         # Import statistics message
@@ -171,12 +173,12 @@ class HomeAssistantWS:
 
         await self.send_message(import_statistics_message)
 
-        logging.debug(f"Imported {len(statistics)} statistics for {entity_id} from {source}")
+        Logger.debug(f"Imported {len(statistics)} statistics for {entity_id} from {source}")
 
     # ----------------------------------
     async def clear_statistics(self, entity_ids: list[str]):
 
-        logging.debug(f"Clearing {entity_ids} statistics...")
+        Logger.debug(f"Clearing {entity_ids} statistics...")
 
         # Clear statistics message
         clear_statistics_message = {
@@ -186,4 +188,4 @@ class HomeAssistantWS:
 
         await self.send_message(clear_statistics_message)
 
-        logging.debug(f"Cleared {entity_ids} statistics")
+        Logger.debug(f"Cleared {entity_ids} statistics")

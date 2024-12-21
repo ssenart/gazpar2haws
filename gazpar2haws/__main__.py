@@ -6,6 +6,8 @@ from gazpar2haws import __version__
 from gazpar2haws import config_utils
 from gazpar2haws.bridge import Bridge
 
+Logger = logging.getLogger(__name__)
+
 
 # ----------------------------------
 def main():
@@ -64,22 +66,22 @@ def main():
             # Get the root logger and add the console handler
             logging.getLogger().addHandler(console_handler)
 
-        logging.info(f"Starting Gazpar2HAWS version {__version__}")
+        Logger.info(f"Starting Gazpar2HAWS version {__version__}")
 
         # Log configuration
-        logging.info(f"Configuration:\n{config.dumps()}")
+        Logger.info(f"Configuration:\n{config.dumps()}")
 
         # Start the bridge
         bridge = Bridge(config)
         bridge.run()
 
-        logging.info("Gazpar2HAWS stopped.")
+        Logger.info("Gazpar2HAWS stopped.")
 
         return 0
 
     except BaseException:
         errorMessage = f"An error occured while running Gazpar2HAWS: {traceback.format_exc()}"
-        logging.error(errorMessage)
+        Logger.error(errorMessage)
         print(errorMessage)
         return 1
 

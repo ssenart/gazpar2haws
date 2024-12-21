@@ -5,6 +5,8 @@ from gazpar2haws import config_utils
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
 
+Logger = logging.getLogger(__name__)
+
 
 # ----------------------------------
 class Bridge:
@@ -39,7 +41,7 @@ class Bridge:
     # Graceful shutdown function
     def handle_signal(self, signum, frame):
         print(f"Signal {signum} received. Shutting down gracefully...")
-        logging.info(f"Signal {signum} received. Shutting down gracefully...")
+        Logger.info(f"Signal {signum} received. Shutting down gracefully...")
         self._running = False
 
     # ----------------------------------
@@ -54,17 +56,17 @@ class Bridge:
         try:
             while self._running:
                 # Publish Gazpar data to Home Assistant WS
-                logging.info("Publishing Gazpar data to Home Assistant WS...")
+                Logger.info("Publishing Gazpar data to Home Assistant WS...")
 
                 for gazpar in self._gazpar:
-                    logging.info(f"Publishing data for device '{gazpar.name()}'...")
+                    Logger.info(f"Publishing data for device '{gazpar.name()}'...")
                     await gazpar.publish()
-                    logging.info(f"Device '{gazpar.name()}' data published to Home Assistant WS.")
+                    Logger.info(f"Device '{gazpar.name()}' data published to Home Assistant WS.")
 
-                logging.info("Gazpar data published to Home Assistant WS.")
+                Logger.info("Gazpar data published to Home Assistant WS.")
 
                 # Wait before next scan
-                logging.info(f"Waiting {self._grdf_scan_interval} minutes before next scan...")
+                Logger.info(f"Waiting {self._grdf_scan_interval} minutes before next scan...")
 
                 # Check if the scan interval is 0 and leave the loop.
                 if self._grdf_scan_interval == 0:
@@ -73,7 +75,7 @@ class Bridge:
                 await self._await_with_interrupt(self._grdf_scan_interval * 60, 5)
         except KeyboardInterrupt:
             print("Keyboard interrupt detected. Shutting down gracefully...")
-            logging.info("Keyboard interrupt detected. Shutting down gracefully...")
+            Logger.info("Keyboard interrupt detected. Shutting down gracefully...")
         finally:
             await self.dispose()
 
