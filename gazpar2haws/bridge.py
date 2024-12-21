@@ -47,14 +47,15 @@ class Bridge:
     # ----------------------------------
     async def run(self):
 
-        # Connect to Home Assistant
-        await self._homeassistant.connect()
-
         # Set running flag
         self._running = True
 
         try:
             while self._running:
+
+                # Connect to Home Assistant
+                await self._homeassistant.connect()
+
                 # Publish Gazpar data to Home Assistant WS
                 Logger.info("Publishing Gazpar data to Home Assistant WS...")
 
@@ -64,6 +65,9 @@ class Bridge:
                     Logger.info(f"Device '{gazpar.name()}' data published to Home Assistant WS.")
 
                 Logger.info("Gazpar data published to Home Assistant WS.")
+
+                # Disconnect from Home Assistant
+                await self._homeassistant.disconnect()
 
                 # Wait before next scan
                 Logger.info(f"Waiting {self._grdf_scan_interval} minutes before next scan...")
@@ -76,13 +80,6 @@ class Bridge:
         except KeyboardInterrupt:
             print("Keyboard interrupt detected. Shutting down gracefully...")
             Logger.info("Keyboard interrupt detected. Shutting down gracefully...")
-        finally:
-            await self.dispose()
-
-    # ----------------------------------
-    async def dispose(self):
-        # Stop the network loop
-        await self._homeassistant.disconnect()
 
     # ----------------------------------
     async def _await_with_interrupt(self, total_sleep_time: int, check_interval: int):

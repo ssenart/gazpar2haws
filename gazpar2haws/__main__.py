@@ -1,16 +1,16 @@
-import sys
+import asyncio
 import argparse
 import logging
 import traceback
-from gazpar2haws import __version__
 from gazpar2haws import config_utils
+from gazpar2haws import __version__
 from gazpar2haws.bridge import Bridge
 
 Logger = logging.getLogger(__name__)
 
 
 # ----------------------------------
-def main():
+async def main():
     """Main function"""
     parser = argparse.ArgumentParser(prog="gazpar2haws", description="Gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface.")
     parser.add_argument("-v", "--version",
@@ -73,7 +73,7 @@ def main():
 
         # Start the bridge
         bridge = Bridge(config)
-        bridge.run()
+        await bridge.run()
 
         Logger.info("Gazpar2HAWS stopped.")
 
@@ -88,4 +88,4 @@ def main():
 
 # ----------------------------------
 if __name__ == '__main__':
-    sys.exit(main())
+    asyncio.run(main())
