@@ -3,6 +3,8 @@ Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provi
 
 It is compatible with Home Assistant Energy Dashboard and permits to upload the history and keep it updated with the latest readings.
 
+This first version only publish volume in cubic meter.
+
 ## Installation
 
 Gazpar2HAWS can be installed on any host as a standalone program.
