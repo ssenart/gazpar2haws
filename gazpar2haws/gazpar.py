@@ -34,18 +34,30 @@ class Gazpar:
     # Publish Gaspar data to Home Assistant WS
     async def publish(self):
 
+        # Volume and energy sensor names.
+        volume_sensor_name = f"sensor.{self._name}_volume"
+        energy_sensor_name = f"sensor.{self._name}_energy"
+
         # Eventually reset the sensor in Home Assistant
         if self._reset:
             try:
-                await self._homeassistant.clear_statistics([f"sensor.{self._name}"])
+                await self._homeassistant.clear_statistics([volume_sensor_name, energy_sensor_name])
             except Exception:
                 errorMessage = f"Error while resetting the sensor in Home Assistant: {traceback.format_exc()}"
                 Logger.warning(errorMessage)
                 raise Exception(errorMessage)
 
+        # Publish volume sensor
+        await self._publish_entity(volume_sensor_name, pygazpar.PropertyName.VOLUME.value, "m³")
+        await self._publish_entity(energy_sensor_name, pygazpar.PropertyName.ENERGY.value, "kWh")
+
+    # ----------------------------------
+    # Publish a sensor to Home Assistant
+    async def _publish_entity(self, entity_id: str, property_name: str, unit_of_measurement: str):
+
         # Check the existence of the sensor in Home Assistant
         try:
-            exists_statistic_id = await self._homeassistant.exists_statistic_id(f"sensor.{self._name}", "sum")
+            exists_statistic_id = await self._homeassistant.exists_statistic_id(entity_id, "sum")
         except Exception:
             errorMessage = f"Error while checking the existence of the sensor in Home Assistant: {traceback.format_exc()}"
             Logger.warning(errorMessage)
@@ -54,7 +66,7 @@ class Gazpar:
         if exists_statistic_id:
             # Get last statistics from GrDF
             try:
-                last_statistics = await self._homeassistant.get_last_statistic(f"sensor.{self._name}")
+                last_statistics = await self._homeassistant.get_last_statistic(entity_id)
             except Exception:
                 errorMessage = f"Error while fetching last statistics from Home Assistant: {traceback.format_exc()}"
                 Logger.warning(errorMessage)
@@ -85,9 +97,10 @@ class Gazpar:
         # Timezone
         timezone = pytz.timezone(self._timezone)
 
-        # Fill statistics.
+        # Compute and fill statistics.
         daily = data.get(pygazpar.Frequency.DAILY.value)
         statistics = []
+        total = 0
         for reading in daily:
             # Parse date format DD/MM/YYYY into datetime.
             date = datetime.strptime(reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y")
@@ -99,15 +112,18 @@ class Gazpar:
             # Set the timezone
             date = timezone.localize(date)
 
+            # Compute the total volume and energy
+            total += reading[property_name]
+
             statistics.append({
                 "start": date.isoformat(),
-                "state": reading[pygazpar.PropertyName.END_INDEX.value],
-                "sum": reading[pygazpar.PropertyName.END_INDEX.value]
+                "state": total,
+                "sum": total
             })
 
         # Publish statistics to Home Assistant
         try:
-            await self._homeassistant.import_statistics(f"sensor.{self._name}", "recorder", "gazpar2haws", "m³", statistics)
+            await self._homeassistant.import_statistics(entity_id, "recorder", "gazpar2haws", unit_of_measurement, statistics)
         except Exception:
             errorMessage = f"Error while importing statistics to Home Assistant: {traceback.format_exc()}"
             Logger.warning(errorMessage)

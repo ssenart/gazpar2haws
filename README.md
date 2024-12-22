@@ -3,8 +3,6 @@ Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provi
 
 It is compatible with Home Assistant Energy Dashboard and permits to upload the history and keep it updated with the latest readings.
 
-This first version only publish volume in cubic meter.
-
 ## Installation
 
 Gazpar2HAWS can be installed on any host as a standalone program.
@@ -65,7 +63,7 @@ logging:
 grdf:
   scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-  - name: gazpar2haws
+  - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_ids: sensor.${name}_volume and sensor.${name}_energy.
     username: "!secret grdf.username"
     password: "!secret grdf.password"
     pce_identifier: "!secret grdf.pce_identifier"
@@ -89,6 +87,36 @@ grdf.pce_identifier: ${GRDF_PCE_IDENTIFIER}
 homeassistant.host: ${HA_HOST}
 homeassistant.port: ${HA_PORT}
 homeassistant.token: ${HA_TOKEN}
+```
+
+The history is uploaded on the entities with names:
+- sensor.${name}_volume: Volume history in m³.
+- sensor.${name}_energy: Energy history in kWh.
+
+${name} is 'gazpar2haws' defined in the above configuration file. It can be replaced by any other name.
+
+Those two entities have to already exist in Home Assistant.
+
+They may be created using the following templates:
+
+```yaml
+
+  - name: gazpar2haws_volume
+    unit_of_measurement: 'm³'
+    availability: true
+    state: 0
+    icon: mdi:fire    
+    device_class: gas
+    state_class: total_increasing    
+
+  - name: gazpar2haws_energy
+    unit_of_measurement: 'kWh'
+    availability: true
+    state: 0     
+    icon: mdi:fire
+    device_class: energy
+    state_class: total_increasing 
+
 ```
 
 ## Contributing

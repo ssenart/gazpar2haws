@@ -73,7 +73,7 @@ class HomeAssistantWS:
 
         response_data = json.loads(response)
 
-        Logger.debug(f"Received response: {response_data}")
+        Logger.debug(f"Received response")
 
         if response_data.get("type") != "result":
             raise Exception(f"Invalid response message: {response_data}")
