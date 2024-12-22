@@ -1,0 +1,19 @@
+services:
+  gazpar2haws:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ssenart/gazpar2haws:latest
+    container_name: gazpar2haws
+    restart: unless-stopped
+    network_mode: bridge
+    user: "1000:1000"
+    volumes:
+      - ./docker/config:/app/config
+      - ./docker/log:/app/log
+    environment:
+      - GRDF_USERNAME=
+      - GRDF_PASSWORD=
+      - GRDF_PCE_IDENTIFIER=
+      - HOMEASSISTANT_HOST=
+      - HOMEASSISTANT_TOKEN=

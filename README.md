@@ -41,6 +41,68 @@ $ pip install gazpar2haws
 
 ```
 
+### 3. Using Dockerfile
+
+The following steps permit to build the Docker image based on the local source files.
+
+1. Clone the repo locally:
+```sh
+$ cd /path/to/my_install_folder/
+
+$ git clone https://github.com/ssenart/gazpar2haws.git
+```
+2. Edit the docker-compose.yaml file by setting the environment variables corresponding to your GrDF account and Home Assistant setup:
+
+```yaml
+    environment:
+      - GRDF_USERNAME=<GrDF account username>
+      - GRDF_PASSWORD=<GrDF account password>
+      - GRDF_PCE_IDENTIFIER=<GrDF PCE meter identifier>
+      - HOMEASSISTANT_HOST=<Home Assistant instance host name>
+      - HOMEASSISTANT_PORT=<Home Assistant instance port number>
+      - HOMEASSISTANT_TOKEN=<Home Assistant access token>
+```
+3. Build the image:
+```sh
+$ docker compose build
+```
+4. Run the container:
+```sh
+$ docker compose up -d
+```
+
+### 4. Using Docker Hub
+
+The following steps permits to run a container from an existing image available in the Docker Hub repository.
+
+1. Copy and save the following docker-compose.yaml file:
+
+```yaml
+services:
+  gazpar2haws:
+    image: ssenart/gazpar2haws:latest  
+    container_name: gazpar2haws
+    restart: unless-stopped
+    network_mode: bridge
+    user: "1000:1000"    
+    volumes:
+      - ./gazpar2haws/config:/app/config
+      - ./gazpar2haws/log:/app/log
+    environment:
+      - GRDF_USERNAME=<GrDF account username>
+      - GRDF_PASSWORD=<GrDF account password>
+      - GRDF_PCE_IDENTIFIER=<GrDF PCE meter identifier>
+      - HOMEASSISTANT_HOST=<Home Assistant instance host name>
+      - HOMEASSISTANT_TOKEN=<Home Assistant access token>
+```
+
+Edit the environment variable section according to your setup.
+
+2. Run the container:
+```sh
+$ docker compose up -d
+```
+
 ## Usage
 
 ### Command line
@@ -118,6 +180,57 @@ They may be created using the following templates:
     state_class: total_increasing 
 
 ```
+
+### Environment variable for Docker
+
+In a Docker environment, the configurations files are instantiated by replacing the environment variables below in the template files:
+
+| Environment variable | Description | Required | Default value |
+|---|---|---|---|
+| GRDF_USERNAME  |  GrDF account user name  | Yes | - |
+| GRDF_PASSWORD  |  GrDF account password (avoid using special characters) | Yes | - |
+| GRDF_PCE_IDENTIFIER  | GrDF meter PCI identifier  | Yes | - |
+| GRDF_SCAN_INTERVAL  | Period in minutes to refresh meter data (0 means one single refresh and stop) | No | 480 (8 hours) |
+| GRDF_LAST_DAYS | Number of days of history data to retrieve  | No | 1095 (3 years) |
+| HOMEASSISTANT_HOST  | Home Assistant instance host name  | Yes | - |
+| HOMEASSISTANT_PORT  | Home Assistant instance port number  | No | 8123 |
+| HOMEASSISTANT_TOKEN  | Home Assistant access token  | Yes | - |
+
+You can setup them directly in a docker-compose.yaml file (environment section) or from a Docker command line (-e option).
+
+## Publish a new image on Docker Hub
+
+1. List all local images
+
+```sh
+$ docker image ls
+```
+
+2. Build a new local image
+
+```sh
+$ docker compose build
+```
+
+3. Tag the new built image with the version number
+
+```sh
+$ docker image tag ssenart/gazpar2haws:latest ssenart/gazpar2haws:0.1.2
+```
+
+4. Login in Docker Hub
+
+```sh
+$ docker login
+```
+
+5. Push all the tagged local images to Docker Hub
+
+```sh
+$ docker push --all-tags ssenart/gazpar2haws
+```
+
+All the gazpar2haws images are available [here](https://hub.docker.com/repository/docker/ssenart/gazpar2haws/general).
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
