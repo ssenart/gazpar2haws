@@ -77,12 +77,18 @@ class Gazpar:
 
             # Compute the number of days since the last statistics
             last_days = (datetime.now() - last_date).days
+
+            # Get the last meter value
+            last_value = last_statistics.get("sum")
         else:
             # If the sensor does not exist in Home Assistant, fetch the last days defined in the configuration
             last_days = self._last_days
 
             # Compute the corresponding last_date
             last_date = datetime.now() - timedelta(days=last_days)
+
+            # If no statistic, the last value is initialized to zero
+            last_value = 0
 
         # Initialize PyGazpar client
         client = pygazpar.Client(pygazpar.JsonWebDataSource(username=self._username, password=self._password))
@@ -100,7 +106,7 @@ class Gazpar:
         # Compute and fill statistics.
         daily = data.get(pygazpar.Frequency.DAILY.value)
         statistics = []
-        total = 0
+        total = last_value
         for reading in daily:
             # Parse date format DD/MM/YYYY into datetime.
             date = datetime.strptime(reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y")
