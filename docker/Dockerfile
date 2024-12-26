@@ -40,7 +40,7 @@ ENV VIRTUAL_ENV=/app/.venv \
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-COPY entrypoint.sh /app
+COPY docker/entrypoint.sh /app
 RUN  chmod +x /app/entrypoint.sh
 COPY gazpar2haws/ /app/gazpar2haws
 RUN  mkdir /app/config

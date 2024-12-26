@@ -64,11 +64,11 @@ $ git clone https://github.com/ssenart/gazpar2haws.git
 ```
 3. Build the image:
 ```sh
-$ docker compose build
+$ docker compose -f docker/docker-compose.yaml build
 ```
 4. Run the container:
 ```sh
-$ docker compose up -d
+$ docker compose -f docker/docker-compose.yaml up -d
 ```
 
 ### 4. Using Docker Hub
@@ -209,7 +209,7 @@ $ docker image ls
 2. Build a new local image
 
 ```sh
-$ docker compose build
+$ docker compose -f docker/docker-compose.yaml build
 ```
 
 3. Tag the new built image with the version number
