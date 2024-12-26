@@ -163,4 +163,6 @@ cython_debug/
 
 # Secrets configuration file
 config/secrets.yaml
-config/secrets.env
+docker/secrets.env
+docker/config
+docker/log
