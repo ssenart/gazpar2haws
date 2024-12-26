@@ -189,7 +189,7 @@ In a Docker environment, the configurations files are instantiated by replacing 
 |---|---|---|---|
 | GRDF_USERNAME  |  GrDF account user name  | Yes | - |
 | GRDF_PASSWORD  |  GrDF account password (avoid using special characters) | Yes | - |
-| GRDF_PCE_IDENTIFIER  | GrDF meter PCI identifier  | Yes | - |
+| GRDF_PCE_IDENTIFIER  | GrDF meter PCE identifier  | Yes | - |
 | GRDF_SCAN_INTERVAL  | Period in minutes to refresh meter data (0 means one single refresh and stop) | No | 480 (8 hours) |
 | GRDF_LAST_DAYS | Number of days of history data to retrieve  | No | 1095 (3 years) |
 | HOMEASSISTANT_HOST  | Home Assistant instance host name  | Yes | - |
