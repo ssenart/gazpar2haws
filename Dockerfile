@@ -48,4 +48,4 @@ RUN  mkdir /app/log
 COPY config/configuration.template.yaml /app
 COPY config/secrets.template.yaml /app
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
