@@ -1,0 +1,14 @@
+services:
+  gazpar2haws:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    image: ssenart/gazpar2haws:latest
+    container_name: gazpar2haws
+    restart: unless-stopped
+    network_mode: bridge
+    user: "1000:1000"
+    volumes:
+      - ./config:/app/config
+      - ./log:/app/log
+    env_file: ./secrets.env

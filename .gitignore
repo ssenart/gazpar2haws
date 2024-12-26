@@ -163,3 +163,4 @@ cython_debug/
 
 # Secrets configuration file
 config/secrets.yaml
+config/secrets.env
