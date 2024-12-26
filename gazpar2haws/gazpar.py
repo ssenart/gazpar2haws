@@ -73,7 +73,7 @@ class Gazpar:
                 raise Exception(errorMessage)
 
             # Extract the end date of the last statistics from the unix timestamp
-            last_date = datetime.fromtimestamp(last_statistic.get("end") / 1000)
+            last_date = datetime.fromtimestamp(last_statistic.get("start") / 1000)
 
             # Compute the number of days since the last statistics
             last_days = (datetime.now() - last_date).days
@@ -89,6 +89,8 @@ class Gazpar:
 
             # If no statistic, the last value is initialized to zero
             last_value = 0
+
+        Logger.debug(f"Last date: {last_date}, last days: {last_days}, last value: {last_value}")
 
         # Initialize PyGazpar client
         client = pygazpar.Client(pygazpar.JsonWebDataSource(username=self._username, password=self._password))
@@ -113,6 +115,7 @@ class Gazpar:
 
             # Skip all readings before the last statistic date.
             if date.date() <= last_date.date():
+                Logger.debug(f"Skip date: {date.date()} <= {last_date.date()}")
                 continue
 
             # Set the timezone
