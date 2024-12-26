@@ -64,22 +64,22 @@ class Gazpar:
             raise Exception(errorMessage)
 
         if exists_statistic_id:
-            # Get last statistics from GrDF
+            # Get the last statistic from Home Assistant
             try:
-                last_statistics = await self._homeassistant.get_last_statistic(entity_id)
+                last_statistic = await self._homeassistant.get_last_statistic(entity_id)
             except Exception:
                 errorMessage = f"Error while fetching last statistics from Home Assistant: {traceback.format_exc()}"
                 Logger.warning(errorMessage)
                 raise Exception(errorMessage)
 
             # Extract the end date of the last statistics from the unix timestamp
-            last_date = datetime.fromtimestamp(last_statistics.get("end") / 1000)
+            last_date = datetime.fromtimestamp(last_statistic.get("end") / 1000)
 
             # Compute the number of days since the last statistics
             last_days = (datetime.now() - last_date).days
 
             # Get the last meter value
-            last_value = last_statistics.get("sum")
+            last_value = last_statistic.get("sum")
         else:
             # If the sensor does not exist in Home Assistant, fetch the last days defined in the configuration
             last_days = self._last_days
@@ -112,7 +112,7 @@ class Gazpar:
             date = datetime.strptime(reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y")
 
             # Skip all readings before the last statistic date.
-            if date.date() < last_date.date():
+            if date.date() <= last_date.date():
                 continue
 
             # Set the timezone
