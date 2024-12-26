@@ -73,10 +73,10 @@ class Gazpar:
                 raise Exception(errorMessage)
 
             # Extract the end date of the last statistics from the unix timestamp
-            last_date = datetime.fromtimestamp(last_statistic.get("start") / 1000)
+            last_date = datetime.fromtimestamp(last_statistic.get("start") / 1000, tz=pytz.timezone(self._timezone))
 
             # Compute the number of days since the last statistics
-            last_days = (datetime.now() - last_date).days
+            last_days = (datetime.now(tz=pytz.timezone(self._timezone)) - last_date).days
 
             # Get the last meter value
             last_value = last_statistic.get("sum")
@@ -85,7 +85,7 @@ class Gazpar:
             last_days = self._last_days
 
             # Compute the corresponding last_date
-            last_date = datetime.now() - timedelta(days=last_days)
+            last_date = datetime.now(tz=pytz.timezone(self._timezone)) - timedelta(days=last_days)
 
             # If no statistic, the last value is initialized to zero
             last_value = 0
@@ -113,13 +113,13 @@ class Gazpar:
             # Parse date format DD/MM/YYYY into datetime.
             date = datetime.strptime(reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y")
 
-            # Skip all readings before the last statistic date.
-            if date.date() <= last_date.date():
-                Logger.debug(f"Skip date: {date.date()} <= {last_date.date()}")
-                continue
-
             # Set the timezone
             date = timezone.localize(date)
+
+            # Skip all readings before the last statistic date.
+            if date <= last_date:
+                Logger.debug(f"Skip date: {date} <= {last_date}")
+                continue
 
             # Compute the total volume and energy
             total += reading[property_name]
