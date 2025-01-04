@@ -66,7 +66,7 @@ async def test_exists_statistic_id():
 
     await haws.connect()
 
-    exists_statistic_id = await haws.exists_statistic_id("sensor.gazpar2haws")
+    exists_statistic_id = await haws.exists_statistic_id("sensor.gazpar2haws_volume")
 
     assert exists_statistic_id is not None
 
@@ -90,7 +90,7 @@ async def test_get_last_statistic():
 
     await haws.connect()
 
-    statistics = await haws.get_last_statistic("sensor.gazpar2haws")
+    statistics = await haws.get_last_statistic("sensor.gazpar2haws_volume")
 
     assert statistics is not None
 
@@ -132,7 +132,7 @@ async def test_import_statistics():
         }
     ]
 
-    await haws.import_statistics("sensor.gazpar2haws", "recorder", "test", "m³", statistics)
+    await haws.import_statistics("sensor.gazpar2haws_volume", "recorder", "test", "m³", statistics)
 
     await haws.disconnect()
 
@@ -154,6 +154,6 @@ async def test_clear_statistics():
 
     await haws.connect()
 
-    await haws.clear_statistics(["sensor.gazpar2haws"])
+    await haws.clear_statistics(["sensor.gazpar2haws_volume"])
 
     await haws.disconnect()

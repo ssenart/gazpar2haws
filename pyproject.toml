@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gazpar2haws"
-version = "0.1.2"
+version = "0.1.3"
 description = "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface"
 authors = ["Stéphane Senart"]
 license = "MIT"
@@ -9,7 +9,7 @@ include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pygazpar = "==1.2.5"
+pygazpar = "^1.2.6"
 websockets = "^14.1"
 pytest-asyncio = "^0.25.0"
 pyyaml = "^6.0.2"
