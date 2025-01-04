@@ -20,10 +20,11 @@ class Bridge:
         # Home Assistant configuration
         ha_host = config.get("homeassistant.host")
         ha_port = config.get("homeassistant.port")
+        ha_endpoint = config.get("homeassistant.endpoint")
         ha_token = config.get("homeassistant.token")
 
         # Initialize Home Assistant
-        self._homeassistant = HomeAssistantWS(ha_host, ha_port, ha_token)
+        self._homeassistant = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
         # Initialize Gazpar
         self._gazpar = []

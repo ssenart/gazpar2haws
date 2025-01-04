@@ -8,9 +8,10 @@ Logger = logging.getLogger(__name__)
 
 # ----------------------------------
 class HomeAssistantWS:
-    def __init__(self, host, port, token):
+    def __init__(self, host: str, port: str, endpoint: str, token: str):
         self._host = host
         self._port = port
+        self._endpoint = endpoint
         self._token = token
         self._websocket = None
         self._message_id = 1
@@ -20,7 +21,7 @@ class HomeAssistantWS:
 
         Logger.debug(f"Connecting to Home Assistant at {self._host}:{self._port}")
 
-        ws_url = f"ws://{self._host}:{self._port}/api/websocket"
+        ws_url = f"ws://{self._host}:{self._port}{self._endpoint}"
 
         # Connect to the websocket
         self._websocket = await websockets.connect(ws_url, additional_headers={"Authorization": f"Bearer {self._token}"})

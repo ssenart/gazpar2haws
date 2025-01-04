@@ -26,9 +26,10 @@ FROM python:3.12-slim-bookworm AS runtime
 # GRDF_PCE_IDENTIFIER: The identifier of the PCE to use to fetch the data
 # GRDF_SCAN_INTERVAL: The interval in minutes between two scans of the GRDF API
 # GRDF_LAST_DAYS: The number of days to fetch when fetching the data
-# HOME_ASSISTANT_HOST: The hostname of the Home Assistant instance
-# HOME_ASSISTANT_PORT: The port of the Home Assistant instance
-# HOME_ASSISTANT_TOKEN: The long-lived access token to use to authenticate to the Home Assistant instance
+# HOMEASSISTANT_HOST: The hostname of the Home Assistant instance
+# HOMEASSISTANT_PORT: The port of the Home Assistant instance
+# HOMEASSISTANT_ENDPOINT: The endpoint to use to send the data to the Home Assistant
+# HOMEASSISTANT_TOKEN: The long-lived access token to use to authenticate to the Home Assistant instance
 
 # Install the required system dependencies: envsubst
 RUN apt-get update && apt-get install -y gettext-base

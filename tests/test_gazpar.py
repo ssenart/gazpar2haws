@@ -15,9 +15,10 @@ async def test_publish():
 
     ha_host = config.get("homeassistant.host")
     ha_port = config.get("homeassistant.port")
+    ha_endpoint = config.get("homeassistant.endpoint")
     ha_token = config.get("homeassistant.token")
 
-    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+    haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
     grdf_device_config = config.get("grdf.devices")[0]
 
