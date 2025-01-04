@@ -6,7 +6,7 @@ RUN apk add --no-cache gettext
 
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
-RUN pip3 install --no-cache-dir gazpar2haws
+RUN pip3 install --no-cache-dir gazpar2haws --upgrade
 
 WORKDIR /app
 
