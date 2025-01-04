@@ -10,6 +10,7 @@ arch:
   - armv7
   - i386
 homeassistant_api: true
+hassio_api: true
 options:
   grdf:
     scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
@@ -21,11 +22,10 @@ options:
     reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
 schema:
   grdf:
-    scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+    scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
     username: str
     password: str
     pce_identifier: str
     timezone: str?
     last_days: int? # Number of days of data to retrieve.
     reset: bool? # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
-

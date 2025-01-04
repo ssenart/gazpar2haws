@@ -1,4 +1,4 @@
-#!/usr/bin/env bashio
+#!/usr/bin/with-contenv bashio
 
 GRDF_USERNAME=$(bashio::config 'grdf.username')
 GRDF_PASSWORD=$(bashio::config 'grdf.password')
@@ -29,19 +29,19 @@ echo "GRDF_SCAN_INTERVAL: ${GRDF_SCAN_INTERVAL}"
 echo "GRDF_LAST_DAYS: ${GRDF_LAST_DAYS}"
 echo "HOMEASSISTANT_HOST: ${HOMEASSISTANT_HOST}"
 echo "HOMEASSISTANT_PORT: ${HOMEASSISTANT_PORT}"
-echo "HOMEASSISTANT_TOKEN: ***************"
+echo "HOMEASSISTANT_TOKEN: ${HOMEASSISTANT_TOKEN}"
 
 # Export environment variables
 export GRDF_USERNAME GRDF_PASSWORD GRDF_PCE_IDENTIFIER GRDF_SCAN_INTERVAL GRDF_LAST_DAYS HOMEASSISTANT_HOST HOMEASSISTANT_PORT HOMEASSISTANT_TOKEN
 
 # Instantiate the template config
 if [ ! -e /app/config/configuration.yaml ]; then
-    envsubst < "/app/configuration.template.yaml" > "/app/config/configuration.yaml"
+    envsubst < "/app/config/configuration.template.yaml" > "/app/config/configuration.yaml"
 fi
 
 # Instantiate the template secrets
 if [ ! -e /app/config/secrets.yaml ]; then
-    envsubst < "/app/secrets.template.yaml" > "/app/config/secrets.yaml"
+    envsubst < "/app/config/secrets.template.yaml" > "/app/config/secrets.yaml"
 fi
 
 # Run the gazpar2haws python program
