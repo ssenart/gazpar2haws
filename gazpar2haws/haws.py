@@ -23,7 +23,7 @@ class HomeAssistantWS:
         ws_url = f"ws://{self._host}:{self._port}/api/websocket"
 
         # Connect to the websocket
-        self._websocket = await websockets.connect(ws_url)
+        self._websocket = await websockets.connect(ws_url, additional_headers={"Authorization": f"Bearer {self._token}"})
 
         # When a client connects to the server, the server sends out auth_required.
         connect_response = await self._websocket.recv()
