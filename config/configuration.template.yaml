@@ -18,4 +18,5 @@ grdf:
 homeassistant:
   host: "!secret homeassistant.host"
   port: "!secret homeassistant.port"
+  endpoint: ${HOMEASSISTANT_ENDPOINT}
   token: "!secret homeassistant.token"
