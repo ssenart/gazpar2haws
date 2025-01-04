@@ -13,11 +13,11 @@ homeassistant_api: true
 hassio_api: true
 options:
   grdf:
-    scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
-    username: "!secret grdf.username"
-    password: "!secret grdf.password"
-    pce_identifier: "!secret grdf.pce_identifier"
-    timezone: Europe/Paris
+    scan_interval: 480 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+    username: ""
+    password: ""
+    pce_identifier: ""
+    timezone: "Europe/Paris"
     last_days: 365 # Number of days of data to retrieve.
     reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
 schema:
