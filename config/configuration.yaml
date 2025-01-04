@@ -1,11 +1,11 @@
 logging:
   file: log/gazpar2haws.log
   console: true
-  level: info
+  level: debug
   format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
 
 grdf:
-  scan_interval: 1440 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
   - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
     username: "!secret grdf.username"
@@ -18,4 +18,5 @@ grdf:
 homeassistant:
   host: "!secret homeassistant.host"
   port: "!secret homeassistant.port"
+  endpoint: "/api/websocket"
   token: "!secret homeassistant.token"

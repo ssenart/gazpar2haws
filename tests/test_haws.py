@@ -16,9 +16,10 @@ async def test_connect():
 
     ha_host = config.get("homeassistant.host")
     ha_port = config.get("homeassistant.port")
+    ha_endpoint = config.get("homeassistant.endpoint")
     ha_token = config.get("homeassistant.token")
 
-    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+    haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
     await haws.connect()
 
@@ -36,9 +37,10 @@ async def test_list_statistic_ids():
 
     ha_host = config.get("homeassistant.host")
     ha_port = config.get("homeassistant.port")
+    ha_endpoint = config.get("homeassistant.endpoint")
     ha_token = config.get("homeassistant.token")
 
-    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+    haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
     await haws.connect()
 
@@ -60,9 +62,10 @@ async def test_exists_statistic_id():
 
     ha_host = config.get("homeassistant.host")
     ha_port = config.get("homeassistant.port")
+    ha_endpoint = config.get("homeassistant.endpoint")
     ha_token = config.get("homeassistant.token")
 
-    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+    haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
     await haws.connect()
 
@@ -84,9 +87,10 @@ async def test_get_last_statistic():
 
     ha_host = config.get("homeassistant.host")
     ha_port = config.get("homeassistant.port")
+    ha_endpoint = config.get("homeassistant.endpoint")
     ha_token = config.get("homeassistant.token")
 
-    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+    haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
     await haws.connect()
 
@@ -108,9 +112,10 @@ async def test_import_statistics():
 
     ha_host = config.get("homeassistant.host")
     ha_port = config.get("homeassistant.port")
+    ha_endpoint = config.get("homeassistant.endpoint")
     ha_token = config.get("homeassistant.token")
 
-    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+    haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
     await haws.connect()
 
@@ -148,9 +153,10 @@ async def test_clear_statistics():
 
     ha_host = config.get("homeassistant.host")
     ha_port = config.get("homeassistant.port")
+    ha_endpoint = config.get("homeassistant.endpoint")
     ha_token = config.get("homeassistant.token")
 
-    haws = HomeAssistantWS(ha_host, ha_port, ha_token)
+    haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
     await haws.connect()
 
