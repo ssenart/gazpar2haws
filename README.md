@@ -7,71 +7,15 @@ It is compatible with Home Assistant Energy Dashboard and permits to upload the 
 
 Gazpar2HAWS can be installed on any host as a standalone program.
 
-### 1. Using source files
+### 1. Home Assistant Add-on.
 
-The project requires [Poetry](https://python-poetry.org/) tool for dependency and package management.
+In the **Add-on store**, click **⋮ → Repositories**, fill in **`https://github.com/ssenart/gazpar2haws`** and click **Add → Close** or click the **Add repository** button below, click **Add → Close** (You might need to enter the **internal IP address** of your Home Assistant instance first).  
 
-```sh
-$ cd /path/to/my_install_folder/
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fssenart%2Fgazpar2haws)
 
-$ git clone https://github.com/ssenart/gazpar2haws.git
+For usage and configuration, read the documentation [here](addons/gazpar2haws/DOCS.md).
 
-$ cd gazpar2haws
-
-$ poetry install
-
-$ poetry shell
-
-```
-
-### 2. Using PIP package
-
-```sh
-$ cd /path/to/my_install_folder/
-
-$ mkdir gazpar2haws
-
-$ cd gazpar2haws
-
-$ python -m venv .venv
-
-$ source .venv/bin/activate
-
-$ pip install gazpar2haws
-
-```
-
-### 3. Using Dockerfile
-
-The following steps permit to build the Docker image based on the local source files.
-
-1. Clone the repo locally:
-```sh
-$ cd /path/to/my_install_folder/
-
-$ git clone https://github.com/ssenart/gazpar2haws.git
-```
-2. Edit the docker-compose.yaml file by setting the environment variables corresponding to your GrDF account and Home Assistant setup:
-
-```yaml
-    environment:
-      - GRDF_USERNAME=<GrDF account username>
-      - GRDF_PASSWORD=<GrDF account password>
-      - GRDF_PCE_IDENTIFIER=<GrDF PCE meter identifier>
-      - HOMEASSISTANT_HOST=<Home Assistant instance host name>
-      - HOMEASSISTANT_PORT=<Home Assistant instance port number>
-      - HOMEASSISTANT_TOKEN=<Home Assistant access token>
-```
-3. Build the image:
-```sh
-$ docker compose -f docker/docker-compose.yaml build
-```
-4. Run the container:
-```sh
-$ docker compose -f docker/docker-compose.yaml up -d
-```
-
-### 4. Using Docker Hub
+### 2. Using Docker Hub
 
 The following steps permits to run a container from an existing image available in the Docker Hub repository.
 
@@ -101,6 +45,70 @@ Edit the environment variable section according to your setup.
 2. Run the container:
 ```sh
 $ docker compose up -d
+```
+
+### 3. Using PIP package
+
+```sh
+$ cd /path/to/my_install_folder/
+
+$ mkdir gazpar2haws
+
+$ cd gazpar2haws
+
+$ python -m venv .venv
+
+$ source .venv/bin/activate
+
+$ pip install gazpar2haws
+
+```
+
+### 4. Using Dockerfile
+
+The following steps permit to build the Docker image based on the local source files.
+
+1. Clone the repo locally:
+```sh
+$ cd /path/to/my_install_folder/
+
+$ git clone https://github.com/ssenart/gazpar2haws.git
+```
+2. Edit the docker-compose.yaml file by setting the environment variables corresponding to your GrDF account and Home Assistant setup:
+
+```yaml
+    environment:
+      - GRDF_USERNAME=<GrDF account username>
+      - GRDF_PASSWORD=<GrDF account password>
+      - GRDF_PCE_IDENTIFIER=<GrDF PCE meter identifier>
+      - HOMEASSISTANT_HOST=<Home Assistant instance host name>
+      - HOMEASSISTANT_PORT=<Home Assistant instance port number>
+      - HOMEASSISTANT_TOKEN=<Home Assistant access token>
+```
+3. Build the image:
+```sh
+$ docker compose -f docker/docker-compose.yaml build
+```
+4. Run the container:
+```sh
+$ docker compose -f docker/docker-compose.yaml up -d
+```
+
+### 5. Using source files
+
+The project requires [Poetry](https://python-poetry.org/) tool for dependency and package management.
+
+```sh
+$ cd /path/to/my_install_folder/
+
+$ git clone https://github.com/ssenart/gazpar2haws.git
+
+$ cd gazpar2haws
+
+$ poetry install
+
+$ poetry shell
+
 ```
 
 ## Usage
@@ -155,31 +163,7 @@ The history is uploaded on the entities with names:
 - sensor.${name}_volume: Volume history in m³.
 - sensor.${name}_energy: Energy history in kWh.
 
-${name} is 'gazpar2haws' defined in the above configuration file. It can be replaced by any other name.
-
-Those two entities have to already exist in Home Assistant.
-
-They may be created using the following templates:
-
-```yaml
-
-  - name: gazpar2haws_volume
-    unit_of_measurement: 'm³'
-    availability: true
-    state: 0
-    icon: mdi:fire    
-    device_class: gas
-    state_class: total_increasing    
-
-  - name: gazpar2haws_energy
-    unit_of_measurement: 'kWh'
-    availability: true
-    state: 0     
-    icon: mdi:fire
-    device_class: energy
-    state_class: total_increasing 
-
-```
+`${name}` is 'gazpar2haws' defined in the above configuration file. It can be replaced by any other name.
 
 ### Environment variable for Docker
 
