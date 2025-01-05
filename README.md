@@ -14,7 +14,7 @@ It is a complement to the other available projects:
 
 Gazpar2HAWS can be installed in many ways.
 
-### 1. Home Assistant Add-on.
+### 1. Home Assistant Add-on
 
 In the **Add-on store**, click **⋮ → Repositories**, fill in **`https://github.com/ssenart/gazpar2haws`** and click **Add → Close** or click the **Add repository** button below, click **Add → Close** (You might need to enter the **internal IP address** of your Home Assistant instance first).  
 
