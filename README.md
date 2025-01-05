@@ -1,11 +1,18 @@
 # gazpar2haws
+
 Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface.
 
 It is compatible with Home Assistant Energy Dashboard and permits to upload the history and keep it updated with the latest readings.
 
+It is a complement to the other available projects:
+
+- [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar): HA integration that publishes a Gazpar entity with the corresponding meter value.
+- [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt): [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) alternative but using MQTT events (it reduce coupling with HA).
+- [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card): HA dashboard card compatible with [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) and [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt).
+
 ## Installation
 
-Gazpar2HAWS can be installed on any host as a standalone program.
+Gazpar2HAWS can be installed in many ways.
 
 ### 1. Home Assistant Add-on.
 
@@ -217,14 +224,17 @@ $ docker push --all-tags ssenart/gazpar2haws
 All the gazpar2haws images are available [here](https://hub.docker.com/repository/docker/ssenart/gazpar2haws/general).
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Pull requests are welcome. For any change proposal, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
 ## License
+
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Project status
+
 Gazpar2HAWS has been initiated for integration with [Home Assistant](https://www.home-assistant.io/) energy dashboard.
 
 

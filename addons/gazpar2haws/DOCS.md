@@ -20,5 +20,5 @@ grdf:
 | grdf.password  | GrDF account password (avoid using special characters)  | Yes | - |
 | grdf.pce_identifier  | GrDF meter PCE identifier | Yes | - |
 | grdf.timezone | Timezone of the GrDF data | No | Europe/Paris |
-| grdf.last_days  | Number of days of history data to retrieve  | No | 1095 days |
+| grdf.last_days  | Number of days of history data to retrieve  | No | 365 days |
 | grdf.reset  | Rebuild the history. If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added  | No | false |
