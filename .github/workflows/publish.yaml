@@ -130,7 +130,7 @@ jobs:
       - name: Upload distributions
         uses: actions/upload-artifact@v4
         with:
-          name: package-${{ steps.setup-python.outputs.python-version }}
+          name: package-${{ matrix.python-version }}
           path: dist/
 
   publish-to-testpypi:
@@ -157,7 +157,7 @@ jobs:
     - name: Download all the dists
       uses: actions/download-artifact@v4
       with:
-        name: package-${{ steps.setup-python.outputs.python-version }}
+        name: package-${{ matrix.python-version }}
         path: dist/
 
     - name: Publish distribution 📦 to TestPyPI
