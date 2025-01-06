@@ -124,7 +124,7 @@ jobs:
 
       #----------------------------------------------
       - name: Build release distributions
-        run: poetry build
+        run: poetry build --local-version ${{ steps.gitversion.outputs.informationalVersion }}"
 
       #----------------------------------------------
       - name: Upload distributions
