@@ -17,6 +17,7 @@ permissions:
 
 jobs:
   build:
+    name: Build
     # strategy:
     #   fail-fast: true
     #   matrix:
@@ -166,7 +167,7 @@ jobs:
           path: dist/
 
   publish-to-testpypi:
-    name: Publish Python 🐍 distribution 📦 to TestPyPI
+    name: Publish to TestPyPI
     needs:
     - build
 
