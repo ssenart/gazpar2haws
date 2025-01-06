@@ -36,6 +36,7 @@ jobs:
         uses: gittools/actions/gitversion/setup@v3.1.1
         with:
           versionSpec: '6.0.x'
+          fetch-depth: 0
 
       #----------------------------------------------
       # GitVersion execution : see examples at https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/execute/usage-examples.md
