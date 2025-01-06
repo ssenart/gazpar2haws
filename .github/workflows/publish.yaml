@@ -86,6 +86,29 @@ jobs:
           echo "CommitDate: ${{ steps.gitversion.outputs.commitDate }}"              
 
       #----------------------------------------------
+      # Set the package version
+      - name: Set package version
+        env:
+          PACKAGE_VERSION: ${{ steps.gitversion.outputs.informationalVersion }}
+        run: echo "PACKAGE_VERSION=${PACKAGE_VERSION}" >> $GITHUB_ENV
+
+      #----------------------------------------------
+      # Install envsubst
+      - name: Install envsubst
+        run: sudo apt-get update && sudo apt-get install -y gettext-base
+
+      #----------------------------------------------
+      # Replace placeholders in pyproject.toml, config.yaml and build.yaml
+      - name: Replace placeholders
+        run: |
+          envsubst < pyproject.toml > pyproject.toml.tmp
+          mv pyproject.toml.tmp pyproject.toml
+          envsubst < addons/gazpar2haws/config.yaml > addons/gazpar2haws/config.yaml.tmp
+          mv addons/gazpar2haws/config.yaml.tmp addons/gazpar2haws/config.yaml
+          envsubst < addons/gazpar2haws/build.yaml > addons/gazpar2haws/build.yaml.tmp
+          mv addons/gazpar2haws/build.yaml.tmp addons/gazpar2haws/build.yaml
+
+      #----------------------------------------------
       #       set-up python
       # - name: Set up python ${{ matrix.python-version }}
       #   id: setup-python
