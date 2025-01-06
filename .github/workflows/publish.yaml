@@ -102,12 +102,9 @@ jobs:
       # Replace placeholders in pyproject.toml, config.yaml and build.yaml
       - name: Replace placeholders
         run: |
-          envsubst < pyproject.toml > pyproject.toml.tmp
-          mv pyproject.toml.tmp pyproject.toml
-          envsubst < addons/gazpar2haws/config.yaml > addons/gazpar2haws/config.yaml.tmp
-          mv addons/gazpar2haws/config.yaml.tmp addons/gazpar2haws/config.yaml
-          envsubst < addons/gazpar2haws/build.yaml > addons/gazpar2haws/build.yaml.tmp
-          mv addons/gazpar2haws/build.yaml.tmp addons/gazpar2haws/build.yaml
+          envsubst < pyproject.template.toml > pyproject.toml
+          envsubst < addons/gazpar2haws/config.template.yaml > addons/gazpar2haws/config.yaml
+          envsubst < addons/gazpar2haws/build.template.yaml > addons/gazpar2haws/build.yaml
 
       #----------------------------------------------
       # Commit the changes

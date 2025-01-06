@@ -1,0 +1,31 @@
+name: "Gazpar2HAWS"
+description: "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface."
+version: "${PACKAGE_VERSION}"
+slug: "gazpar2haws"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+homeassistant_api: true
+hassio_api: true
+options:
+  grdf:
+    scan_interval: 480 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+    username: ""
+    password: ""
+    pce_identifier: ""
+    timezone: "Europe/Paris"
+    last_days: 365 # Number of days of data to retrieve.
+    reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
+schema:
+  grdf:
+    scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+    username: str
+    password: str
+    pce_identifier: str
+    timezone: str?
+    last_days: int? # Number of days of data to retrieve.
+    reset: bool? # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
