@@ -17,12 +17,13 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ "ubuntu-latest" ]
-        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
-    runs-on: ${{ matrix.os }}
+    # strategy:
+    #   fail-fast: true
+    #   matrix:
+    #     os: [ "ubuntu-latest" ]
+    #     python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+    # runs-on: ${{ matrix.os }}
+    runs-on: ${{ "ubuntu-latest" }}
 
     steps:
       #----------------------------------------------
@@ -86,11 +87,11 @@ jobs:
 
       #----------------------------------------------
       #       set-up python
-      - name: Set up python ${{ matrix.python-version }}
-        id: setup-python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+      # - name: Set up python ${{ matrix.python-version }}
+      #   id: setup-python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: ${{ matrix.python-version }}
 
       #----------------------------------------------
       #  -----  install & configure poetry  -----
@@ -104,23 +105,23 @@ jobs:
 
       #----------------------------------------------
       #       load cached venv if cache exists
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      # - name: Load cached venv
+      #   id: cached-poetry-dependencies
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: .venv
+      #     key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
       #----------------------------------------------
       # install dependencies if cache does not exist
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+      # - name: Install dependencies
+      #   if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      #   run: poetry install --no-interaction --no-root
 
       #----------------------------------------------
       # install your root project, if required
-      - name: Install library
-        run: poetry install --no-interaction
+      # - name: Install library
+      #   run: poetry install --no-interaction
 
       #----------------------------------------------
       - name: Build release distributions
@@ -130,7 +131,7 @@ jobs:
       - name: Upload distributions
         uses: actions/upload-artifact@v4
         with:
-          name: package-${{ matrix.python-version }}
+          name: package
           path: dist/
 
   publish-to-testpypi:
@@ -138,12 +139,7 @@ jobs:
     needs:
     - build
 
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ "ubuntu-latest" ]
-        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
-    runs-on: ${{ matrix.os }}
+    runs-on: "ubuntu-latest"
 
     environment:
       name: testpypi
@@ -157,10 +153,10 @@ jobs:
     - name: Download all the dists
       uses: actions/download-artifact@v4
       with:
-        name: package-${{ matrix.python-version }}
+        name: package
         path: dist/
 
-    - name: Publish distribution 📦 to TestPyPI
+    - name: Publish 📦 to TestPyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
