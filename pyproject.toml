@@ -8,7 +8,7 @@ readme = "README.md"
 include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.8"
 pygazpar = "^1.2.6"
 websockets = "^14.1"
 pytest-asyncio = "^0.25.0"
