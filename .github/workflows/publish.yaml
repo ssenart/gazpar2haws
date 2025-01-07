@@ -16,6 +16,9 @@ permissions:
   contents: write # Allow to commit and push.
 
 jobs:
+
+  #----------------------------------------------
+  # Build the package
   build:
     name: Build
     # strategy:
@@ -40,6 +43,8 @@ jobs:
         id: compute-version
         uses: ./.github/workflows/compute-version    
 
+      #----------------------------------------------
+      # Display version
       - name: Display version
         run: "echo Version=${{ steps.compute-version.outputs.version }}"
         shell: bash
@@ -55,8 +60,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gettext-base
 
       #----------------------------------------------
-      # Replace placeholders in pyproject.toml, config.yaml and build.yaml
-      - name: Replace placeholders
+      # Replace version in pyproject.toml, config.yaml and build.yaml
+      - name: Replace version
         run: |
           envsubst < pyproject.template.toml > pyproject.toml
           envsubst < addons/gazpar2haws/config.template.yaml > addons/gazpar2haws/config.yaml
@@ -111,22 +116,29 @@ jobs:
       #   run: poetry install --no-interaction
 
       #----------------------------------------------
-      - name: Build release distributions
+      - name: Build package
         run: poetry build
 
       #----------------------------------------------
-      - name: Upload distributions
+      - name: Upload package
         uses: actions/upload-artifact@v4
         with:
           name: package
           path: dist/
 
+  #----------------------------------------------
+  # Publish to TestPyPI          
   publish-to-testpypi:
     name: Publish to TestPyPI
     runs-on: "ubuntu-latest"
     needs: build
 
     steps:
+      #----------------------------------------------
+      #       check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - uses: ./.github/workflows/publish-to-testpypi
         with:
           package-name: gazpar2haws
