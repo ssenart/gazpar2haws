@@ -43,9 +43,7 @@ jobs:
       #----------------------------------------------
       # Set the package version
       - name: Set package version
-        env:
-          PACKAGE_VERSION: ${{ steps.compute-version.outputs.version }}
-        run: echo "PACKAGE_VERSION=${PACKAGE_VERSION}" >> $GITHUB_ENV
+        run: echo "PACKAGE_VERSION=${{ steps.compute-version.outputs.version }}" >> $GITHUB_ENV
 
       #----------------------------------------------
       # Install envsubst
