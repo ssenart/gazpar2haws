@@ -5,15 +5,16 @@ inputs:
     description: "Package name to publish available in the actions workspace"
     required: true
 
-environment:
+runs:
+  using: "composite"
+
+  environment:
     name: testpypi
     url: "https://test.pypi.org/p/${{ inputs.package-name }}"
 
-permissions:
+  permissions:
     id-token: write  # IMPORTANT: mandatory for trusted publishing
 
-runs:
-  using: "composite"
   steps:
   - name: Download all the dists
     uses: actions/download-artifact@v4
