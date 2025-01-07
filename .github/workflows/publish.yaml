@@ -143,8 +143,8 @@ jobs:
     steps:
       #----------------------------------------------
       #       check-out repo
-      # - name: Check out repository
-      #   uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       # - uses: ./.github/workflows/publish-to-testpypi
       #   with:
