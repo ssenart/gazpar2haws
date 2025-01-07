@@ -38,9 +38,7 @@ jobs:
       # Compute the version of the project based in the current checkout branch
       - name: Compute version
         id: compute-version
-        uses: ./.github/workflows/compute-version
-        with:
-          description: 'Compute the version of the project based in the current checkout branch'          
+        uses: ./.github/workflows/compute-version    
 
       #----------------------------------------------
       # Set the package version

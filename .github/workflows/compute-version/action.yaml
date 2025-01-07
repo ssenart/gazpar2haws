@@ -26,7 +26,7 @@ steps:
     # Display GitVersion outputs
     - name: Display GitVersion outputs
       run: |
-        echo "Major: ${{ gitversion.outputs.major }}"
+        echo "Major: ${{ steps.gitversion.outputs.major }}"
         echo "Minor: ${{ steps.gitversion.outputs.minor }}"
         echo "Patch: ${{ steps.gitversion.outputs.patch }}"
         echo "PreReleaseTag: ${{ steps.gitversion.outputs.preReleaseTag }}"
