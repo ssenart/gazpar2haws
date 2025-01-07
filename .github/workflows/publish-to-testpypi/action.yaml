@@ -5,12 +5,12 @@ inputs:
     description: "Package name to publish available in the actions workspace"
     required: true
 
-  environment:
-    name: testpypi
-    url: https://test.pypi.org/p/gazpar2haws
+  # environment:
+  #   name: testpypi
+  #   url: https://test.pypi.org/p/gazpar2haws
 
-  permissions:
-    id-token: write  # IMPORTANT: mandatory for trusted publishing
+  # permissions:
+  #   id-token: write  # IMPORTANT: mandatory for trusted publishing
 
 runs:
   using: "composite"    
