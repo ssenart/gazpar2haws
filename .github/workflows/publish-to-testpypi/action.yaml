@@ -12,14 +12,16 @@ environment:
 permissions:
     id-token: write  # IMPORTANT: mandatory for trusted publishing
 
-steps:
-- name: Download all the dists
-  uses: actions/download-artifact@v4
-  with:
-    name: ${{ inputs.package-name }}
-    path: dist/
-- name: Publish 📦 to TestPyPI
-  uses: pypa/gh-action-pypi-publish@release/v1
-  with:
-    repository-url: https://test.pypi.org/legacy/
-    verbose: true
+runs:
+  using: "composite"
+  steps:
+  - name: Download all the dists
+    uses: actions/download-artifact@v4
+    with:
+      name: ${{ inputs.package-name }}
+      path: dist/
+  - name: Publish 📦 to TestPyPI
+    uses: pypa/gh-action-pypi-publish@release/v1
+    with:
+      repository-url: https://test.pypi.org/legacy/
+      verbose: true
