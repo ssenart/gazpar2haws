@@ -38,7 +38,7 @@ jobs:
       # Compute the version of the project based in the current checkout branch
       - name: Compute version
         id: compute-version
-        uses: ./.github/workflows/actions/compute-version
+        uses: ./.github/workflows/compute-version
         with:
           description: 'Compute the version of the project based in the current checkout branch'          
 
@@ -127,6 +127,6 @@ jobs:
     needs: build
 
     steps:
-      - uses: ./.github/workflows/actions/publish-to-testpypi
+      - uses: ./.github/workflows/publish-to-testpypi
         with:
           package-name: gazpar2haws
