@@ -40,6 +40,10 @@ jobs:
         id: compute-version
         uses: ./.github/workflows/compute-version    
 
+      - name: Display version
+        run: "echo Version: ${{ steps.compute-version.outputs.version }}"
+        shell: bash
+
       #----------------------------------------------
       # Set the package version
       - name: Set package version
