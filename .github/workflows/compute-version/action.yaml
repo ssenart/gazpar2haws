@@ -4,6 +4,7 @@ description: 'Compute the version of the project based in the current checkout b
 outputs:
   version:
     description: 'The computed version of the project'
+    value: ${{ steps.set-version.outputs.version }}
 
 runs:
   using: "composite"

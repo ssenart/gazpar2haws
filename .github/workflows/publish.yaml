@@ -41,7 +41,7 @@ jobs:
         uses: ./.github/workflows/compute-version    
 
       - name: Display version
-        run: "echo Version: ${{ steps.compute-version.outputs.version }}"
+        run: "echo Version=${{ steps.compute-version.outputs.version }}"
         shell: bash
 
       #----------------------------------------------
