@@ -1,6 +1,6 @@
 [project]
 name = "gazpar2haws"
-version = "0.1.8.dev48"
+version = "0.1.8.dev49"
 description = "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface"
 license = { file = "LICENSE" }
 readme = "README.md"
