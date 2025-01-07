@@ -4,17 +4,29 @@ inputs:
   package-name:
     description: "Package name to publish available in the actions workspace"
     required: true
+  action_ref:
+    default: ${{ github.action_ref }}
+  action_repo:
+      default: ${{ github.action_repo }}
+  action_repo-id:
+      default: ${{ github.action_repo-id }}                
 
-  # environment:
-  #   name: testpypi
-  #   url: https://test.pypi.org/p/gazpar2haws
+  environment:
+    name: testpypi
+    url: https://test.pypi.org/p/gazpar2haws
 
-  # permissions:
-  #   id-token: write  # IMPORTANT: mandatory for trusted publishing
+  permissions:
+    id-token: write  # IMPORTANT: mandatory for trusted publishing
 
 runs:
   using: "composite"    
   steps:
+  - run: echo ${{ inputs.action_ref }} 
+    shell: bash
+  - run: echo ${{ inputs.action_repo }} 
+    shell: bash
+  - run: echo ${{ inputs.action_repo-id }} 
+    shell: bash        
   - name: Download the package
     uses: actions/download-artifact@v4
     with:
