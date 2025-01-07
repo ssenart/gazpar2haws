@@ -69,5 +69,10 @@ runs:
       shell: bash      
       run: |
         echo "version=${{ steps.gitversion.outputs.informationalVersion }}" >> $GITHUB_OUTPUT
-      env:
-        GITHUB_OUTPUT: $GITHUB_ENV
+
+    #----------------------------------------------
+    # Display the version
+    - name: Display the version
+      shell: bash
+      run: |
+        echo "version=${{ steps.set-version.outputs.version }}"
