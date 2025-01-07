@@ -35,63 +35,18 @@ jobs:
           fetch-depth: 0
 
       #----------------------------------------------
-      # GitVersion setup : see examples at https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/setup.md
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.1.1
+      # Compute the version of the project based in the current checkout branch
+      - name: Compute version
+        id: compute-version
+        uses: ./.github/workflows/actions/compute-version
         with:
-          versionSpec: '6.0.x'
-
-      #----------------------------------------------
-      # GitVersion execution : see examples at https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/execute/usage-examples.md
-      - name: Determine Version
-        id:   gitversion
-        uses: gittools/actions/gitversion/execute@v3.1.1
-        with:
-          useConfigFile: true
-          configFilePath: gitversion.yaml
-
-      #----------------------------------------------
-      # Display GitVersion outputs
-      - name: Display GitVersion outputs
-        run: |
-          echo "Major: ${{ steps.gitversion.outputs.major }}"
-          echo "Minor: ${{ steps.gitversion.outputs.minor }}"
-          echo "Patch: ${{ steps.gitversion.outputs.patch }}"
-          echo "PreReleaseTag: ${{ steps.gitversion.outputs.preReleaseTag }}"
-          echo "PreReleaseTagWithDash: ${{ steps.gitversion.outputs.preReleaseTagWithDash }}"
-          echo "PreReleaseLabel: ${{ steps.gitversion.outputs.preReleaseLabel }}"
-          echo "PreReleaseNumber: ${{ steps.gitversion.outputs.preReleaseNumber }}"
-          echo "WeightedPreReleaseNumber: ${{ steps.gitversion.outputs.weightedPreReleaseNumber }}"
-          echo "BuildMetaData: ${{ steps.gitversion.outputs.buildMetaData }}"
-          echo "BuildMetaDataPadded: ${{ steps.gitversion.outputs.buildMetaDataPadded }}"
-          echo "FullBuildMetaData: ${{ steps.gitversion.outputs.fullBuildMetaData }}"
-          echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
-          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
-          echo "LegacySemVer: ${{ steps.gitversion.outputs.legacySemVer }}"
-          echo "LegacySemVerPadded: ${{ steps.gitversion.outputs.legacySemVerPadded }}"
-          echo "AssemblySemVer: ${{ steps.gitversion.outputs.assemblySemVer }}"
-          echo "AssemblySemFileVer: ${{ steps.gitversion.outputs.assemblySemFileVer }}"
-          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
-          echo "InformationalVersion: ${{ steps.gitversion.outputs.informationalVersion }}"
-          echo "BranchName: ${{ steps.gitversion.outputs.branchName }}"
-          echo "EscapedBranchName: ${{ steps.gitversion.outputs.escapedBranchName }}"
-          echo "Sha: ${{ steps.gitversion.outputs.sha }}"
-          echo "ShortSha: ${{ steps.gitversion.outputs.shortSha }}"
-          echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
-          echo "NuGetVersion: ${{ steps.gitversion.outputs.nuGetVersion }}"
-          echo "NuGetPreReleaseTagV2: ${{ steps.gitversion.outputs.nuGetPreReleaseTagV2 }}"
-          echo "NuGetPreReleaseTag: ${{ steps.gitversion.outputs.nuGetPreReleaseTag }}"
-          echo "VersionSourceSha: ${{ steps.gitversion.outputs.versionSourceSha }}"
-          echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.commitsSinceVersionSource }}"
-          echo "CommitsSinceVersionSourcePadded: ${{ steps.gitversion.outputs.commitsSinceVersionSourcePadded }}"
-          echo "UncommittedChanges: ${{ steps.gitversion.outputs.uncommittedChanges }}"
-          echo "CommitDate: ${{ steps.gitversion.outputs.commitDate }}"              
+          description: 'Compute the version of the project based in the current checkout branch'          
 
       #----------------------------------------------
       # Set the package version
       - name: Set package version
         env:
-          PACKAGE_VERSION: ${{ steps.gitversion.outputs.informationalVersion }}
+          PACKAGE_VERSION: ${{ steps.compute-version.outputs.version }}
         run: echo "PACKAGE_VERSION=${PACKAGE_VERSION}" >> $GITHUB_ENV
 
       #----------------------------------------------
@@ -167,31 +122,7 @@ jobs:
           path: dist/
 
   publish-to-testpypi:
-    name: Publish to TestPyPI
-    needs:
-    - build
-
-    runs-on: "ubuntu-latest"
-
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/gazpar2haws
-
-    permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
-
-    steps:
-
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: package
-        path: dist/
-
-    - name: Publish 📦 to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
-        skip-existing: true
-        verbose: true
-
+    needs: build
+    uses: ./.github/workflows/actions/publish-to-testpypi.yaml
+    with:
+      package-name: gazpar2haws
