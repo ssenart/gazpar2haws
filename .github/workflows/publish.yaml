@@ -152,7 +152,7 @@ jobs:
       - name: Download the package
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.package-name }}
+          name: gazpar2haws
           path: dist/
       - name: Publish 📦 to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
