@@ -1,6 +1,6 @@
 name: "Gazpar2HAWS"
 description: "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface."
-version: ""
+version: "0.1.8.dev39"
 slug: "gazpar2haws"
 init: false
 arch:
