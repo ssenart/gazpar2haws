@@ -7,7 +7,7 @@ inputs:
 
 environment:
     name: testpypi
-    url: https://test.pypi.org/p/${{ inputs.package-name }}
+    url: "https://test.pypi.org/p/${{ inputs.package-name }}"
 
 permissions:
     id-token: write  # IMPORTANT: mandatory for trusted publishing
