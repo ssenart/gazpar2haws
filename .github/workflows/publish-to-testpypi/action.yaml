@@ -21,6 +21,7 @@ inputs:
 runs:
   using: "composite"    
   steps:
+  # Workaround to get the REF, REPO and REPO_ID (see https://github.com/actions/runner/issues/2473).
   - run: echo REF=$REF
     env:
       REF: release/v1
@@ -31,7 +32,7 @@ runs:
     shell: bash
   - run: echo REPO_ID=$REPO_ID
     env:
-      REPO: 904401178
+      REPO_ID: 904401178
     shell: bash     
   - name: Download the package
     uses: actions/download-artifact@v4
