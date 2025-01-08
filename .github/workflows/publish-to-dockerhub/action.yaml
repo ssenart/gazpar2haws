@@ -5,6 +5,12 @@ inputs:
   image:
     description: 'Docker image name'
     required: true
+  username:
+    description: 'DockerHub username'
+    required: true
+  password:
+    description: 'DockerHub password'
+    required: true
 
 runs:
   using: "composite"
@@ -27,8 +33,8 @@ runs:
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3

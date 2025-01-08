@@ -26,3 +26,5 @@ jobs:
         uses: ./.github/workflows/publish-to-dockerhub
         with:
           image: ssenart/gazpar2haws
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
