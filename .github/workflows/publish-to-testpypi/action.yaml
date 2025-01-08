@@ -21,12 +21,18 @@ inputs:
 runs:
   using: "composite"    
   steps:
-  - run: echo ${{ inputs.action_ref }} 
+  - run: echo REF=${{ REF }}
+    env:
+      REF: release/v1
+    shell: bash    
+  - run: echo REPO=${{ REPO }} 
+    env:
+      REPO: pypa/gh-action-pypi-publish
     shell: bash
-  - run: echo ${{ inputs.action_repo }} 
-    shell: bash
-  - run: echo ${{ inputs.action_repo-id }} 
-    shell: bash        
+  - run: echo REPO_ID=${{ REPO_ID }} 
+    env:
+      REPO: 904401178
+    shell: bash     
   - name: Download the package
     uses: actions/download-artifact@v4
     with:
