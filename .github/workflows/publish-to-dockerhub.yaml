@@ -16,11 +16,6 @@ jobs:
       id-token: write
     steps:
       #----------------------------------------------
-      #  Check-out repo
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      #----------------------------------------------
       # Publish the Docker image
       - name: Publish Docker image
         uses: ./.github/workflows/publish-to-dockerhub
