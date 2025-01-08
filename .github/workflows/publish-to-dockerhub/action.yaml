@@ -46,8 +46,8 @@ runs:
       id: push
       uses: docker/build-push-action@v5
       with:
-        context: "{{defaultContext}}:docker"
-        file: Dockerfile
+        context: "{{defaultContext}}"
+        file: ./docker/Dockerfile
         push: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
