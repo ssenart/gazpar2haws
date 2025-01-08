@@ -28,7 +28,8 @@ async def get_last_statistic(entity_id):
         auth_response_data = json.loads(auth_response)
 
         if auth_response_data.get("type") == "auth_invalid":
-            raise Exception(f"Authentication failed: {auth_response_data.get("messsage")}")
+            message = auth_response_data.get("messsage")
+            raise Exception(f"Authentication failed: {message}")
 
         # Subscribe to statistics
         request_id = 1
