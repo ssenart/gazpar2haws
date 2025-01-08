@@ -29,4 +29,6 @@ jobs:
       # Linting the code
       - name: Linting
         uses: ./.github/workflows/python-lint
+        with:
+          python-version: ${{ matrix.python-version }}
             

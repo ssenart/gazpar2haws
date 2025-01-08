@@ -51,4 +51,4 @@ runs:
     # Run test suite and output coverage file
     - name: Test with pytest
       shell: bash
-      run: poetry run pytest --cov=<project-dir> --cov-report=xml
+      run: poetry run pytest
