@@ -10,6 +10,8 @@
 
 name: Publish Python Package to TestPyPI
 
+on:
+
 permissions:
   contents: write # Allow to commit and push.
 
