@@ -1,12 +1,11 @@
 name: 'python-test'
 description: 'Python testing workflow'
 
-strategy:
-  fail-fast: true
-  matrix:
-    os: [ "ubuntu-latest" ]
-    python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
-runs-on: ${{ matrix.os }}
+inputs:
+  python-version:
+    description: 'Python version'
+    required: true
+    default: '3.13'
 
 runs:
   using: "composite"
@@ -15,7 +14,7 @@ runs:
     #  Set-up python
     - uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}    
+        python-version: ${{ inputs.python-version }}    
 
     #----------------------------------------------
     # Install poetry

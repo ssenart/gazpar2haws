@@ -11,7 +11,14 @@ jobs:
   # Testing
   testing:
     name: Testing
-    runs-on: "ubuntu-latest"
+
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ "ubuntu-latest" ]
+        python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
+    runs-on: ${{ matrix.os }}
+
     steps:
       #----------------------------------------------
       #  Check-out repo
@@ -22,4 +29,5 @@ jobs:
       # Testing the code
       - name: Testing
         uses: ./.github/workflows/python-test
-            
+        with:
+          python-version: ${{ matrix.python-version }}            
