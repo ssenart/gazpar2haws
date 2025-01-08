@@ -36,9 +36,10 @@ runs:
       REPO_ID: 904401178
     shell: bash
   - run: |
-    echo "ref=$REF" >>"$GITHUB_OUTPUT"
-    echo "repo=$REPO" >>"$GITHUB_OUTPUT"
-    echo "repo-id=$REPO_ID" >>"$GITHUB_OUTPUT"
+      echo "ref=$REF" >>"$GITHUB_OUTPUT"
+      echo "repo=$REPO" >>"$GITHUB_OUTPUT"
+      echo "repo-id=$REPO_ID" >>"$GITHUB_OUTPUT"
+    shell: bash
   #----------------------------------------------
     
   - name: Download the package
