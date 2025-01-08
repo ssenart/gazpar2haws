@@ -27,11 +27,13 @@ runs:
     #----------------------------------------------
     #  Install linters
     - name: Install linters
-      run: python -m pip install pylint flake8 black isort mypy ruff 
+      shell: bash
+      run: python -m pip install pylint flake8 black isort mypy ruff
 
     #----------------------------------------------
     #  Run linters    
     - name: Run linters
+      shell: bash
       run: |
         pylint .
         flake8 .
