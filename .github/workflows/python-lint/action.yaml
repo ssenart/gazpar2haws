@@ -35,7 +35,7 @@ runs:
     - name: Run linters
       shell: bash
       run: |
-        pylint . logging-fstring-interpolation
+        pylint . --disable=logging-fstring-interpolation
         flake8 .
         black . --check
         isort . --check-only
