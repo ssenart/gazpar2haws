@@ -7,6 +7,8 @@
 # documentation.
 
 # See template at: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
+# See linting and testing at: https://github.com/snok/install-poetry
+
 
 name: Upload Python Package
 
