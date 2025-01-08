@@ -1,0 +1,28 @@
+name: Publish Docker Image to DockerHub
+
+on: push
+
+permissions:
+  contents: read
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      #----------------------------------------------
+      #  Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      #----------------------------------------------
+      # Publish the Docker image
+      - name: Publish Docker image
+        uses: ./.github/workflows/publish-to-dockerhub
+        with:
+          image: ssenart/gazpar2haws
