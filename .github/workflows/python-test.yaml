@@ -1,0 +1,25 @@
+name: Test Python Testing
+
+on: push
+
+permissions:
+  contents: read # Allow to commit and push.
+
+jobs:
+
+  #----------------------------------------------
+  # Testing
+  testing:
+    name: Testing
+    runs-on: "ubuntu-latest"
+    steps:
+      #----------------------------------------------
+      #  Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      #----------------------------------------------
+      # Testing the code
+      - name: Testing
+        uses: ./.github/workflows/python-test
+            
