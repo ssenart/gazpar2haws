@@ -1,6 +1,6 @@
 name: Test Python Linting
 
-on: push
+on: workflow_dispatch
 
 permissions:
   contents: read # Allow to commit and push.
