@@ -8,7 +8,7 @@
 
 # See template at: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 
-name: Upload Python Package
+name: Publish Python Package to PyPI
 
 permissions:
   contents: write # Allow to commit and push.
@@ -19,14 +19,7 @@ jobs:
   # Build the package
   build:
     name: Build
-    # strategy:
-    #   fail-fast: true
-    #   matrix:
-    #     os: [ "ubuntu-latest" ]
-    #     python-version: [ "3.9", "3.10", "3.11", "3.12" ]
-    # runs-on: ${{ matrix.os }}
     runs-on: "ubuntu-latest"
-
     steps:
       #----------------------------------------------
       #       check-out repo
@@ -77,14 +70,6 @@ jobs:
           git push
 
       #----------------------------------------------
-      #       set-up python
-      # - name: Set up python ${{ matrix.python-version }}
-      #   id: setup-python
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: ${{ matrix.python-version }}
-
-      #----------------------------------------------
       #  -----  install & configure poetry  -----
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -93,26 +78,6 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
           virtualenvs-path: .venv
-
-      #----------------------------------------------
-      #       load cached venv if cache exists
-      # - name: Load cached venv
-      #   id: cached-poetry-dependencies
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: .venv
-      #     key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-
-      #----------------------------------------------
-      # install dependencies if cache does not exist
-      # - name: Install dependencies
-      #   if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      #   run: poetry install --no-interaction --no-root
-
-      #----------------------------------------------
-      # install your root project, if required
-      # - name: Install library
-      #   run: poetry install --no-interaction
 
       #----------------------------------------------
       - name: Build package
@@ -126,29 +91,28 @@ jobs:
           path: dist/
 
   #----------------------------------------------
-  # Publish to TestPyPI          
+  # Publish to PyPI          
   publish-to-testpypi:
-    name: Publish to TestPyPI
+    name: Publish to PyPI
     runs-on: "ubuntu-latest"
     needs: build
 
-    steps:
-      #----------------------------------------------
-      #       check-out repo
-      - name: Check out repository
-        uses: actions/checkout@v4
+    environment:
+        name: pypi
+        url: https://pypi.org/p/gazpar2haws
 
-      - uses: ./.github/workflows/publish-to-testpypi
-        with:
-          package-name: gazpar2haws
-          
-      # - name: Download the package
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: gazpar2haws
-      #     path: dist/
-      # - name: Publish 📦 to TestPyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   with:
-      #     repository-url: https://test.pypi.org/legacy/
-      #     verbose: true
+    permissions:
+        id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: gazpar2haws
+        path: dist/
+
+    - name: Publish 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        verbose: true
