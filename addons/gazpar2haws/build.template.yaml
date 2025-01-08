@@ -11,4 +11,4 @@ labels:
   org.opencontainers.image.source: "https://github.com/ssenart/gazpar2haws"
   org.opencontainers.image.licenses: "MIT"
 args:
-  GAZPAR2HAWS_VERSION: "0.1.8.dev56"
+  GAZPAR2HAWS_VERSION: "${PACKAGE_VERSION}"
