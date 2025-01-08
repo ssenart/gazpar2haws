@@ -21,15 +21,15 @@ inputs:
 runs:
   using: "composite"    
   steps:
-  - run: echo REF=${{ REF }}
+  - run: echo REF=$REF
     env:
       REF: release/v1
     shell: bash    
-  - run: echo REPO=${{ REPO }} 
+  - run: echo REPO=$REPO
     env:
       REPO: pypa/gh-action-pypi-publish
     shell: bash
-  - run: echo REPO_ID=${{ REPO_ID }} 
+  - run: echo REPO_ID=$REPO_ID
     env:
       REPO: 904401178
     shell: bash     
