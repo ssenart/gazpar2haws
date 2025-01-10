@@ -85,7 +85,7 @@ jobs:
       #----------------------------------------------
       # Commit the changes
       - name: Commit changes
-        if: false
+        if: true
         run: |
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
@@ -96,7 +96,7 @@ jobs:
       #----------------------------------------------
       # Tag the commit
       - name: Git tag
-        if: false
+        if: true
         uses: ./.github/workflows/git-tag
         with:
           tag-name: ${{ needs.information.outputs.package-version }}
@@ -195,4 +195,4 @@ jobs:
           image: ssenart/gazpar2haws
           version: ${{ needs.information.outputs.package-version }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}         
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
