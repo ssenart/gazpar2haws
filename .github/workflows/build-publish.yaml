@@ -190,7 +190,7 @@ jobs:
   #----------------------------------------------
   # Publish Docker image to DockerHub
   publish-to-dockerhub:
-    name: Publish Docker image to Docker Hub
+    name: Publish to DockerHub
     needs: build
     runs-on: ubuntu-latest
     permissions:
