@@ -100,7 +100,7 @@ jobs:
         uses: actions/checkout@v4
       #----------------------------------------------
       # Testing the code
-      - name: Testing
+      - name: Test
         uses: ./.github/workflows/python-test
         with:
           python-version: ${{ matrix.python-version }}    
