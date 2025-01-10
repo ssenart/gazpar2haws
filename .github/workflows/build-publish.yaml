@@ -62,7 +62,7 @@ jobs:
       - name: Display information
         run: |
           echo "package-version=${{ steps.select-package-version.outputs.package-version }}"
-          echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}"
+          echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}"
 
   #----------------------------------------------
   # Build and publish the pip package and docker image
