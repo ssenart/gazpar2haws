@@ -10,6 +10,12 @@ on:
   release:
     types: ["published"]
   workflow_dispatch:
+    inputs:
+      package-version:
+        description: 'Package version'
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: write # Allow to commit and push.
@@ -43,12 +49,17 @@ jobs:
       - name: Compute version
         id: compute-version
         uses: ./.github/workflows/compute-version
+        if: ${{ inputs.package-version == "" }}
 
       #----------------------------------------------
       # Send to Github Actions
       - name: Display information
         run: |
-          echo "package-version=${{ steps.compute-version.outputs.pep440-version }}"
+          if [ -z "${{ inputs.package-version }}" ]; then
+            echo "package-version=${{ steps.compute-version.outputs.pep440-version }}"
+          else
+            echo "package-version=${{ inputs.package-version }}"
+          fi
           echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}"
           echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}"
 
@@ -63,23 +74,6 @@ jobs:
       # Checkout repo
       - name: Check out repository
         uses: actions/checkout@v4
-
-      #----------------------------------------------
-      # Determine branch from current commit
-      - name: Determine branch
-        shell: bash
-        run: |
-          echo branchname=$(git branch -r --contains ${GITHUB_SHA})
-          branch=$(git branch -r --contains ${GITHUB_SHA} | grep -m 1 'origin/' | sed 's|origin/||')
-          echo "branch=$branch" >> $GITHUB_ENV
-
-      #----------------------------------------------
-      # Checkout the corresponding branch
-      - name: Checkout branch
-        shell: bash
-        run: |
-          git fetch origin $branch
-          git checkout $branch
 
       #----------------------------------------------
       # Set the package version
