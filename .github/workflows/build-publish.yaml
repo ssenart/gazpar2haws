@@ -89,8 +89,8 @@ jobs:
       - name: Replace version
         run: |
           envsubst < pyproject.template.toml > pyproject.toml
-          envsubst < addons/gazpar2haws/templates/config.template.yaml > addons/gazpar2haws/config.yaml
-          envsubst < addons/gazpar2haws/templates/build.template.yaml > addons/gazpar2haws/build.yaml
+          envsubst < addons/gazpar2haws/config.yaml.template > addons/gazpar2haws/config.yaml
+          envsubst < addons/gazpar2haws/build.yaml.template > addons/gazpar2haws/build.yaml
 
       #----------------------------------------------
       # Commit the changes
