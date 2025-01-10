@@ -129,22 +129,17 @@ jobs:
     runs-on: "ubuntu-latest"
     needs: build
     if: ${{ startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/release/') }}
-
     environment:
         name: pypi
         url: https://pypi.org/p/gazpar2haws
-
     permissions:
         id-token: write  # IMPORTANT: mandatory for trusted publishing
-
     steps:
-
     - name: Download the package
       uses: actions/download-artifact@v4
       with:
         name: gazpar2haws
         path: dist/
-
     - name: Publish 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -157,16 +152,12 @@ jobs:
     runs-on: "ubuntu-latest"
     needs: build
     if: ${{ !startsWith(github.ref, 'refs/heads/main') && !startsWith(github.ref, 'refs/heads/develop') && !startsWith(github.ref, 'refs/heads/release/') }}
-
     environment:
       name: testpypi
       url: https://test.pypi.org/p/gazpar2haws
-
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
-
-    steps:
-          
+    steps:          
       - name: Download the package
         uses: actions/download-artifact@v4
         with:
@@ -178,3 +169,28 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           verbose: true
+
+  #----------------------------------------------
+  # Publish Docker image to DockerHub
+  publish-to-dockerhub:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      #----------------------------------------------
+      #  Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      #----------------------------------------------
+      # Publish the Docker image
+      - name: Publish Docker image
+        uses: ./.github/workflows/publish-to-dockerhub
+        with:
+          image: ssenart/gazpar2haws
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}         

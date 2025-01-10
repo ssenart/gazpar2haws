@@ -5,6 +5,9 @@ inputs:
   image:
     description: 'Docker image name'
     required: true
+  version:
+    description: 'Version of the image'
+    required: true
   username:
     description: 'DockerHub username'
     required: true
@@ -21,13 +24,12 @@ runs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.image }}
-        tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+        tags: |         
+            # Set latest tag for the default branch
+            type=raw,value=latest,enable={{is_default_branch}}
+            # Set the version tag for all branches
+            type=raw,value=${{ inputs.version }},enable=true
+            # Set the SHA tag
             type=sha
 
     - name: Log in to Docker Hub
@@ -44,7 +46,7 @@ runs:
 
     - name: Build and push Docker image
       id: push
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: "{{defaultContext}}"
         file: ./docker/Dockerfile
