@@ -58,8 +58,8 @@ jobs:
       # Display versions
       - name: Display versions
         run: |
-          "echo package-version=${{ steps.compute-version.outputs.pep440-version }}"
-          "echo semantic-version=${{ steps.compute-version.outputs.semantic-version }}"
+          echo "package-version=${{ steps.compute-version.outputs.pep440-version }}"
+          echo "semantic-version=${{ steps.compute-version.outputs.semantic-version }}"
 
   #----------------------------------------------
   # Lint
