@@ -34,6 +34,8 @@ jobs:
     outputs:
       package-version: ${{ steps.compute-version.outputs.pep440-version }}
       semantic-version: ${{ steps.compute-version.outputs.semantic-version }}
+      target_python_versions: ${{ env.TARGET_PYTHON_VERSIONS }}
+      default_python_version: ${{ env.DEFAULT_PYTHON_VERSION }}
     runs-on: ubuntu-latest
     steps:
       #----------------------------------------------
@@ -55,11 +57,17 @@ jobs:
         uses: ./.github/workflows/compute-version
 
       #----------------------------------------------
-      # Display versions
-      - name: Display versions
+      # Send to Github Actions
+      - name: Display & Send to Github Actions
         run: |
           echo "package-version=${{ steps.compute-version.outputs.pep440-version }}"
+          # echo "package-version=${{ steps.compute-version.outputs.pep440-version }}" >> $GITHUB_ENV
           echo "semantic-version=${{ steps.compute-version.outputs.semantic-version }}"
+          # echo "semantic-version=${{ steps.compute-version.outputs.semantic-version }}" >> $GITHUB_ENV
+          echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}"
+          # echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}" >> $GITHUB_ENV
+          echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}"
+          # echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}" >> $GITHUB_ENV
 
   #----------------------------------------------
   # Lint
@@ -83,10 +91,11 @@ jobs:
   # Test
   test:
     name: Test
+    needs: information
     strategy:
       fail-fast: true
       matrix:
-        python-version: ${{ fromJSON(env.TARGET_PYTHON_VERSIONS) }}
+        python-version: ${{ fromJSON(needs.information.outputs.target_python_versions) }}
     runs-on: "ubuntu-latest"
     steps:
       #----------------------------------------------
