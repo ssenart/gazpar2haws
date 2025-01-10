@@ -1,3 +1,4 @@
+"""Test haws module."""
 import pytest
 from gazpar2haws.haws import HomeAssistantWS
 from gazpar2haws import config_utils
@@ -6,6 +7,7 @@ from gazpar2haws import config_utils
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_connect():
 
@@ -27,6 +29,7 @@ async def test_connect():
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_list_statistic_ids():
 
@@ -52,6 +55,7 @@ async def test_list_statistic_ids():
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_exists_statistic_id():
 
@@ -77,6 +81,7 @@ async def test_exists_statistic_id():
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_get_last_statistic():
 
@@ -102,6 +107,7 @@ async def test_get_last_statistic():
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_import_statistics():
 
@@ -143,6 +149,7 @@ async def test_import_statistics():
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_clear_statistics():
 

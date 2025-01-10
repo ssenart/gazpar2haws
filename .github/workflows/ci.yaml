@@ -78,3 +78,26 @@ jobs:
         uses: ./.github/workflows/python-lint
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+  #----------------------------------------------
+  # Test
+  test:
+    name: Test
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ env.TARGET_PYTHON_VERSIONS }}
+    runs-on: "ubuntu-latest"
+
+    steps:
+      #----------------------------------------------
+      #  Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      #----------------------------------------------
+      # Testing the code
+      - name: Testing
+        uses: ./.github/workflows/python-test
+        with:
+          python-version: ${{ matrix.python-version }}    
