@@ -1,34 +1,33 @@
-name: 'publish-to-dockerhub'
-description: 'Publish to DockerHub workflow'
+name: "publish-to-dockerhub"
+description: "Publish to DockerHub workflow"
 
 inputs:
   image:
-    description: 'Docker image name'
+    description: "Docker image name"
     required: true
   version:
-    description: 'Version of the image'
+    description: "Version of the image"
     required: true
   username:
-    description: 'DockerHub username'
+    description: "DockerHub username"
     required: true
   password:
-    description: 'DockerHub password'
+    description: "DockerHub password"
     required: true
 
 runs:
   using: "composite"
   steps:
-
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.image }}
-        tags: |         
-            # Set latest tag for the default branch
-            type=raw,value=latest,enable={{is_default_branch}}
-            # Set the version tag for all branches
-            type=raw,value=${{ inputs.version }},enable=true
+        tags: |
+          # Set latest tag for the default branch
+          type=raw,value=latest,enable={{is_default_branch}}
+          # Set the version tag for all branches
+          type=raw,value=${{ inputs.version }}
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
