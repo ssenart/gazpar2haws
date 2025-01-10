@@ -68,6 +68,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.skip-lint }}
     steps:
       #----------------------------------------------
       #  Check-out repo
@@ -86,11 +87,12 @@ jobs:
   test:
     name: Test
     needs: information
+    runs-on: "ubuntu-latest"
+    if: ${{ !github.event.inputs.skip-tests }}
     strategy:
       fail-fast: true
       matrix:
         python-version: ${{ fromJSON(needs.information.outputs.target_python_versions) }}
-    runs-on: "ubuntu-latest"
     steps:
       #----------------------------------------------
       #  Check-out repo
@@ -101,4 +103,4 @@ jobs:
       - name: Test
         uses: ./.github/workflows/python-test
         with:
-          python-version: ${{ matrix.python-version }}    
+          python-version: ${{ matrix.python-version }}
