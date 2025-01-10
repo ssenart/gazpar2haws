@@ -1,10 +1,15 @@
 name: Build pip package and docker image
 
-# yamllint disable-line rule:truthy
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - develop
+      - release/*
+      - feature/*
   release:
     types: ["published"]
+  workflow_dispatch:
 
 permissions:
   contents: write # Allow to commit and push.
@@ -91,6 +96,7 @@ jobs:
       #----------------------------------------------
       # Tag the commit
       - name: Git tag
+        if: false
         uses: ./.github/workflows/git-tag
         with:
           tag-name: ${{ needs.information.outputs.package-version }}
