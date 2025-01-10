@@ -1,9 +1,11 @@
+"""Test the main module."""
 import pytest
 from gazpar2haws import __main__
 import sys
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_main():
 

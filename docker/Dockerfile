@@ -1,7 +1,7 @@
 # The builder image, used to build the virtual environment
 FROM python:3.12-bookworm AS builder
 
-RUN pip install poetry==1.8.4
+RUN pip install poetry==2.0.0
 
 ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
@@ -10,8 +10,10 @@ ENV POETRY_NO_INTERACTION=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
-RUN touch README.md
+COPY pyproject.toml ./
+COPY poetry.lock ./
+COPY README.md ./
+COPY LICENSE ./
 
 COPY gazpar2haws/ /app/gazpar2haws
 

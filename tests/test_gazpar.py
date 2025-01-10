@@ -1,3 +1,4 @@
+"""Test gazpar module."""
 import pytest
 from gazpar2haws import config_utils
 from gazpar2haws.gazpar import Gazpar
@@ -5,6 +6,7 @@ from gazpar2haws.haws import HomeAssistantWS
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_publish():
 

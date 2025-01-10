@@ -1,9 +1,11 @@
+"""Test the bridge module."""
 import pytest
 from gazpar2haws import config_utils
 from gazpar2haws.bridge import Bridge
 
 
 # ----------------------------------
+@pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_run():
 
