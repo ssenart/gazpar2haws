@@ -1,0 +1,90 @@
+name: Publish to DockerHub
+
+on:
+  workflow_dispatch:
+    inputs:
+      package-version:
+        description: "Package version"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read # Readonly permissions
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.12"
+
+jobs:
+  #----------------------------------------------
+  # Collect information
+  information:
+    name: Collect information
+    outputs:
+      package-version: ${{ steps.select-package-version.outputs.package-version }}
+      default_python_version: ${{ env.DEFAULT_PYTHON_VERSION }}
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      # Display Github environment variables
+      - name: Display Github environment variables
+        run: printenv | grep '^GITHUB_' | sort
+
+      #----------------------------------------------
+      # Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      #----------------------------------------------
+      # Compute the version of the project based in the current checkout branch
+      - name: Compute version
+        id: compute-version
+        uses: ./.github/workflows/compute-version
+        if: ${{ inputs.package-version == '' }}
+
+      #----------------------------------------------
+      # Select package version
+      - name: Select package version
+        id: select-package-version
+        run: |
+          if [ -z "${{ inputs.package-version }}" ]; then
+            echo "package-version=${{ steps.compute-version.outputs.pep440-version }}" >> $GITHUB_OUTPUT
+          else
+            echo "package-version=${{ inputs.package-version }}" >> $GITHUB_OUTPUT
+          fi
+
+      #----------------------------------------------
+      # Send to Github Actions
+      - name: Display information
+        run: |
+          echo "package-version=${{ steps.select-package-version.outputs.package-version }}"
+          echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}"
+
+  #----------------------------------------------
+  # Publish Docker image to DockerHub
+  publish-to-dockerhub:
+    name: Publish to DockerHub
+    needs: information
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      #----------------------------------------------
+      #  Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      #----------------------------------------------
+      # Publish the Docker image
+      - name: Publish Docker image
+        uses: ./.github/workflows/publish-to-dockerhub
+        with:
+          image: ssenart/gazpar2haws
+          version: ${{ needs.information.outputs.package-version }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}

@@ -100,7 +100,7 @@ jobs:
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
           git add pyproject.toml addons/gazpar2haws/config.yaml addons/gazpar2haws/build.yaml
-          git commit -m "Upgrade version to ${PACKAGE_VERSION}"
+          git commit --allow-empty -m "Upgrade version to ${PACKAGE_VERSION}"
           git push
 
       #----------------------------------------------
@@ -190,7 +190,7 @@ jobs:
   # Publish Docker image to DockerHub
   publish-to-dockerhub:
     name: Publish to DockerHub
-    needs: build
+    needs: [information, build]
     runs-on: ubuntu-latest
     permissions:
       packages: write

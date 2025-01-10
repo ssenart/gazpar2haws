@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-[#26]((https://github.com/ssenart/gazpar2haws/issues/26): Fix broken HA addons update.
+[#26](https://github.com/ssenart/gazpar2haws/issues/26): Fix broken HA addons update.
 
 ## [0.1.8] - 2025-01-10
 
