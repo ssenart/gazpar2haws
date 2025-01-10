@@ -10,8 +10,10 @@ ENV POETRY_NO_INTERACTION=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
-RUN touch README.md
+COPY pyproject.toml ./
+COPY poetry.lock ./
+COPY README.md ./
+COPY LICENSE ./
 
 COPY gazpar2haws/ /app/gazpar2haws
 
