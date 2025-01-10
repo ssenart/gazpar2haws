@@ -81,7 +81,7 @@ jobs:
       - name: Lint
         uses: ./.github/workflows/python-lint
         with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}"
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
   #----------------------------------------------
   # Test
