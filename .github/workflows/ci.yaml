@@ -23,7 +23,8 @@ on:
         type: boolean
 
 jobs:
-  information: Collect information
+  information:
+    name: Collect information
     outputs:
       package-version: ${{ steps.compute-version.outputs.pep440-version }}
       semantic-version: ${{ steps.compute-version.outputs.semantic-version }}
