@@ -28,7 +28,6 @@ jobs:
     outputs:
       package-version: ${{ steps.compute-version.outputs.pep440-version }}
       semantic-version: ${{ steps.compute-version.outputs.semantic-version }}
-
     runs-on: ubuntu-latest
     steps:
       #----------------------------------------------
