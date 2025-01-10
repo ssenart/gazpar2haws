@@ -1,4 +1,4 @@
-name: Build pip package and docker image
+name: Release
 
 on:
   workflow_dispatch:
