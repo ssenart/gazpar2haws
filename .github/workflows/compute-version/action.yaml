@@ -5,9 +5,6 @@ outputs:
   pep440-version:
     description: 'The computed PEP440 version of the project'
     value: ${{ steps.set-version.outputs.pep440-version }}
-  semantic-version:
-    description: 'The computed semantic version of the project'
-    value: ${{ steps.set-version.outputs.semantic-version }}
 
 runs:
   using: "composite"
@@ -73,7 +70,6 @@ runs:
       shell: bash      
       run: |
         echo "pep440-version=${{ steps.gitversion.outputs.informationalVersion }}" >> $GITHUB_OUTPUT
-        echo "semantic-version=${{ steps.gitversion.outputs.assemblySemVer }}" >> $GITHUB_OUTPUT
 
     #----------------------------------------------
     # Display the version
@@ -81,4 +77,3 @@ runs:
       shell: bash
       run: |
         echo "pep440-version=${{ steps.set-version.outputs.pep440-version }}"
-        echo "semantic-version=${{ steps.set-version.outputs.semantic-version }}"

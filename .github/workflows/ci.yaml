@@ -33,7 +33,6 @@ jobs:
     name: Collect information
     outputs:
       package-version: ${{ steps.compute-version.outputs.pep440-version }}
-      semantic-version: ${{ steps.compute-version.outputs.semantic-version }}
       target_python_versions: ${{ env.TARGET_PYTHON_VERSIONS }}
       default_python_version: ${{ env.DEFAULT_PYTHON_VERSION }}
     runs-on: ubuntu-latest
@@ -61,7 +60,6 @@ jobs:
       - name: Display information
         run: |
           echo "package-version=${{ steps.compute-version.outputs.pep440-version }}"
-          echo "semantic-version=${{ steps.compute-version.outputs.semantic-version }}"
           echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}"
           echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}"
 
