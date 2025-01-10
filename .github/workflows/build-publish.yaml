@@ -128,7 +128,7 @@ jobs:
     name: Publish to PyPI
     runs-on: "ubuntu-latest"
     needs: build
-    if: or(startsWith(github.ref, 'refs/heads/main'), startsWith(github.ref, 'refs/heads/develop'), startsWith(github.ref, 'refs/heads/release/'))
+    if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/release/')
 
     environment:
         name: pypi
@@ -156,7 +156,7 @@ jobs:
     name: Publish to TestPyPI
     runs-on: "ubuntu-latest"
     needs: build
-    if: and(not(startsWith(github.ref, 'refs/heads/main')), not(nostartsWith(github.ref, 'refs/heads/develop')), not(startsWith(github.ref, 'refs/heads/release/')))
+    if: !startsWith(github.ref, 'refs/heads/main') && !startsWith(github.ref, 'refs/heads/develop') && !startsWith(github.ref, 'refs/heads/release/')
 
     environment:
       name: testpypi
