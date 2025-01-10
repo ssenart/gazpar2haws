@@ -1,14 +1,6 @@
 name: Build pip package and docker image
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-      - release/*
-      - feature/*
-  release:
-    types: ["published"]
   workflow_dispatch:
     inputs:
       package-version:
