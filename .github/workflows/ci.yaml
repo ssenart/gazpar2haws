@@ -86,7 +86,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ${TARGET_PYTHON_VERSIONS}
+        python-version: ${{ fromJSON(TARGET_PYTHON_VERSIONS) }}
     runs-on: "ubuntu-latest"
     steps:
       #----------------------------------------------
