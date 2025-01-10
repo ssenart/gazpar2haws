@@ -12,6 +12,9 @@ on:
 permissions:
   contents: write # Allow to commit and push.
 
+env:
+  DEFAULT_PYTHON_VERSION: "3.12"
+
 jobs:
 
   #----------------------------------------------
@@ -110,6 +113,12 @@ jobs:
         uses: ./.github/workflows/git-tag
         with:
           tag-name: ${{ needs.information.outputs.package-version }}
+
+    #----------------------------------------------
+    #  Set-up python
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
       #----------------------------------------------
       # Install & configure poetry  -----
