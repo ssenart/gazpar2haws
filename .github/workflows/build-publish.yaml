@@ -19,7 +19,6 @@ jobs:
   information:
     name: Collect information
     outputs:
-      package-version: ${{ steps.compute-version.outputs.pep440-version }}
       target_python_versions: ${{ env.TARGET_PYTHON_VERSIONS }}
       default_python_version: ${{ env.DEFAULT_PYTHON_VERSION }}
     runs-on: ubuntu-latest
