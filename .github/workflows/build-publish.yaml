@@ -48,10 +48,11 @@ jobs:
       - name: Display information
         run: |
           if [ -z "${{ inputs.package-version }}" ]; then
-            echo "package-version=${{ steps.compute-version.outputs.pep440-version }}"
+            echo "package-version=${{ steps.compute-version.outputs.pep440-version }}" >> $GITHUB_OUT
           else
-            echo "package-version=${{ inputs.package-version }}"
+            echo "package-version=${{ inputs.package-version }}" >> $GITHUB_OUT
           fi
+          echo "package-version=${package-version}"
           echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}"
           echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}"
 
