@@ -23,7 +23,6 @@ jobs:
     name: Collect information
     outputs:
       package-version: ${{ steps.select-package-version.outputs.package-version }}
-      target_python_versions: ${{ env.TARGET_PYTHON_VERSIONS }}
       default_python_version: ${{ env.DEFAULT_PYTHON_VERSION }}
     runs-on: ubuntu-latest
     steps:
