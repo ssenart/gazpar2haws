@@ -29,8 +29,6 @@ runs:
             type=raw,value=latest,enable={{is_default_branch}}
             # Set the version tag for all branches
             type=raw,value=${{ inputs.version }},enable=true
-            # Set the SHA tag
-            type=sha
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
