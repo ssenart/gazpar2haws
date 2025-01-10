@@ -1,3 +1,5 @@
+## Documentation: https://docs.docker.com/build/ci/github-actions/multi-platform/
+
 name: "publish-to-dockerhub"
 description: "Publish to DockerHub workflow"
 
