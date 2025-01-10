@@ -58,7 +58,7 @@ jobs:
 
       #----------------------------------------------
       # Send to Github Actions
-      - name: Display & Send to Github Actions
+      - name: Display information
         run: |
           echo "package-version=${{ steps.compute-version.outputs.pep440-version }}"
           echo "semantic-version=${{ steps.compute-version.outputs.semantic-version }}"

@@ -2,9 +2,12 @@ name: 'compute-version'
 description: 'Compute the version of the project based in the current checkout branch'
 
 outputs:
-  version:
-    description: 'The computed version of the project'
-    value: ${{ steps.set-version.outputs.version }}
+  pep440-version:
+    description: 'The computed PEP440 version of the project'
+    value: ${{ steps.set-version.outputs.pep440-version }}
+  semantic-version:
+    description: 'The computed semantic version of the project'
+    value: ${{ steps.set-version.outputs.semantic-version }}
 
 runs:
   using: "composite"
@@ -70,7 +73,7 @@ runs:
       shell: bash      
       run: |
         echo "pep440-version=${{ steps.gitversion.outputs.informationalVersion }}" >> $GITHUB_OUTPUT
-        echo "semantic-version=${{ steps.gitversion.outputs.fullSemVer }}" >> $GITHUB_OUTPUT
+        echo "semantic-version=${{ steps.gitversion.outputs.assemblySemVer }}" >> $GITHUB_OUTPUT
 
     #----------------------------------------------
     # Display the version
