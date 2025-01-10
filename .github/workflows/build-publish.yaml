@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       package-version:
-        description: 'Package version'
+        description: "Package version"
         required: false
         default: ""
         type: string
@@ -16,7 +16,6 @@ env:
   DEFAULT_PYTHON_VERSION: "3.12"
 
 jobs:
-
   #----------------------------------------------
   # Collect information
   information:
@@ -90,8 +89,8 @@ jobs:
       - name: Replace version
         run: |
           envsubst < pyproject.template.toml > pyproject.toml
-          envsubst < addons/gazpar2haws/config.template.yaml > addons/gazpar2haws/config.yaml
-          envsubst < addons/gazpar2haws/build.template.yaml > addons/gazpar2haws/build.yaml
+          envsubst < addons/gazpar2haws/templates/config.template.yaml > addons/gazpar2haws/config.yaml
+          envsubst < addons/gazpar2haws/templates/build.template.yaml > addons/gazpar2haws/build.yaml
 
       #----------------------------------------------
       # Commit the changes
@@ -100,7 +99,7 @@ jobs:
         run: |
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
-          git add pyproject.toml addons/gazpar2haws/config.yaml addons/gazpar2haws/build.yaml 
+          git add pyproject.toml addons/gazpar2haws/config.yaml addons/gazpar2haws/build.yaml
           git commit -m "Upgrade version to ${PACKAGE_VERSION}"
           git push
 
@@ -140,30 +139,30 @@ jobs:
           path: dist/
 
   #----------------------------------------------
-  # Publish to PyPI          
+  # Publish to PyPI
   publish-to-pypi:
     name: Publish to PyPI
     runs-on: "ubuntu-latest"
     needs: build
     if: ${{ startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/release/') }}
     environment:
-        name: pypi
-        url: https://pypi.org/p/gazpar2haws
+      name: pypi
+      url: https://pypi.org/p/gazpar2haws
     permissions:
-        id-token: write  # IMPORTANT: mandatory for trusted publishing
+      id-token: write # IMPORTANT: mandatory for trusted publishing
     steps:
-    - name: Download the package
-      uses: actions/download-artifact@v4
-      with:
-        name: gazpar2haws
-        path: dist/
-    - name: Publish 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        verbose: true
+      - name: Download the package
+        uses: actions/download-artifact@v4
+        with:
+          name: gazpar2haws
+          path: dist/
+      - name: Publish 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
 
   #----------------------------------------------
-  # Publish to TestPyPI          
+  # Publish to TestPyPI
   publish-to-testpypi:
     name: Publish to TestPyPI
     runs-on: "ubuntu-latest"
@@ -173,8 +172,8 @@ jobs:
       name: testpypi
       url: https://test.pypi.org/p/gazpar2haws
     permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
-    steps:          
+      id-token: write # IMPORTANT: mandatory for trusted publishing
+    steps:
       - name: Download the package
         uses: actions/download-artifact@v4
         with:

@@ -6,7 +6,6 @@ FROM $BUILD_FROM
 ARG GAZPAR2HAWS_VERSION
 
 RUN apk add --no-cache gettext
-RUN apk add --no-cache py3-pip
 
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
