@@ -65,40 +65,40 @@ runs:
     #  Run Pylint    
     - name: Pylint
       shell: bash
-      run: pylint . --disable=logging-fstring-interpolation
+      run: pylint . --ignore=.venv --disable=logging-fstring-interpolation 
       continue-on-error: true
 
     #----------------------------------------------
     #  Run Flake8
     - name: Flake8
       shell: bash
-      run: flake8 .
+      run: flake8 . --exclude=.venv
       continue-on-error: true
 
     #----------------------------------------------
     #  Run Black
     - name: Black
       shell: bash
-      run: black . --check
+      run: black . --exclude=.venv --check
       continue-on-error: true
 
     #----------------------------------------------
     #  Run Isort
     - name: Isort
       shell: bash
-      run: isort . --check-only
+      run: isort . --skip .venv --check-only
       continue-on-error: true
 
     #----------------------------------------------
     #  Run Mypy
     - name: Mypy
       shell: bash
-      run: mypy .
+      run: mypy . --exclude .venv
       continue-on-error: true
 
     #----------------------------------------------
     #  Run Ruff
     - name: Ruff
       shell: bash
-      run: ruff check .
+      run: ruff check . --exclude .venv
       continue-on-error: true
