@@ -1,0 +1,74 @@
+name: CI
+run-name: "${{ github.event_name == 'workflow_dispatch' && format('CI: {0}', github.ref_name) || '' }}"
+
+on:
+  push:
+    branches:
+      - develop
+      - release
+      - main
+      - feature
+  pull_request: ~
+  workflow_dispatch:
+    inputs:
+      skip-lint:
+        description: 'Skip linting'
+        required: false
+        default: false
+        type: boolean
+      skip-tests:
+        description: 'Skip tests'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  information: Collect information
+  outputs:
+    package-version: ${{ steps.compute-version.outputs.pep440-version }}
+    semantic-version: ${{ steps.compute-version.outputs.semantic-version }}
+
+  runs-on: ubuntu-latest
+  steps:
+    #----------------------------------------------
+    # Display Github environment variables
+    - name: Display Github environment variables
+      run: |
+        echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"
+        echo "GITHUB_SHA=${GITHUB_SHA}"
+        echo "GITHUB_REF=${GITHUB_REF}"
+        echo "GITHUB_HEAD_REF=${GITHUB_HEAD_REF}"
+        echo "GITHUB_BASE_REF=${GITHUB_BASE_REF}"
+        echo "GITHUB_ACTOR=${GITHUB_ACTOR}"
+        echo "GITHUB_WORKFLOW=${GITHUB_WORKFLOW}"
+        echo "GITHUB_RUN_ID=${GITHUB_RUN_ID}"
+        echo "GITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER}"
+        echo "GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME}"
+        echo "GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH}"
+        echo "GITHUB_WORKSPACE=${GITHUB_WORKSPACE}"
+        echo "GITHUB_ACTION=${GITHUB_ACTION}"
+        echo "GITHUB_ACTIONS=${GITHUB_ACTIONS}"
+        echo "GITHUB_ACTOR=${GITHUB_ACTOR}"
+        echo "GITHUB_JOB=${GITHUB_JOB}"
+        echo "GITHUB_RUN_ID=${GITHUB_RUN_ID}"
+        echo "GITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER}"
+        echo "GITHUB_RETENTION_DAYS=${GITHUB_RETENTION_DAYS}"
+        echo "GITHUB_SERVER_URL=${GITHUB_SERVER_URL}"
+        echo "GITHUB_API_URL=${GITHUB_API_URL}"
+        echo "GITHUB_GRAPHQL_URL=${GITHUB_GRAPHQL_URL}"
+        echo "GITHUB_REF=${GITHUB_REF}"
+        echo "GITHUB_HEAD_REF=${GITHUB_HEAD_REF}"
+        echo "GITHUB_BASE_REF=${GITHUB_BASE_REF}"
+
+    #----------------------------------------------
+    # Check-out repo
+    - name: Check out repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    #----------------------------------------------
+    # Compute the version of the project based in the current checkout branch
+    - name: Compute version
+      id: compute-version
+      uses: ./.github/workflows/compute-version

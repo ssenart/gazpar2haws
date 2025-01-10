@@ -69,11 +69,13 @@ runs:
       id:   set-version
       shell: bash      
       run: |
-        echo "version=${{ steps.gitversion.outputs.informationalVersion }}" >> $GITHUB_OUTPUT
+        echo "pep440-version=${{ steps.gitversion.outputs.informationalVersion }}" >> $GITHUB_OUTPUT
+        echo "semantic-version=${{ steps.gitversion.outputs.fullSemVer }}" >> $GITHUB_OUTPUT
 
     #----------------------------------------------
     # Display the version
-    - name: Display the version
+    - name: Display the versions
       shell: bash
       run: |
-        echo "version=${{ steps.set-version.outputs.version }}"
+        echo "pep440-version=${{ steps.set-version.outputs.pep440-version }}"
+        echo "semantic-version=${{ steps.set-version.outputs.semantic-version }}"
