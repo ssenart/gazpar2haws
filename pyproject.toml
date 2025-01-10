@@ -1,8 +1,8 @@
 [project]
 name = "gazpar2haws"
-version = "0.1.8.dev56"
+version = "0.2.0.dev6"
 description = "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface"
-license = "MIT"
+license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
@@ -12,8 +12,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13"
+    "Programming Language :: Python :: 3.12",    
 ]
 dependencies = [
     "pygazpar>=1.2.7",
