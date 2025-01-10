@@ -58,7 +58,7 @@ jobs:
       # Send to Github Actions
       - name: Display information
         run: |
-          echo "package-version=${package-version}"
+          echo "package-version=${{ steps.select-package-version.outputs.package-version }}"
           echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}"
           echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}"
 
@@ -184,7 +184,7 @@ jobs:
   # Publish Docker image to DockerHub
   publish-to-dockerhub:
     name: Publish Docker image to Docker Hub
-    needs: information
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       packages: write
