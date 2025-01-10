@@ -65,6 +65,22 @@ jobs:
         uses: actions/checkout@v4
 
       #----------------------------------------------
+      # Determine branch from current commit
+      - name: Determine branch
+        shell: bash
+        run: |
+          branch=$(git branch -r --contains ${GITHUB_SHA} | grep -m 1 'origin/' | sed 's|origin/||')
+          echo "branch=$branch" >> $GITHUB_ENV
+
+      #----------------------------------------------
+      # Checkout the corresponding branch
+      - name: Checkout branch
+        shell: bash
+        run: |
+          git fetch origin $branch
+          git checkout $branch
+
+      #----------------------------------------------
       # Set the package version
       - name: Set package version
         run: echo "PACKAGE_VERSION=${{ needs.information.outputs.package-version }}" >> $GITHUB_ENV
