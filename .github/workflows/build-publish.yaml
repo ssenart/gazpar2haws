@@ -49,7 +49,7 @@ jobs:
       - name: Compute version
         id: compute-version
         uses: ./.github/workflows/compute-version
-        if: ${{ inputs.package-version == "" }}
+        if: ${{ inputs.package-version == '' }}
 
       #----------------------------------------------
       # Send to Github Actions
