@@ -69,7 +69,7 @@ jobs:
       - name: Determine branch
         shell: bash
         run: |
-          branch=$(git branch -r --contains ${GITHUB_SHA} | grep -m 1 'origin/' | sed 's|origin/||')
+          branch=$(git branch -r --contains ${GITHUB_SHA})
           echo "branch=$branch" >> $GITHUB_ENV
 
       #----------------------------------------------
