@@ -29,18 +29,3 @@ runs:
       shell: bash
       run: git push origin ${{ inputs.tag-name }}
       continue-on-error: true
-
-
-
-
-
-
-
-
-
-
-
-
-      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      shell: bash
-      run: poetry install --no-interaction --no-root
