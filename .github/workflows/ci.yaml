@@ -22,7 +22,13 @@ on:
         default: false
         type: boolean
 
+env:
+  DEFAULT_PYTHON_VERSION: 3.12
+  ALL_PYTHON_VERSIONS: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
+
 jobs:
+  #----------------------------------------------
+  # Collect information
   information:
     name: Collect information
     outputs:
@@ -47,3 +53,28 @@ jobs:
       - name: Compute version
         id: compute-version
         uses: ./.github/workflows/compute-version
+
+      #----------------------------------------------
+      # Display versions
+      - name: Display versions
+        run: |
+          "echo package-version=${{ steps.compute-version.outputs.pep440-version }}"
+          "echo semantic-version=${{ steps.compute-version.outputs.semantic-version }}"
+
+  #----------------------------------------------
+  # Lint
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #  Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      #----------------------------------------------
+      # Linting the code
+      - name: Lint
+        uses: ./.github/workflows/python-lint
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}

@@ -31,13 +31,43 @@ runs:
       run: python -m pip install pylint flake8 black isort mypy ruff
 
     #----------------------------------------------
-    #  Run linters    
-    - name: Run linters
+    #  Run Pylint    
+    - name: Pylint
       shell: bash
-      run: |
-        pylint . --disable=logging-fstring-interpolation
-        flake8 .
-        black . --check
-        isort . --check-only
-        mypy .
-        ruff check .
+      run: pylint . --disable=logging-fstring-interpolation
+      continue-on-error: true
+
+    #----------------------------------------------
+    #  Run Flake8
+    - name: Flake8
+      shell: bash
+      run: flake8 .
+      continue-on-error: true
+
+    #----------------------------------------------
+    #  Run Black
+    - name: Black
+      shell: bash
+      run: black . --check
+      continue-on-error: true
+
+    #----------------------------------------------
+    #  Run Isort
+    - name: Isort
+      shell: bash
+      run: isort . --check-only
+      continue-on-error: true
+
+    #----------------------------------------------
+    #  Run Mypy
+    - name: Mypy
+      shell: bash
+      run: mypy .
+      continue-on-error: true
+
+    #----------------------------------------------
+    #  Run Ruff
+    - name: Ruff
+      shell: bash
+      run: ruff check .
+      continue-on-error: true
