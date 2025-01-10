@@ -61,13 +61,9 @@ jobs:
       - name: Display & Send to Github Actions
         run: |
           echo "package-version=${{ steps.compute-version.outputs.pep440-version }}"
-          # echo "package-version=${{ steps.compute-version.outputs.pep440-version }}" >> $GITHUB_ENV
           echo "semantic-version=${{ steps.compute-version.outputs.semantic-version }}"
-          # echo "semantic-version=${{ steps.compute-version.outputs.semantic-version }}" >> $GITHUB_ENV
           echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}"
-          # echo "target-python-versions=${{ env.TARGET_PYTHON_VERSIONS }}" >> $GITHUB_ENV
           echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}"
-          # echo "default-python-version=${{ env.DEFAULT_PYTHON_VERSION }}" >> $GITHUB_ENV
 
   #----------------------------------------------
   # Lint
@@ -85,7 +81,7 @@ jobs:
       - name: Lint
         uses: ./.github/workflows/python-lint
         with:
-          python-version: ${DEFAULT_PYTHON_VERSION}
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}"
 
   #----------------------------------------------
   # Test
