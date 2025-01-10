@@ -173,7 +173,8 @@ jobs:
   #----------------------------------------------
   # Publish Docker image to DockerHub
   publish-to-dockerhub:
-    name: Push Docker image to Docker Hub
+    name: Publish Docker image to Docker Hub
+    needs: information
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -192,5 +193,6 @@ jobs:
         uses: ./.github/workflows/publish-to-dockerhub
         with:
           image: ssenart/gazpar2haws
+          version: ${{ needs.information.outputs.package-version }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}         
