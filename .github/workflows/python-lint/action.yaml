@@ -59,7 +59,7 @@ runs:
     #  Install linters
     - name: Install linters
       shell: bash
-      run: python -m pip install pylint flake8 black isort mypy ruff
+      run: poetry run pip install pylint flake8 black isort mypy ruff
 
     #----------------------------------------------
     #  Run Pylint    
