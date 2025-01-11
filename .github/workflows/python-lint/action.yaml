@@ -78,7 +78,6 @@ runs:
     - name: Black
       shell: bash
       run: poetry run black . --exclude=.venv --check
-      continue-on-error: true
 
     #----------------------------------------------
     #  Run Isort

@@ -63,7 +63,9 @@ class Bridge:
                 for gazpar in self._gazpar:
                     Logger.info(f"Publishing data for device '{gazpar.name()}'...")
                     await gazpar.publish()
-                    Logger.info(f"Device '{gazpar.name()}' data published to Home Assistant WS.")
+                    Logger.info(
+                        f"Device '{gazpar.name()}' data published to Home Assistant WS."
+                    )
 
                 Logger.info("Gazpar data published to Home Assistant WS.")
 
@@ -71,7 +73,9 @@ class Bridge:
                 await self._homeassistant.disconnect()
 
                 # Wait before next scan
-                Logger.info(f"Waiting {self._grdf_scan_interval} minutes before next scan...")
+                Logger.info(
+                    f"Waiting {self._grdf_scan_interval} minutes before next scan..."
+                )
 
                 # Check if the scan interval is 0 and leave the loop.
                 if self._grdf_scan_interval == 0:

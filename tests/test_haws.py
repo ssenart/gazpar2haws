@@ -1,4 +1,5 @@
 """Test haws module."""
+
 import pytest
 from gazpar2haws.haws import HomeAssistantWS
 from gazpar2haws import config_utils
@@ -11,11 +12,13 @@ class TestHomeAssistantWS:
 
     # ----------------------------------
     def setup_method(self):
-        """ setup any state tied to the execution of the given method in a
+        """setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
         # Load configuration
-        self._config = config_utils.ConfigLoader("config/configuration.yaml", "config/secrets.yaml")  # pylint: disable=W0201
+        self._config = config_utils.ConfigLoader(
+            "config/configuration.yaml", "config/secrets.yaml"
+        )  # pylint: disable=W0201
         self._config.load_secrets()
         self._config.load_config()
 
@@ -24,7 +27,9 @@ class TestHomeAssistantWS:
         ha_endpoint = self._config.get("homeassistant.endpoint")
         ha_token = self._config.get("homeassistant.token")
 
-        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)  # pylint: disable=W0201
+        self._haws = HomeAssistantWS(
+            ha_host, ha_port, ha_endpoint, ha_token
+        )  # pylint: disable=W0201
 
     # ----------------------------------
     @pytest.mark.skip(reason="Requires Home Assistant server")
@@ -55,7 +60,9 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        exists_statistic_id = await self._haws.exists_statistic_id("sensor.gazpar2haws_volume")
+        exists_statistic_id = await self._haws.exists_statistic_id(
+            "sensor.gazpar2haws_volume"
+        )
 
         assert exists_statistic_id is not None
 
@@ -82,24 +89,14 @@ class TestHomeAssistantWS:
         await self._haws.connect()
 
         statistics = [
-            {
-                "start": "2024-12-14T00:00:00+00:00",
-                "state": 100.0,
-                "sum": 100.0
-            },
-            {
-                "start": "2024-12-15T00:00:00+00:00",
-                "state": 200.0,
-                "sum": 200.0
-            },
-            {
-                "start": "2024-12-16T00:00:00+00:00",
-                "state": 300.0,
-                "sum": 300.0
-            }
+            {"start": "2024-12-14T00:00:00+00:00", "state": 100.0, "sum": 100.0},
+            {"start": "2024-12-15T00:00:00+00:00", "state": 200.0, "sum": 200.0},
+            {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
         ]
 
-        await self._haws.import_statistics("sensor.gazpar2haws_volume", "recorder", "test", "m³", statistics)
+        await self._haws.import_statistics(
+            "sensor.gazpar2haws_volume", "recorder", "test", "m³", statistics
+        )
 
         await self._haws.disconnect()
 
