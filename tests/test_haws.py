@@ -17,9 +17,9 @@ class TestHomeAssistantWS:
         class.  setup_method is invoked for every test method of a class.
         """
         # Load configuration
-        self._config = config_utils.ConfigLoader(
+        self._config = config_utils.ConfigLoader(  # pylint: disable=W0201
             "config/configuration.yaml", "config/secrets.yaml"
-        )  # pylint: disable=W0201
+        )
         self._config.load_secrets()
         self._config.load_config()
 
@@ -28,9 +28,9 @@ class TestHomeAssistantWS:
         ha_endpoint = self._config.get("homeassistant.endpoint")
         ha_token = self._config.get("homeassistant.token")
 
-        self._haws = HomeAssistantWS(
+        self._haws = HomeAssistantWS(  # pylint: disable=W0201
             ha_host, ha_port, ha_endpoint, ha_token
-        )  # pylint: disable=W0201
+        )
 
     # ----------------------------------
     @pytest.mark.skip(reason="Requires Home Assistant server")
