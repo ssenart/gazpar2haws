@@ -37,7 +37,7 @@ class ConfigLoader:
             secret_key = data.split(" ", 1)[1]
             if secret_key in self.secrets:
                 return self.secrets[secret_key]
-            raise KeyError(f"Secret key '{secret_key}' not found in secrets file.")        
+            raise KeyError(f"Secret key '{secret_key}' not found in secrets file.")
         return data
 
     def get(self, key, default=None):

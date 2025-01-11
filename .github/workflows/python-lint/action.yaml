@@ -66,14 +66,12 @@ runs:
     - name: Pylint
       shell: bash
       run: poetry run pylint . --ignore=.venv --disable=C,W1203,R0902,R0913,R0917,R0801
-      continue-on-error: true
 
     #----------------------------------------------
     #  Run Flake8
     - name: Flake8
       shell: bash
-      run: poetry run poetry run flake8 . --exclude=.venv
-      continue-on-error: true
+      run: poetry run poetry run flake8 . --exclude=.venv --ignore=E501
 
     #----------------------------------------------
     #  Run Black
