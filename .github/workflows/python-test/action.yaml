@@ -53,13 +53,6 @@ runs:
       run: poetry install --no-interaction
 
     #----------------------------------------------
-    # If not using devcontainer, run tests
-    - name: Test with pytest
-      if: ${{ !inputs.use-devcontainer }}
-      shell: bash
-      run: poetry run pytest
-
-    #----------------------------------------------
     # If using devcontainer, run tests
     - name: Build and run dev container task
       if: ${{ inputs.use-devcontainer }}
@@ -69,6 +62,10 @@ runs:
           # Start HA supervisor
           supervisor_run &
           # Wait a few for HA to start
-          sleep 10
-          # Run tests
-          poetry run pytest
+          sleep 30
+
+    #----------------------------------------------
+    # If not using devcontainer, run tests
+    - name: Test with pytest
+      shell: bash
+      run: poetry run pytest
