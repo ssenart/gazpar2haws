@@ -1,11 +1,16 @@
-name: 'python-test'
-description: 'Python testing workflow'
+name: "python-test"
+description: "Python testing workflow"
 
 inputs:
   python-version:
-    description: 'Python version'
+    description: "Python version"
     required: true
-    default: '3.13'
+    default: "3.13"
+  use-devcontainer:
+    description: "Use devcontainer"
+    required: false
+    default: false
+    type: boolean
 
 runs:
   using: "composite"
@@ -14,7 +19,7 @@ runs:
     #  Set-up python
     - uses: actions/setup-python@v5
       with:
-        python-version: ${{ inputs.python-version }}    
+        python-version: ${{ inputs.python-version }}
 
     #----------------------------------------------
     # Install poetry
@@ -48,7 +53,22 @@ runs:
       run: poetry install --no-interaction
 
     #----------------------------------------------
-    # Run test suite and output coverage file
+    # If not using devcontainer, run tests
     - name: Test with pytest
+      if: ${{ !inputs.use-devcontainer }}
       shell: bash
       run: poetry run pytest
+
+    #----------------------------------------------
+    # If using devcontainer, run tests
+    - name: Build and run dev container task
+      if: ${{ inputs.use-devcontainer }}
+      uses: devcontainers/ci@v0.3
+      with:
+        runCmd: |
+          # Start HA supervisor
+          supervisor_run &
+          # Wait a few for HA to start
+          sleep 10
+          # Run tests
+          poetry run pytest
