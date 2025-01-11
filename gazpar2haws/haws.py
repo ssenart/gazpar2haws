@@ -190,3 +190,35 @@ class HomeAssistantWS:
         await self.send_message(clear_statistics_message)
 
         Logger.debug(f"Cleared {entity_ids} statistics")
+
+    # ----------------------------------
+    async def create_token(self, url: str, key: str) -> str:
+
+        socket_connection = await websockets.connect(url)
+
+        # socket_connection = websockets.create_connection("ws://localhost:YOUR-PORT/api/websocket".format(url), sslopt={'cert_reqs': ssl.CERT_NONE})
+        socket_response = await socket_connection.recv()
+        result = json.loads(socket_response)
+
+        # Check if auth required, if so send password
+        auth = None
+        if result["type"] == "auth_required":
+            if key is not None:
+                auth = json.dumps({
+                    "type": "auth",
+                    "api_password": key
+                })
+                await socket_connection.send(auth)
+                auth_repsonse = await socket_connection.recv()
+
+        create_token = json.dumps({
+            "id": 11,
+            "type": "auth/long_lived_access_token",
+            "client_name": "appdaemon",
+            "lifespan": 365
+            })
+        await socket_connection.send(create_token)
+        token_response = await socket_connection.recv()
+        q = json.loads(token_response)
+
+        return q["result"]
