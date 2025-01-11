@@ -97,4 +97,3 @@ runs:
     - name: Ruff
       shell: bash
       run: poetry run ruff check . --exclude .venv
-      continue-on-error: true
