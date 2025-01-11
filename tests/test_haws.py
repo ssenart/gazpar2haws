@@ -1,8 +1,9 @@
 """Test haws module."""
 
 import pytest
-from gazpar2haws.haws import HomeAssistantWS
+
 from gazpar2haws import config_utils
+from gazpar2haws.haws import HomeAssistantWS
 
 # See WebSocket source code here: https://git.informatik.uni-kl.de/s_menne19/hassio-core/-/blob/fix-tests-assist/homeassistant/components/recorder/websocket_api.py
 

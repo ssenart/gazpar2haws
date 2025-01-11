@@ -1,7 +1,8 @@
-import websockets
 import json
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+
+import websockets
 
 Logger = logging.getLogger(__name__)
 

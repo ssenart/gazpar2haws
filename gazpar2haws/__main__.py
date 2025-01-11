@@ -1,9 +1,9 @@
-import asyncio
 import argparse
+import asyncio
 import logging
 import traceback
-from gazpar2haws import config_utils
-from gazpar2haws import __version__
+
+from gazpar2haws import __version__, config_utils
 from gazpar2haws.bridge import Bridge
 
 Logger = logging.getLogger(__name__)

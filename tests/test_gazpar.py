@@ -1,9 +1,10 @@
 """Test gazpar module."""
 
 import pytest
+
+from gazpar2haws import config_utils
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
-from gazpar2haws import config_utils
 
 
 # ----------------------------------

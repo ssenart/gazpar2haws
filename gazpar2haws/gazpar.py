@@ -1,9 +1,11 @@
-import pygazpar
-import traceback
 import logging
-import pytz
-from typing import Any
+import traceback
 from datetime import datetime, timedelta
+from typing import Any
+
+import pygazpar
+import pytz
+
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
 
 Logger = logging.getLogger(__name__)

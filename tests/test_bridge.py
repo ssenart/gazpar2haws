@@ -1,6 +1,7 @@
 """Test the bridge module."""
 
 import pytest
+
 from gazpar2haws import config_utils
 from gazpar2haws.bridge import Bridge
 

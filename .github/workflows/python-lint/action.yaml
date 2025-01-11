@@ -84,7 +84,6 @@ runs:
     - name: Isort
       shell: bash
       run: poetry run isort . --skip .venv --check-only
-      continue-on-error: true
 
     #----------------------------------------------
     #  Run Mypy

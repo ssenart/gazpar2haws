@@ -1,6 +1,7 @@
+import asyncio
 import logging
 import signal
-import asyncio
+
 from gazpar2haws import config_utils
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS

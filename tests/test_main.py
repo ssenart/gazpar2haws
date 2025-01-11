@@ -1,8 +1,10 @@
 """Test the main module."""
 
-import pytest
-from gazpar2haws import __main__
 import sys
+
+import pytest
+
+from gazpar2haws import __main__
 
 
 # ----------------------------------
