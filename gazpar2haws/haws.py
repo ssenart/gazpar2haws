@@ -7,6 +7,11 @@ Logger = logging.getLogger(__name__)
 
 
 # ----------------------------------
+class HomeAssistantWSException(Exception):
+    pass
+
+
+# ----------------------------------
 class HomeAssistantWS:
     def __init__(self, host: str, port: str, endpoint: str, token: str):
         self._host = host
@@ -33,7 +38,7 @@ class HomeAssistantWS:
         if connect_response_data.get("type") != "auth_required":
             message = f"Authentication failed: auth_required not received {connect_response_data.get('messsage')}"
             Logger.warning(message)
-            raise Exception(message)
+            raise HomeAssistantWSException(message)
 
         # The first message from the client should be an auth message. You can authorize with an access token.
         auth_message = {"type": "auth", "access_token": self._token}
@@ -46,7 +51,7 @@ class HomeAssistantWS:
         if auth_response_data.get("type") == "auth_invalid":
             message = f"Authentication failed: {auth_response_data.get('messsage')}"
             Logger.warning(message)
-            raise Exception(message)
+            raise HomeAssistantWSException(message)
 
         Logger.debug("Connected to Home Assistant")
 
@@ -77,10 +82,10 @@ class HomeAssistantWS:
         Logger.debug("Received response")
 
         if response_data.get("type") != "result":
-            raise Exception(f"Invalid response message: {response_data}")
+            raise HomeAssistantWSException(f"Invalid response message: {response_data}")
 
         if not response_data.get("success"):
-            raise Exception(f"Request failed: {response_data.get('error')}")
+            raise HomeAssistantWSException(f"Request failed: {response_data.get('error')}")
 
         return response_data.get("result")
 

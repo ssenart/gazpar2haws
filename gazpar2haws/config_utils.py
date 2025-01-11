@@ -8,11 +8,12 @@ class ConfigLoader:
         self.secrets_file = secrets_file
         self.config = {}
         self.secrets = {}
+        self.raw_config = None
 
     def load_secrets(self):
         """Load the secrets file."""
         if os.path.exists(self.secrets_file):
-            with open(self.secrets_file, 'r') as file:
+            with open(self.secrets_file, 'r', encoding='utf-8') as file:
                 self.secrets = yaml.safe_load(file)
         else:
             raise FileNotFoundError(f"Secrets file '{self.secrets_file}' not found.")
@@ -30,16 +31,14 @@ class ConfigLoader:
         """Recursively resolve `!secret` keys in the configuration."""
         if isinstance(data, dict):
             return {key: self._resolve_secrets(value) for key, value in data.items()}
-        elif isinstance(data, list):
+        if isinstance(data, list):
             return [self._resolve_secrets(item) for item in data]
-        elif isinstance(data, str) and data.startswith("!secret"):
+        if isinstance(data, str) and data.startswith("!secret"):
             secret_key = data.split(" ", 1)[1]
             if secret_key in self.secrets:
                 return self.secrets[secret_key]
-            else:
-                raise KeyError(f"Secret key '{secret_key}' not found in secrets file.")
-        else:
-            return data
+            raise KeyError(f"Secret key '{secret_key}' not found in secrets file.")        
+        return data
 
     def get(self, key, default=None):
         """Get a configuration value."""

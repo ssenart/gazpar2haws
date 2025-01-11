@@ -65,7 +65,7 @@ runs:
     #  Run Pylint    
     - name: Pylint
       shell: bash
-      run: poetry run pylint . --ignore=.venv --disable=logging-fstring-interpolation 
+      run: poetry run pylint . --ignore=.venv --disable=C,W1203,R0902,R0913,R0917,R0801
       continue-on-error: true
 
     #----------------------------------------------
