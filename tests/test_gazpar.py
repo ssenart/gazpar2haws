@@ -31,9 +31,9 @@ class TestGazpar:
             ha_host, ha_port, ha_endpoint, ha_token
         )
 
-        self._grdf_device_config = self._config.get("grdf.devices")[  # pylint: disable=W0201
-            0
-        ]
+        self._grdf_device_config = self._config.get(  # pylint: disable=W0201
+            "grdf.devices"
+        )[0]
 
     # ----------------------------------
     @pytest.mark.skip(reason="Requires Home Assistant server")

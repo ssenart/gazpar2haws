@@ -14,6 +14,7 @@ class HomeAssistantWSException(Exception):
 
 # ----------------------------------
 class HomeAssistantWS:
+    # ----------------------------------
     def __init__(self, host: str, port: str, endpoint: str, token: str):
         self._host = host
         self._port = port
