@@ -8,3 +8,8 @@ services:
       - ./config:/config
     ports:
       - 6123:8123
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
