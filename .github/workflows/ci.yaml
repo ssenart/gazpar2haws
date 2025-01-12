@@ -32,8 +32,8 @@ env:
 jobs:
   #----------------------------------------------
   # Collect information
-  collect:
-    name: Collect
+  prepare:
+    name: Prepare
     outputs:
       package-version: ${{ steps.compute-version.outputs.pep440-version }}
       target_python_versions: ${{ env.TARGET_PYTHON_VERSIONS }}
@@ -70,7 +70,7 @@ jobs:
   # Lint
   lint:
     name: Lint
-    needs: collect
+    needs: prepare
     runs-on: ubuntu-latest
     if: ${{ !github.event.inputs.skip-lint }}
     steps:
@@ -90,7 +90,7 @@ jobs:
   # Test
   test:
     name: Test
-    needs: [collect, lint]
+    needs: [prepare, lint]
     runs-on: "ubuntu-latest"
     if: ${{ !github.event.inputs.skip-tests }}
     strategy:
