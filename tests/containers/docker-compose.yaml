@@ -5,6 +5,6 @@ services:
     restart: always
     network_mode: bridge 
     volumes:
-      - ./config:/config
+      - ./tests/config:/config
     ports:
-      - 6123:8123      
+      - 6123:8123
