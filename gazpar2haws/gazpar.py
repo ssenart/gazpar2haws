@@ -193,7 +193,8 @@ class Gazpar:
             if last_statistic:
                 # Extract the end date of the last statistics from the unix timestamp
                 last_date = datetime.fromtimestamp(
-                    int(str(last_statistic.get("start"))) / 1000, tz=pytz.timezone(self._timezone)
+                    int(str(last_statistic.get("start"))) / 1000,
+                    tz=pytz.timezone(self._timezone),
                 )
 
                 # Compute the number of days since the last statistics

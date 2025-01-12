@@ -113,7 +113,9 @@ class HomeAssistantWS:
 
         # Check response instance type
         if not isinstance(response, list):
-            raise HomeAssistantWSException(f"Invalid list_statistic_ids response type: got {type(response)} instead of list[dict]")
+            raise HomeAssistantWSException(
+                f"Invalid list_statistic_ids response type: got {type(response)} instead of list[dict]"
+            )
 
         Logger.debug(f"Listed statistics IDs: {len(response)} ids")
 
@@ -160,7 +162,9 @@ class HomeAssistantWS:
 
         # Check response instance type
         if not isinstance(response, dict):
-            raise HomeAssistantWSException(f"Invalid statistics_during_period response type: got {type(response)} instead of dict")
+            raise HomeAssistantWSException(
+                f"Invalid statistics_during_period response type: got {type(response)} instead of dict"
+            )
 
         Logger.debug(
             f"Received {entity_ids} statistics during period from {start_time} to {end_time}"
