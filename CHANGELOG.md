@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#28](https://github.com/ssenart/gazpar2haws/issues/28): Fix the code lint warning messages.
 
+### Added
+
+[#27](https://github.com/ssenart/gazpar2haws/issues/27): In a Github workflow, run unit tests against a HA container.
+
 ## [0.1.9] - 2025-01-10
 
 ### Fixed

@@ -1,11 +1,11 @@
-name: 'python-test'
-description: 'Python testing workflow'
+name: "python-test"
+description: "Python testing workflow"
 
 inputs:
   python-version:
-    description: 'Python version'
+    description: "Python version"
     required: true
-    default: '3.13'
+    default: "3.13"
 
 runs:
   using: "composite"
@@ -14,7 +14,7 @@ runs:
     #  Set-up python
     - uses: actions/setup-python@v5
       with:
-        python-version: ${{ inputs.python-version }}    
+        python-version: ${{ inputs.python-version }}
 
     #----------------------------------------------
     # Install poetry
@@ -48,7 +48,29 @@ runs:
       run: poetry install --no-interaction
 
     #----------------------------------------------
-    # Run test suite and output coverage file
+    # Build and start HA testing container
+    - name: Build and start HA testing container
+      shell: bash
+      run: docker compose -f tests/containers/docker-compose.yaml up -d
+
+    #----------------------------------------------
+    # Wait for the container healthy status
+    - name: Wait for healthy status
+      shell: bash
+      run: |
+        for i in {1..30}; do
+          if [ "$(docker inspect --format='{{.State.Health.Status}}' homeassistant)" = "healthy" ]; then
+            echo "Container is healthy!"
+            exit 0
+          fi
+          echo "Waiting for healthy status..."
+          sleep 5
+        done
+        echo "Container did not become healthy in time."
+        exit 1
+
+    #----------------------------------------------
+    # If not using devcontainer, run tests
     - name: Test with pytest
       shell: bash
-      run: poetry run pytest
+      run: poetry run pytest tests
