@@ -137,10 +137,14 @@ class Gazpar:
 
         if self._data_source == "excel":
             return pygazpar.ExcelWebDataSource(
-                username=self._username, password=self._password, tmpDirectory=self._tmp_dir
+                username=self._username,
+                password=self._password,
+                tmpDirectory=self._tmp_dir,
             )
 
-        return pygazpar.JsonWebDataSource(username=self._username, password=self._password)
+        return pygazpar.JsonWebDataSource(
+            username=self._username, password=self._password
+        )
 
     # ----------------------------------
     # Find last date, days and value of the entity.
