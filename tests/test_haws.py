@@ -33,7 +33,7 @@ class TestHomeAssistantWS:
         )
 
     # ----------------------------------
-    @pytest.mark.skip(reason="Requires Home Assistant server")
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
     async def test_connect(self):
 
@@ -42,7 +42,7 @@ class TestHomeAssistantWS:
         await self._haws.disconnect()
 
     # ----------------------------------
-    @pytest.mark.skip(reason="Requires Home Assistant server")
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
     async def test_list_statistic_ids(self):
 
@@ -55,7 +55,7 @@ class TestHomeAssistantWS:
         await self._haws.disconnect()
 
     # ----------------------------------
-    @pytest.mark.skip(reason="Requires Home Assistant server")
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
     async def test_exists_statistic_id(self):
 
@@ -70,7 +70,7 @@ class TestHomeAssistantWS:
         await self._haws.disconnect()
 
     # ----------------------------------
-    @pytest.mark.skip(reason="Requires Home Assistant server")
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
     async def test_get_last_statistic(self):
 
@@ -83,7 +83,7 @@ class TestHomeAssistantWS:
         await self._haws.disconnect()
 
     # ----------------------------------
-    @pytest.mark.skip(reason="Requires Home Assistant server")
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
     async def test_import_statistics(self):
 
@@ -102,7 +102,7 @@ class TestHomeAssistantWS:
         await self._haws.disconnect()
 
     # ----------------------------------
-    @pytest.mark.skip(reason="Requires Home Assistant server")
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
     async def test_clear_statistics(self):
 

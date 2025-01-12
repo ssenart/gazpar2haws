@@ -36,7 +36,7 @@ class TestGazpar:
         )[0]
 
     # ----------------------------------
-    @pytest.mark.skip(reason="Requires Home Assistant server")
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
     async def test_publish(self):
 

@@ -7,7 +7,7 @@ from gazpar2haws.bridge import Bridge
 
 
 # ----------------------------------
-@pytest.mark.skip(reason="Requires Home Assistant server")
+# @pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_run():
 
