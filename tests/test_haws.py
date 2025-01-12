@@ -1,6 +1,7 @@
 """Test haws module."""
 
 import pytest
+from datetime import datetime
 
 from gazpar2haws import config_utils
 from gazpar2haws.haws import HomeAssistantWS
@@ -76,7 +77,7 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        statistics = await self._haws.get_last_statistic("sensor.gazpar2haws_volume")
+        statistics = await self._haws.get_last_statistic("sensor.gazpar2haws_volume", datetime.now(), 30)
 
         assert statistics is not None
 
@@ -90,9 +91,9 @@ class TestHomeAssistantWS:
         await self._haws.connect()
 
         statistics = [
-            {"start": "2024-12-14T00:00:00+00:00", "state": 100.0, "sum": 100.0},
-            {"start": "2024-12-15T00:00:00+00:00", "state": 200.0, "sum": 200.0},
-            {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
+            {"start": "2020-12-14T00:00:00+00:00", "state": 100.0, "sum": 100.0},
+            {"start": "2020-12-15T00:00:00+00:00", "state": 200.0, "sum": 200.0},
+            {"start": "2020-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
         ]
 
         await self._haws.import_statistics(
@@ -108,6 +109,6 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        await self._haws.clear_statistics(["sensor.gazpar2haws_volume"])
+        await self._haws.clear_statistics(["sensor.gazpar2haws_energy", "sensor.gazpar2haws_volume"])
 
         await self._haws.disconnect()

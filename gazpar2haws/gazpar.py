@@ -30,6 +30,21 @@ class Gazpar:
         self._timezone = config.get("timezone")
         self._reset = bool(config.get("reset"))
 
+        # As of date: YYYY-MM-DD
+        as_of_date = config.get("as_of_date")
+        if self._data_source is not None and str(self._data_source).lower() == "test":
+            self._as_of_date = (
+                datetime.now(tz=pytz.timezone(self._timezone))
+                if as_of_date is None
+                else datetime.strptime(as_of_date, "%Y-%m-%d")
+            )
+        else:
+            self._as_of_date = datetime.now(tz=pytz.timezone(self._timezone))
+
+        # Set the timezone
+        timezone = pytz.timezone(self._timezone)
+        self._as_of_date = timezone.localize(self._as_of_date)
+
     # ----------------------------------
     def name(self):
         return self._name
@@ -132,15 +147,16 @@ class Gazpar:
     # Create the data source.
     def _create_data_source(self) -> pygazpar.datasource.IDataSource:
 
-        if self._data_source == "test":
-            return pygazpar.TestDataSource()
+        if self._data_source is not None:
+            if str(self._data_source).lower() == "test":
+                return pygazpar.TestDataSource()
 
-        if self._data_source == "excel":
-            return pygazpar.ExcelWebDataSource(
-                username=self._username,
-                password=self._password,
-                tmpDirectory=self._tmp_dir,
-            )
+            if str(self._data_source).lower() == "excel":
+                return pygazpar.ExcelWebDataSource(
+                    username=self._username,
+                    password=self._password,
+                    tmpDirectory=self._tmp_dir,
+                )
 
         return pygazpar.JsonWebDataSource(
             username=self._username, password=self._password
@@ -166,35 +182,42 @@ class Gazpar:
         if exists_statistic_id:
             # Get the last statistic from Home Assistant
             try:
-                last_statistic = await self._homeassistant.get_last_statistic(entity_id)
+                last_statistic = await self._homeassistant.get_last_statistic(entity_id, self._as_of_date, self._last_days)
             except HomeAssistantWSException:
                 Logger.warning(
                     f"Error while fetching last statistics from Home Assistant: {traceback.format_exc()}"
                 )
 
-            # Extract the end date of the last statistics from the unix timestamp
-            last_date = datetime.fromtimestamp(
-                last_statistic.get("start") / 1000, tz=pytz.timezone(self._timezone)
-            )
+            if last_statistic:
+                # Extract the end date of the last statistics from the unix timestamp
+                last_date = datetime.fromtimestamp(
+                    last_statistic.get("start") / 1000, tz=pytz.timezone(self._timezone)
+                )
 
-            # Compute the number of days since the last statistics
-            last_days = (
-                datetime.now(tz=pytz.timezone(self._timezone)) - last_date
-            ).days
+                # Compute the number of days since the last statistics
+                last_days = (self._as_of_date - last_date).days
 
-            # Get the last meter value
-            last_value = last_statistic.get("sum")
+                # Get the last meter value
+                last_value = last_statistic.get("sum")
+
+                Logger.debug(
+                    f"Last date: {last_date}, last days: {last_days}, last value: {last_value}"
+                )
+
+                return last_date, last_days, last_value
+            else:
+                Logger.debug(f"No statistics found for the existing sensor {entity_id}.")
         else:
-            # If the sensor does not exist in Home Assistant, fetch the last days defined in the configuration
-            last_days = self._last_days
+            Logger.debug(f"Sensor {entity_id} does not exist in Home Assistant.")
 
-            # Compute the corresponding last_date
-            last_date = datetime.now(tz=pytz.timezone(self._timezone)) - timedelta(
-                days=last_days
-            )
+        # If the sensor does not exist in Home Assistant, fetch the last days defined in the configuration
+        last_days = self._last_days
 
-            # If no statistic, the last value is initialized to zero
-            last_value = 0
+        # Compute the corresponding last_date
+        last_date = self._as_of_date - timedelta(days=last_days)
+
+        # If no statistic, the last value is initialized to zero
+        last_value = 0
 
         Logger.debug(
             f"Last date: {last_date}, last days: {last_days}, last value: {last_value}"

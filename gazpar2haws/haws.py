@@ -158,12 +158,12 @@ class HomeAssistantWS:
         return response
 
     # ----------------------------------
-    async def get_last_statistic(self, entity_id: str) -> dict:
+    async def get_last_statistic(self, entity_id: str, as_of_date: datetime, depth_days: int) -> dict:
 
         Logger.debug(f"Getting last statistic for {entity_id}...")
 
         statistics = await self.statistics_during_period(
-            [entity_id], datetime.now() - timedelta(days=30), datetime.now()
+            [entity_id], as_of_date - timedelta(days=depth_days), as_of_date
         )
 
         if not statistics:
