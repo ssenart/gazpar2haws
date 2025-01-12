@@ -34,7 +34,7 @@ jobs:
   #----------------------------------------------
   # Collect information
   information:
-    name: Collect information
+    name: Collect
     outputs:
       package-version: ${{ steps.compute-version.outputs.pep440-version }}
       target_python_versions: ${{ env.TARGET_PYTHON_VERSIONS }}
