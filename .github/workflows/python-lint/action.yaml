@@ -59,35 +59,31 @@ runs:
     #  Install linters
     - name: Install linters
       shell: bash
-      run: python -m pip install pylint flake8 black isort mypy ruff
+      run: poetry run pip install pylint flake8 black isort mypy ruff
 
     #----------------------------------------------
     #  Run Pylint    
     - name: Pylint
       shell: bash
-      run: poetry run pylint . --ignore=.venv --disable=logging-fstring-interpolation 
-      continue-on-error: true
+      run: poetry run pylint . --ignore=.venv --disable=C,W1203,R0902,R0913,R0917,R0801
 
     #----------------------------------------------
     #  Run Flake8
     - name: Flake8
       shell: bash
-      run: poetry run poetry run flake8 . --exclude=.venv
-      continue-on-error: true
+      run: poetry run poetry run flake8 . --exclude=.venv --ignore=E501
 
     #----------------------------------------------
     #  Run Black
     - name: Black
       shell: bash
       run: poetry run black . --exclude=.venv --check
-      continue-on-error: true
 
     #----------------------------------------------
     #  Run Isort
     - name: Isort
       shell: bash
       run: poetry run isort . --skip .venv --check-only
-      continue-on-error: true
 
     #----------------------------------------------
     #  Run Mypy
@@ -101,4 +97,3 @@ runs:
     - name: Ruff
       shell: bash
       run: poetry run ruff check . --exclude .venv
-      continue-on-error: true
