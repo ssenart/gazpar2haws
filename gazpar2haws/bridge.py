@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import signal
-from datetime import datetime
 
 from gazpar2haws import config_utils
 from gazpar2haws.gazpar import Gazpar

@@ -205,8 +205,8 @@ class Gazpar:
                 )
 
                 return last_date, last_days, last_value
-            else:
-                Logger.debug(f"No statistics found for the existing sensor {entity_id}.")
+
+            Logger.debug(f"No statistics found for the existing sensor {entity_id}.")
         else:
             Logger.debug(f"Sensor {entity_id} does not exist in Home Assistant.")
 
