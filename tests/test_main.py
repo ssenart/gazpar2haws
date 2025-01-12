@@ -16,9 +16,9 @@ async def test_main():
     sys.argv = [
         "gazpar2haws",
         "-c",
-        "config/configuration.yaml",
+        "tests/config/configuration.yaml",
         "-s",
-        "config/secrets.yaml",
+        "tests/config/secrets.yaml",
     ]
 
     await __main__.main()

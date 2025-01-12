@@ -21,9 +21,11 @@ class Gazpar:
 
         # GrDF configuration
         self._name = config.get("name")
+        self._data_source = config.get("data_source")
         self._username = config.get("username")
         self._password = config.get("password")
         self._pce_identifier = str(config.get("pce_identifier"))
+        self._tmp_dir = config.get("tmp_dir")
         self._last_days = int(config.get("last_days"))
         self._timezone = config.get("timezone")
         self._reset = bool(config.get("reset"))
@@ -71,10 +73,16 @@ class Gazpar:
             entity_id
         )
 
+        # Instantiate the right data source.
+        if self._data_source == "test":
+            data_source = pygazpar.TestDataSource()
+        elif self._data_source == "excel":
+            data_source = pygazpar.ExcelWebDataSource(username=self._username, password=self._password, tmpDirectory=self._tmp_dir)
+        else:
+            data_source = pygazpar.JsonWebDataSource(username=self._username, password=self._password)
+
         # Initialize PyGazpar client
-        client = pygazpar.Client(
-            pygazpar.JsonWebDataSource(username=self._username, password=self._password)
-        )
+        client = pygazpar.Client(data_source)
 
         try:
             data = client.loadSince(

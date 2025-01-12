@@ -18,7 +18,7 @@ class TestHomeAssistantWS:
         """
         # Load configuration
         self._config = config_utils.ConfigLoader(  # pylint: disable=W0201
-            "config/configuration.yaml", "config/secrets.yaml"
+            "tests/config/configuration.yaml", "tests/config/secrets.yaml"
         )
         self._config.load_secrets()
         self._config.load_config()
