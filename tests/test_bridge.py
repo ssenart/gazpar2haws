@@ -1,5 +1,7 @@
 """Test the bridge module."""
+
 import pytest
+
 from gazpar2haws import config_utils
 from gazpar2haws.bridge import Bridge
 
@@ -10,7 +12,9 @@ from gazpar2haws.bridge import Bridge
 async def test_run():
 
     # Load configuration
-    config = config_utils.ConfigLoader("config/configuration.yaml", "config/secrets.yaml")
+    config = config_utils.ConfigLoader(
+        "config/configuration.yaml", "config/secrets.yaml"
+    )
     config.load_secrets()
     config.load_config()
 
