@@ -48,7 +48,9 @@ runs:
       run: poetry install --no-interaction
 
     #----------------------------------------------
+    # Build and start HA testing container
     - name: Build and start HA testing container
+      shell: bash
       run: docker compose -f tests/containers/docker-compose.yaml up -d
 
     #----------------------------------------------
