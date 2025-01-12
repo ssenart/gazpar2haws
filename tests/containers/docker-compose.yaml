@@ -2,7 +2,7 @@ services:
   homeassistant:
     image: homeassistant/home-assistant:latest
     container_name: homeassistant
-    restart: unless-stopped
+    restart: always
     network_mode: bridge 
     volumes:
       - ./config:/config

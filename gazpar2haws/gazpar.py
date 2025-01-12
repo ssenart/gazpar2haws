@@ -74,12 +74,7 @@ class Gazpar:
         )
 
         # Instantiate the right data source.
-        if self._data_source == "test":
-            data_source = pygazpar.TestDataSource()
-        elif self._data_source == "excel":
-            data_source = pygazpar.ExcelWebDataSource(username=self._username, password=self._password, tmpDirectory=self._tmp_dir)
-        else:
-            data_source = pygazpar.JsonWebDataSource(username=self._username, password=self._password)
+        data_source = self._create_data_source()
 
         # Initialize PyGazpar client
         client = pygazpar.Client(data_source)
@@ -132,6 +127,20 @@ class Gazpar:
                 f"Error while importing statistics to Home Assistant: {traceback.format_exc()}"
             )
             raise
+
+    # ----------------------------------
+    # Create the data source.
+    def _create_data_source(self) -> pygazpar.datasource.IDataSource:
+
+        if self._data_source == "test":
+            return pygazpar.TestDataSource()
+
+        if self._data_source == "excel":
+            return pygazpar.ExcelWebDataSource(
+                username=self._username, password=self._password, tmpDirectory=self._tmp_dir
+            )
+
+        return pygazpar.JsonWebDataSource(username=self._username, password=self._password)
 
     # ----------------------------------
     # Find last date, days and value of the entity.
