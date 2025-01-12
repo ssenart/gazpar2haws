@@ -25,14 +25,6 @@
       }
     },
     "mounts": [
-      "type=volume,target=/var/lib/docker",
-
-      // Custom configuration directory
-      //"source=C:\\Users\\steph\\Qsync\\Workspace\\Python\\gazpar2haws\\mount\\config,target=${containerWorkspaceFolder}/config,type=bind"
-      // Custom component
-      //"source=${localEnv:HOME}/custom_repo/custom_components/component_name,target=${containerWorkspaceFolder}/config/custom_components/component_name,type=bind",
-      //Custom library
-      //"source=${localEnv:HOME}/path/to/custom_repo/custom_libraries/library_name,target=${containerWorkspaceFolder}/config/custom_libraries/library_name,type=bind",
-
+      "type=volume,target=/var/lib/docker"
     ]
   }
