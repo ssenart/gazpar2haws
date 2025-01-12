@@ -1,0 +1,10 @@
+services:
+  homeassistant:
+    image: homeassistant/home-assistant:latest
+    container_name: homeassistant
+    restart: unless-stopped
+    network_mode: bridge 
+    volumes:
+      - ./config:/config
+    ports:
+      - 6123:8123      
