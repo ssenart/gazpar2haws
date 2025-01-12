@@ -27,13 +27,12 @@ permissions:
 
 env:
   DEFAULT_PYTHON_VERSION: "3.12"
-  #TARGET_PYTHON_VERSIONS: "[ '3.9', '3.10', '3.11', '3.12', '3.13' ]"
-  TARGET_PYTHON_VERSIONS: "[ '3.12' ]"
+  TARGET_PYTHON_VERSIONS: "[ '3.9', '3.10', '3.11', '3.12', '3.13' ]"
 
 jobs:
   #----------------------------------------------
   # Collect information
-  information:
+  collect:
     name: Collect
     outputs:
       package-version: ${{ steps.compute-version.outputs.pep440-version }}
@@ -71,6 +70,7 @@ jobs:
   # Lint
   lint:
     name: Lint
+    needs: collect
     runs-on: ubuntu-latest
     if: ${{ !github.event.inputs.skip-lint }}
     steps:
@@ -90,7 +90,7 @@ jobs:
   # Test
   test:
     name: Test
-    needs: information
+    needs: [collect, lint]
     runs-on: "ubuntu-latest"
     if: ${{ !github.event.inputs.skip-tests }}
     strategy:
