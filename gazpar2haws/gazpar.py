@@ -26,8 +26,8 @@ class Gazpar:
         self._password = config.get("password")
         self._pce_identifier = str(config.get("pce_identifier"))
         self._tmp_dir = config.get("tmp_dir")
-        self._last_days = int(config.get("last_days"))
-        self._timezone = config.get("timezone")
+        self._last_days = int(str(config.get("last_days")))
+        self._timezone = str(config.get("timezone"))
         self._reset = bool(config.get("reset"))
 
         # As of date: YYYY-MM-DD
@@ -193,14 +193,14 @@ class Gazpar:
             if last_statistic:
                 # Extract the end date of the last statistics from the unix timestamp
                 last_date = datetime.fromtimestamp(
-                    last_statistic.get("start") / 1000, tz=pytz.timezone(self._timezone)
+                    int(str(last_statistic.get("start"))) / 1000, tz=pytz.timezone(self._timezone)
                 )
 
                 # Compute the number of days since the last statistics
                 last_days = (self._as_of_date - last_date).days
 
                 # Get the last meter value
-                last_value = last_statistic.get("sum")
+                last_value = float(str(last_statistic.get("sum")))
 
                 Logger.debug(
                     f"Last date: {last_date}, last days: {last_days}, last value: {last_value}"

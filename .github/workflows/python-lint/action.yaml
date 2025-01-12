@@ -89,7 +89,7 @@ runs:
     #  Run Mypy
     - name: Mypy
       shell: bash
-      run: poetry run mypy . --exclude .venv
+      run: poetry run mypy . --install-types --non-interactive --exclude .venv
       continue-on-error: true
 
     #----------------------------------------------

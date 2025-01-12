@@ -69,9 +69,12 @@ class HomeAssistantWS:
         Logger.debug("Disconnected from Home Assistant")
 
     # ----------------------------------
-    async def send_message(self, message: dict) -> dict:
+    async def send_message(self, message: dict) -> dict | list[dict]:
 
         Logger.debug("Sending a message...")
+
+        if self._websocket is None:
+            raise HomeAssistantWSException("Not connected to Home Assistant")
 
         message["id"] = self._message_id
 
@@ -96,7 +99,7 @@ class HomeAssistantWS:
         return response_data.get("result")
 
     # ----------------------------------
-    async def list_statistic_ids(self, statistic_type: str = None) -> list[str]:
+    async def list_statistic_ids(self, statistic_type: str | None = None) -> list[dict]:
 
         Logger.debug("Listing statistics IDs...")
 
@@ -108,13 +111,17 @@ class HomeAssistantWS:
 
         response = await self.send_message(list_statistic_ids_message)
 
+        # Check response instance type
+        if not isinstance(response, list):
+            raise HomeAssistantWSException(f"Invalid list_statistic_ids response type: got {type(response)} instead of list[dict]")
+
         Logger.debug(f"Listed statistics IDs: {len(response)} ids")
 
         return response
 
     # ----------------------------------
     async def exists_statistic_id(
-        self, entity_id: str, statistic_type: str = None
+        self, entity_id: str, statistic_type: str | None = None
     ) -> bool:
 
         Logger.debug(f"Checking if {entity_id} exists...")
@@ -150,6 +157,10 @@ class HomeAssistantWS:
         }
 
         response = await self.send_message(statistics_message)
+
+        # Check response instance type
+        if not isinstance(response, dict):
+            raise HomeAssistantWSException(f"Invalid statistics_during_period response type: got {type(response)} instead of dict")
 
         Logger.debug(
             f"Received {entity_ids} statistics during period from {start_time} to {end_time}"

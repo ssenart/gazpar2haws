@@ -41,7 +41,7 @@ class Bridge:
 
     # ----------------------------------
     # Graceful shutdown function
-    def handle_signal(self, signum):
+    def handle_signal(self, signum, _):
         print(f"Signal {signum} received. Shutting down gracefully...")
         Logger.info(f"Signal {signum} received. Shutting down gracefully...")
         self._running = False
