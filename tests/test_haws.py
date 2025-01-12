@@ -77,7 +77,9 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        statistics = await self._haws.get_last_statistic("sensor.gazpar2haws_volume", datetime.now(), 30)
+        statistics = await self._haws.get_last_statistic(
+            "sensor.gazpar2haws_volume", datetime.now(), 30
+        )
 
         assert statistics is not None
 
@@ -109,6 +111,8 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        await self._haws.clear_statistics(["sensor.gazpar2haws_energy", "sensor.gazpar2haws_volume"])
+        await self._haws.clear_statistics(
+            ["sensor.gazpar2haws_energy", "sensor.gazpar2haws_volume"]
+        )
 
         await self._haws.disconnect()

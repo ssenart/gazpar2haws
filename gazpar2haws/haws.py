@@ -158,7 +158,9 @@ class HomeAssistantWS:
         return response
 
     # ----------------------------------
-    async def get_last_statistic(self, entity_id: str, as_of_date: datetime, depth_days: int) -> dict:
+    async def get_last_statistic(
+        self, entity_id: str, as_of_date: datetime, depth_days: int
+    ) -> dict:
 
         Logger.debug(f"Getting last statistic for {entity_id}...")
 

@@ -182,7 +182,9 @@ class Gazpar:
         if exists_statistic_id:
             # Get the last statistic from Home Assistant
             try:
-                last_statistic = await self._homeassistant.get_last_statistic(entity_id, self._as_of_date, self._last_days)
+                last_statistic = await self._homeassistant.get_last_statistic(
+                    entity_id, self._as_of_date, self._last_days
+                )
             except HomeAssistantWSException:
                 Logger.warning(
                     f"Error while fetching last statistics from Home Assistant: {traceback.format_exc()}"
