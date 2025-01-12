@@ -90,7 +90,6 @@ runs:
     - name: Mypy
       shell: bash
       run: poetry run mypy . --install-types --non-interactive --exclude .venv
-      continue-on-error: true
 
     #----------------------------------------------
     #  Run Ruff

@@ -3,7 +3,7 @@ import traceback
 from datetime import datetime, timedelta
 from typing import Any
 
-import pygazpar
+import pygazpar  # type: ignore
 import pytz
 
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
