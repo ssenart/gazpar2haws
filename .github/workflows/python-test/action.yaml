@@ -6,11 +6,6 @@ inputs:
     description: "Python version"
     required: true
     default: "3.13"
-  use-devcontainer:
-    description: "Use devcontainer"
-    required: false
-    default: false
-    type: boolean
 
 runs:
   using: "composite"
@@ -53,16 +48,8 @@ runs:
       run: poetry install --no-interaction
 
     #----------------------------------------------
-    # If using devcontainer, run tests
-    - name: Build and run dev container task
-      if: ${{ inputs.use-devcontainer }}
-      uses: devcontainers/ci@v0.3
-      with:
-        runCmd: |
-          # Start HA supervisor
-          supervisor_run &
-          # Wait a few for HA to start
-          sleep 30
+    - name: Build and start HA testing container
+      run: docker compose -f tests/containers/docker-compose.yaml up -d
 
     #----------------------------------------------
     # If not using devcontainer, run tests
