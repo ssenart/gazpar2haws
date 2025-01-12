@@ -96,7 +96,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ${{ fromJSON(needs.information.outputs.target_python_versions) }}
+        python-version: ${{ fromJSON(needs.prepare.outputs.target_python_versions) }}
     steps:
       #----------------------------------------------
       #  Check-out repo
