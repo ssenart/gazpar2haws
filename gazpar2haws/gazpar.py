@@ -43,7 +43,7 @@ class Gazpar:
 
         # Set the timezone
         timezone = pytz.timezone(self._timezone)
-        if (self._as_of_date.tzinfo is None):
+        if self._as_of_date.tzinfo is None:
             self._as_of_date = timezone.localize(self._as_of_date)
 
     # ----------------------------------
