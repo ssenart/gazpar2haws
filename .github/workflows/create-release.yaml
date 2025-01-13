@@ -90,8 +90,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gettext-base
 
       #----------------------------------------------
-      # Replace version in pyproject.toml, config.yaml and build.yaml
-      - name: Replace version
+      # Bump version in pyproject.toml, config.yaml and build.yaml
+      - name: Bump version
         run: |
           envsubst < pyproject.template.toml > pyproject.toml
           envsubst < addons/gazpar2haws/config.yaml.template > addons/gazpar2haws/config.yaml
@@ -105,7 +105,7 @@ jobs:
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
           git add pyproject.toml addons/gazpar2haws/config.yaml addons/gazpar2haws/build.yaml
-          git commit --allow-empty -m "Upgrade version to ${PACKAGE_VERSION}"
+          git commit --allow-empty -m "Bump version to ${PACKAGE_VERSION}"
           git push
 
       #----------------------------------------------
