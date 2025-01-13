@@ -10,6 +10,10 @@ inputs:
   version:
     description: "Version of the image"
     required: true
+  is_latest: 
+    description: "Whether the version is a final release"
+    required: false
+    default: false
   username:
     description: "DockerHub username"
     required: true
@@ -39,7 +43,7 @@ runs:
         images: ${{ inputs.image }}
         tags: |
           # Set latest tag for the default branch
-          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=latest,enable=${{ inputs.is_latest }}
           # Set the version tag for all branches
           type=raw,value=${{ inputs.version }}
 

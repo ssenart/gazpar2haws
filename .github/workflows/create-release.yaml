@@ -8,6 +8,11 @@ on:
         required: false
         default: ""
         type: string
+      is_final:
+        description: "Whether it is a final release (not a pre-release)"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write # Allow to commit and push.
@@ -210,5 +215,6 @@ jobs:
         with:
           image: ssenart/gazpar2haws
           version: ${{ needs.prepare.outputs.package-version }}
+          is_latest : ${{ inputs.is_final }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
