@@ -1,0 +1,10 @@
+*
+
+!.gitignore
+!.storage/auth
+!.storage/auth_provider.homeassistant
+!automations.yaml
+!configuration.yaml
+!scenes.yaml
+!scripts.yaml
+!secrets.yaml

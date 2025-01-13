@@ -12,12 +12,12 @@ on:
   workflow_dispatch:
     inputs:
       skip-lint:
-        description: 'Skip linting'
+        description: "Skip linting"
         required: false
         default: false
         type: boolean
       skip-tests:
-        description: 'Skip tests'
+        description: "Skip tests"
         required: false
         default: false
         type: boolean
@@ -32,8 +32,8 @@ env:
 jobs:
   #----------------------------------------------
   # Collect information
-  information:
-    name: Collect information
+  prepare:
+    name: Prepare
     outputs:
       package-version: ${{ steps.compute-version.outputs.pep440-version }}
       target_python_versions: ${{ env.TARGET_PYTHON_VERSIONS }}
@@ -70,6 +70,7 @@ jobs:
   # Lint
   lint:
     name: Lint
+    needs: prepare
     runs-on: ubuntu-latest
     if: ${{ !github.event.inputs.skip-lint }}
     steps:
@@ -89,13 +90,13 @@ jobs:
   # Test
   test:
     name: Test
-    needs: information
+    needs: [prepare, lint]
     runs-on: "ubuntu-latest"
     if: ${{ !github.event.inputs.skip-tests }}
     strategy:
       fail-fast: true
       matrix:
-        python-version: ${{ fromJSON(needs.information.outputs.target_python_versions) }}
+        python-version: ${{ fromJSON(needs.prepare.outputs.target_python_versions) }}
     steps:
       #----------------------------------------------
       #  Check-out repo

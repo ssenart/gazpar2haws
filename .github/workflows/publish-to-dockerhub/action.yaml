@@ -1,3 +1,5 @@
+## Documentation: https://docs.docker.com/build/ci/github-actions/multi-platform/
+
 name: "publish-to-dockerhub"
 description: "Publish to DockerHub workflow"
 
@@ -18,6 +20,18 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - name: Set up Docker
+      uses: docker/setup-docker-action@v4
+      with:
+        daemon-config: |
+          {
+            "debug": true,
+            "features": {
+              "containerd-snapshotter": true
+            }
+          } 
+
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v5
@@ -48,5 +62,6 @@ runs:
         context: "{{defaultContext}}"
         file: ./docker/Dockerfile
         push: true
+        platforms: linux/amd64,linux/arm64
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
