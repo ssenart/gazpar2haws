@@ -9,7 +9,7 @@ on:
         default: ""
         type: string
       is_final:
-        description: "Whether it is a final release (not a pre-release)"
+        description: "It is a final release (not a pre-release)"
         required: false
         default: true
         type: boolean
