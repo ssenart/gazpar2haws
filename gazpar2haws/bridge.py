@@ -16,12 +16,30 @@ class Bridge:
     def __init__(self, config: config_utils.ConfigLoader):
 
         # GrDF scan interval (in seconds)
+        if config.get("grdf.scan_interval") is None:
+            raise ValueError("Configuration parameter 'grdf.scan_interval' is missing")
         self._grdf_scan_interval = int(config.get("grdf.scan_interval"))
 
-        # Home Assistant configuration
+        # Home Assistant configuration: host
+        if config.get("homeassistant.host") is None:
+            raise ValueError("Configuration parameter 'homeassistant.host' is missing")
         ha_host = config.get("homeassistant.host")
+
+        # Home Assistant configuration: port
+        if config.get("homeassistant.port") is None:
+            raise ValueError("Configuration parameter 'homeassistant.port' is missing")
         ha_port = config.get("homeassistant.port")
-        ha_endpoint = config.get("homeassistant.endpoint")
+
+        # Home Assistant configuration: endpoint
+        ha_endpoint = (
+            config.get("homeassistant.endpoint")
+            if config.get("homeassistant.endpoint")
+            else "/api/websocket"
+        )
+
+        # Home Assistant configuration: token
+        if config.get("homeassistant.token") is None:
+            raise ValueError("Configuration parameter 'homeassistant.token' is missing")
         ha_token = config.get("homeassistant.token")
 
         # Initialize Home Assistant
@@ -29,6 +47,9 @@ class Bridge:
 
         # Initialize Gazpar
         self._gazpar = []
+
+        if config.get("grdf.devices") is None:
+            raise ValueError("Configuration parameter 'grdf.devices' is missing")
         for grdf_device_config in config.get("grdf.devices"):
             self._gazpar.append(Gazpar(grdf_device_config, self._homeassistant))
 
