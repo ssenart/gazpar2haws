@@ -19,15 +19,59 @@ class Gazpar:
 
         self._homeassistant = homeassistant
 
-        # GrDF configuration
+        # GrDF configuration: name
+        if config.get("name") is None:
+            raise ValueError("Configuration parameter 'grdf.devices[].name' is missing")
         self._name = config.get("name")
-        self._data_source = config.get("data_source")
+
+        # GrDF configuration: data source
+        self._data_source = (
+            config.get("data_source") if config.get("data_source") else "json"
+        )
+
+        # GrDF configuration: username
+        if self._data_source != "test" and config.get("username") is None:
+            raise ValueError(
+                "Configuration parameter 'grdf.devices[].username' is missing"
+            )
         self._username = config.get("username")
+
+        # GrDF configuration: password
+        if self._data_source != "test" and config.get("password") is None:
+            raise ValueError(
+                "Configuration parameter 'grdf.devices[].password' is missing"
+            )
         self._password = config.get("password")
+
+        # GrDF configuration: pce_identifier
+        if self._data_source != "test" and config.get("pce_identifier") is None:
+            raise ValueError(
+                "Configuration parameter 'grdf.devices[].pce_identifier' is missing"
+            )
         self._pce_identifier = str(config.get("pce_identifier"))
-        self._tmp_dir = config.get("tmp_dir")
+
+        # GrDF configuration: tmp_dir
+        self._tmp_dir = config.get("tmp_dir") if config.get("tmp_dir") else "/tmp"
+
+        # GrDF configuration: last_days
+        if config.get("last_days") is None:
+            raise ValueError(
+                "Configuration parameter 'grdf.devices[].last_days' is missing"
+            )
         self._last_days = int(str(config.get("last_days")))
+
+        # GrDF configuration: timezone
+        if config.get("timezone") is None:
+            raise ValueError(
+                "Configuration parameter 'grdf.devices[].timezone' is missing"
+            )
         self._timezone = str(config.get("timezone"))
+
+        # GrDF configuration: reset
+        if config.get("reset") is None:
+            raise ValueError(
+                "Configuration parameter 'grdf.devices[].reset' is missing"
+            )
         self._reset = bool(config.get("reset"))
 
         # As of date: YYYY-MM-DD
@@ -129,7 +173,13 @@ class Gazpar:
                 continue
 
             # Compute the total volume and energy
-            total += reading[property_name]
+            if reading[property_name] is not None:
+                total += reading[property_name]
+            else:
+                Logger.warning(
+                    f"Missing property {property_name} for date {date}. Skipping..."
+                )
+                continue
 
             statistics.append({"start": date.isoformat(), "state": total, "sum": total})
 

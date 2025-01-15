@@ -27,7 +27,11 @@ class TestHomeAssistantWS:
 
         ha_host = self._config.get("homeassistant.host")
         ha_port = self._config.get("homeassistant.port")
-        ha_endpoint = self._config.get("homeassistant.endpoint")
+        ha_endpoint = (
+            self._config.get("homeassistant.endpoint")
+            if self._config.get("homeassistant.endpoint")
+            else "/api/websocket"
+        )
         ha_token = self._config.get("homeassistant.token")
 
         self._haws = HomeAssistantWS(  # pylint: disable=W0201
