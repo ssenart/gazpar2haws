@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#36](https://github.com/ssenart/gazpar2haws/issues/36): Error if HA endpoint configuration is missing in configuration.yaml.
 
+### Added
+
+[#33](https://github.com/ssenart/gazpar2haws/issues/33): Dockerhub 'latest' tag is currently published only if the release is created in the main branch.
+
 ## [0.1.11] - 2025-01-12
 
 ### Fixed
