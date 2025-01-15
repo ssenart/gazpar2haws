@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+[#37](https://github.com/ssenart/gazpar2haws/issues/37): Error GrDF send missing data with type="Absence de Données".
+
 [#38](https://github.com/ssenart/gazpar2haws/issues/38): Using the HA addon, the PCE identifier is transformed into another number.
 
 [#36](https://github.com/ssenart/gazpar2haws/issues/36): Error if HA endpoint configuration is missing in configuration.yaml.
