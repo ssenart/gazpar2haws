@@ -1,22 +1,22 @@
 logging:
   file: log/gazpar2haws.log
-  console: true  
+  console: true
   level: debug
-  format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
+  format: "%(asctime)s %(levelname)s [%(name)s] %(message)s"
 
 grdf:
   scan_interval: ${GRDF_SCAN_INTERVAL} # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-  - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
-    username: "!secret grdf.username"
-    password: "!secret grdf.password"
-    pce_identifier: "!secret grdf.pce_identifier"
-    timezone: ${GRDF_TIMEZONE} # Timezone of the data. It should be the same as the Home Assistant timezone.
-    last_days: ${GRDF_LAST_DAYS} # Number of days of data to retrieve
-    reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
+    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+      username: "!secret grdf.username"
+      password: "!secret grdf.password"
+      pce_identifier: "!secret grdf.pce_identifier"
+      timezone: "${GRDF_TIMEZONE}" # Timezone of the data. It should be the same as the Home Assistant timezone.
+      last_days: ${GRDF_LAST_DAYS} # Number of days of data to retrieve
+      reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
 
 homeassistant:
   host: "!secret homeassistant.host"
   port: "!secret homeassistant.port"
-  endpoint: ${HOMEASSISTANT_ENDPOINT}  
+  endpoint: "${HOMEASSISTANT_ENDPOINT}" # The websocket endpoint to use. It should be /api/websocket by default.
   token: "!secret homeassistant.token"
