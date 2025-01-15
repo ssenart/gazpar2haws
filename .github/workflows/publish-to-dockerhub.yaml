@@ -8,6 +8,11 @@ on:
         required: false
         default: ""
         type: string
+      is_latest:
+        description: "Update the 'latest' tag"
+        required: false
+        default: true
+        type: boolean        
 
 permissions:
   contents: read # Readonly permissions
@@ -17,9 +22,9 @@ env:
 
 jobs:
   #----------------------------------------------
-  # Collect information
-  information:
-    name: Collect information
+  # Prepare
+  prepare:
+    name: Prepare
     outputs:
       package-version: ${{ steps.select-package-version.outputs.package-version }}
       default_python_version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -66,7 +71,7 @@ jobs:
   # Publish Docker image to DockerHub
   publish-to-dockerhub:
     name: Publish to DockerHub
-    needs: information
+    needs: prepare
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -85,6 +90,7 @@ jobs:
         uses: ./.github/workflows/publish-to-dockerhub
         with:
           image: ssenart/gazpar2haws
-          version: ${{ needs.information.outputs.package-version }}
+          version: ${{ needs.prepare.outputs.package-version }}
+          is_latest: ${{ inputs.is_latest }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
