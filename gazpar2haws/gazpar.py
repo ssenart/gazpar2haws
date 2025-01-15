@@ -173,7 +173,13 @@ class Gazpar:
                 continue
 
             # Compute the total volume and energy
-            total += reading[property_name]
+            if reading[property_name] is not None:
+                total += reading[property_name]
+            else:
+                Logger.warning(
+                    f"Missing property {property_name} for date {date}. Skipping..."
+                )
+                continue
 
             statistics.append({"start": date.isoformat(), "state": total, "sum": total})
 
