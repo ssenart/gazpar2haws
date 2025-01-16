@@ -13,7 +13,7 @@ grdf:
       pce_identifier: "!secret grdf.pce_identifier"
       timezone: "${GRDF_TIMEZONE}" # Timezone of the data. It should be the same as the Home Assistant timezone.
       last_days: ${GRDF_LAST_DAYS} # Number of days of data to retrieve
-      reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
+      reset: ${GRDF_RESET} # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
 
 homeassistant:
   host: "!secret homeassistant.host"
