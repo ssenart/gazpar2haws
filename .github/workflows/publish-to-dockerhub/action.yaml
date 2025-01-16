@@ -42,10 +42,10 @@ runs:
       with:
         images: ${{ inputs.image }}
         tags: |
-          # Set latest tag for the default branch
-          type=raw,value=latest,enable=${{ inputs.is_latest }}
           # Set the version tag for all branches
           type=raw,value=${{ inputs.version }}
+          # Set latest tag for the default branch
+          type=raw,value=latest,enable=${{ inputs.is_latest }}
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
