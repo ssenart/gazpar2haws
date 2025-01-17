@@ -204,9 +204,11 @@ jobs:
       id-token: write
     steps:
       #----------------------------------------------
-      #  Check-out repo
+      #  Checkout the tag from the repository
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.package-version }}
 
       #----------------------------------------------
       # Publish the Docker image
