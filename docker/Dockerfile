@@ -12,6 +12,8 @@ WORKDIR /app
 
 COPY pyproject.toml ./
 COPY poetry.lock ./
+COPY README.md ./
+COPY LICENSE ./
 
 COPY gazpar2haws/ /app/gazpar2haws
 
@@ -48,7 +50,7 @@ RUN  mkdir /app/config
 RUN  mkdir /app/log
 COPY README.md /app
 COPY CHANGELOG.md /app
-COPY LICENCE /app
+COPY LICENSE /app
 COPY config/configuration.template.yaml /app
 COPY config/secrets.template.yaml /app
 
