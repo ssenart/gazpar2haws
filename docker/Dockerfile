@@ -12,6 +12,8 @@ WORKDIR /app
 
 COPY pyproject.toml ./
 COPY poetry.lock ./
+COPY README.md ./
+COPY LICENSE ./
 
 COPY gazpar2haws/ /app/gazpar2haws
 
