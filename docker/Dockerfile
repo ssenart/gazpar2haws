@@ -48,6 +48,9 @@ RUN  chmod +x /app/entrypoint.sh
 COPY gazpar2haws/ /app/gazpar2haws
 RUN  mkdir /app/config
 RUN  mkdir /app/log
+COPY README.md /app
+COPY CHANGELOG.md /app
+COPY LICENSE /app
 COPY config/configuration.template.yaml /app
 COPY config/secrets.template.yaml /app
 
