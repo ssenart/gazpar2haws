@@ -78,6 +78,8 @@ jobs:
       # Checkout repo
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-tags: true
 
       #----------------------------------------------
       # Set the package version
