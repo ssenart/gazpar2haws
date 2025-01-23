@@ -16,7 +16,7 @@ Gazpar2HAWS can be installed in many ways.
 
 ### 1. Home Assistant Add-on
 
-In the **Add-on store**, click **⋮ → Repositories**, fill in **`https://github.com/ssenart/gazpar2haws`** and click **Add → Close** or click the **Add repository** button below, click **Add → Close** (You might need to enter the **internal IP address** of your Home Assistant instance first).  
+In the **Add-on store**, click **⋮ → Repositories**, fill in **`https://github.com/ssenart/gazpar2haws`** and click **Add → Close** or click the **Add repository** button below, click **Add → Close** (You might need to enter the **internal IP address** of your Home Assistant instance first).
 
 [![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fssenart%2Fgazpar2haws)
 
@@ -31,11 +31,11 @@ The following steps permits to run a container from an existing image available 
 ```yaml
 services:
   gazpar2haws:
-    image: ssenart/gazpar2haws:latest  
+    image: ssenart/gazpar2haws:latest
     container_name: gazpar2haws
     restart: unless-stopped
     network_mode: bridge
-    user: "1000:1000"    
+    user: "1000:1000"
     volumes:
       - ./gazpar2haws/config:/app/config
       - ./gazpar2haws/log:/app/log
@@ -50,6 +50,7 @@ services:
 Edit the environment variable section according to your setup.
 
 2. Run the container:
+
 ```sh
 $ docker compose up -d
 ```
@@ -76,27 +77,33 @@ $ pip install gazpar2haws
 The following steps permit to build the Docker image based on the local source files.
 
 1. Clone the repo locally:
+
 ```sh
 $ cd /path/to/my_install_folder/
 
 $ git clone https://github.com/ssenart/gazpar2haws.git
 ```
+
 2. Edit the docker-compose.yaml file by setting the environment variables corresponding to your GrDF account and Home Assistant setup:
 
 ```yaml
-    environment:
-      - GRDF_USERNAME=<GrDF account username>
-      - GRDF_PASSWORD=<GrDF account password>
-      - GRDF_PCE_IDENTIFIER=<GrDF PCE meter identifier>
-      - HOMEASSISTANT_HOST=<Home Assistant instance host name>
-      - HOMEASSISTANT_PORT=<Home Assistant instance port number>
-      - HOMEASSISTANT_TOKEN=<Home Assistant access token>
+environment:
+  - GRDF_USERNAME=<GrDF account username>
+  - GRDF_PASSWORD=<GrDF account password>
+  - GRDF_PCE_IDENTIFIER=<GrDF PCE meter identifier>
+  - HOMEASSISTANT_HOST=<Home Assistant instance host name>
+  - HOMEASSISTANT_PORT=<Home Assistant instance port number>
+  - HOMEASSISTANT_TOKEN=<Home Assistant access token>
 ```
+
 3. Build the image:
+
 ```sh
 $ docker compose -f docker/docker-compose.yaml build
 ```
+
 4. Run the container:
+
 ```sh
 $ docker compose -f docker/docker-compose.yaml up -d
 ```
@@ -135,18 +142,18 @@ logging:
   file: log/gazpar2haws.log
   console: true
   level: debug
-  format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
+  format: "%(asctime)s %(levelname)s [%(name)s] %(message)s"
 
 grdf:
   scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-  - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_ids: sensor.${name}_volume and sensor.${name}_energy.
-    username: "!secret grdf.username"
-    password: "!secret grdf.password"
-    pce_identifier: "!secret grdf.pce_identifier"
-    timezone: Europe/Paris
-    last_days: 365 # Number of days of data to retrieve
-    reset: false # If true, the data will be reset before the first data retrieval
+    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_ids: sensor.${name}_volume and sensor.${name}_energy.
+      username: "!secret grdf.username"
+      password: "!secret grdf.password"
+      pce_identifier: "!secret grdf.pce_identifier"
+      timezone: Europe/Paris
+      last_days: 365 # Number of days of data to retrieve
+      reset: false # If true, the data will be reset before the first data retrieval
 
 homeassistant:
   host: "!secret homeassistant.host"
@@ -167,8 +174,9 @@ homeassistant.token: ${HA_TOKEN}
 ```
 
 The history is uploaded on the entities with names:
-- sensor.${name}_volume: Volume history in m³.
-- sensor.${name}_energy: Energy history in kWh.
+
+- sensor.${name}\_volume: Volume history in m³.
+- sensor.${name}\_energy: Energy history in kWh.
 
 `${name}` is 'gazpar2haws' defined in the above configuration file. It can be replaced by any other name.
 
@@ -176,16 +184,16 @@ The history is uploaded on the entities with names:
 
 In a Docker environment, the configurations files are instantiated by replacing the environment variables below in the template files:
 
-| Environment variable | Description | Required | Default value |
-|---|---|---|---|
-| GRDF_USERNAME  |  GrDF account user name  | Yes | - |
-| GRDF_PASSWORD  |  GrDF account password (avoid using special characters) | Yes | - |
-| GRDF_PCE_IDENTIFIER  | GrDF meter PCE identifier  | Yes | - |
-| GRDF_SCAN_INTERVAL  | Period in minutes to refresh meter data (0 means one single refresh and stop) | No | 480 (8 hours) |
-| GRDF_LAST_DAYS | Number of days of history data to retrieve  | No | 1095 (3 years) |
-| HOMEASSISTANT_HOST  | Home Assistant instance host name  | Yes | - |
-| HOMEASSISTANT_PORT  | Home Assistant instance port number  | No | 8123 |
-| HOMEASSISTANT_TOKEN  | Home Assistant access token  | Yes | - |
+| Environment variable | Description                                                                   | Required | Default value  |
+| -------------------- | ----------------------------------------------------------------------------- | -------- | -------------- |
+| GRDF_USERNAME        | GrDF account user name                                                        | Yes      | -              |
+| GRDF_PASSWORD        | GrDF account password (avoid using special characters)                        | Yes      | -              |
+| GRDF_PCE_IDENTIFIER  | GrDF meter PCE identifier                                                     | Yes      | -              |
+| GRDF_SCAN_INTERVAL   | Period in minutes to refresh meter data (0 means one single refresh and stop) | No       | 480 (8 hours)  |
+| GRDF_LAST_DAYS       | Number of days of history data to retrieve                                    | No       | 1095 (3 years) |
+| HOMEASSISTANT_HOST   | Home Assistant instance host name                                             | Yes      | -              |
+| HOMEASSISTANT_PORT   | Home Assistant instance port number                                           | No       | 8123           |
+| HOMEASSISTANT_TOKEN  | Home Assistant access token                                                   | Yes      | -              |
 
 You can setup them directly in a docker-compose.yaml file (environment section) or from a Docker command line (-e option).
 
@@ -236,6 +244,3 @@ Please make sure to update tests as appropriate.
 ## Project status
 
 Gazpar2HAWS has been initiated for integration with [Home Assistant](https://www.home-assistant.io/) energy dashboard.
-
-
-

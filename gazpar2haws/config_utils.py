@@ -4,7 +4,7 @@ import yaml
 
 
 class ConfigLoader:
-    def __init__(self, config_file="config.yaml", secrets_file="secrets.yaml"):
+    def __init__(self, config_file: str, secrets_file: str):
         self.config_file = config_file
         self.secrets_file = secrets_file
         self.config = {}
@@ -13,6 +13,8 @@ class ConfigLoader:
 
     def load_secrets(self):
         """Load the secrets file."""
+        if self.secrets_file is None:
+            return
         if os.path.exists(self.secrets_file):
             with open(self.secrets_file, "r", encoding="utf-8") as file:
                 self.secrets = yaml.safe_load(file)
