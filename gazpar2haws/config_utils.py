@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 import yaml
 
@@ -7,8 +8,8 @@ class ConfigLoader:
     def __init__(self, config_file: str, secrets_file: str):
         self.config_file = config_file
         self.secrets_file = secrets_file
-        self.config = {}
-        self.secrets = {}
+        self.config = dict[str, Any]()
+        self.secrets = dict[str, Any]()
         self.raw_config = None
 
     def load_secrets(self):
