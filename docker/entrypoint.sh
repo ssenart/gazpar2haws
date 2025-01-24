@@ -38,4 +38,5 @@ fi
 
 # Run the gazpar2haws python program
 cd /app
-python3 -m gazpar2haws
+
+python3 -m gazpar2haws --config config/configuration.yaml --secrets config/secrets.yaml
