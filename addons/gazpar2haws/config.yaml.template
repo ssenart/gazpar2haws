@@ -12,20 +12,22 @@ arch:
 homeassistant_api: true
 hassio_api: true
 options:
-  grdf:
-    scan_interval: 480 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
-    username: ""
-    password: ""
-    pce_identifier: ""
-    timezone: "Europe/Paris"
-    last_days: 365 # Number of days of data to retrieve.
-    reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
+  scan_interval: 480 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  devices:
+    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+      username: "" # Email address used to connect to the GrDF website.
+      password: "" # Password used to connect to the GrDF website.
+      pce_identifier: "" # PCE identifier of the meter. It should be a positive integer.
+      timezone: "Europe/Paris" # Timezone of the data. It should be the same as the Home Assistant timezone.
+      last_days: 365 # Number of days of data to retrieve
+      reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
 schema:
-  grdf:
-    scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
-    username: str
-    password: str
-    pce_identifier: str
-    timezone: str?
-    last_days: int? # Number of days of data to retrieve.
-    reset: bool? # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
+  scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  devices:
+    - name: str # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+      username: email # Email address used to connect to the GrDF website.
+      password: password # Password used to connect to the GrDF website.
+      pce_identifier: match(^0|[1-9][0-9]*$) # PCE identifier of the meter. It should be a positive integer.
+      timezone: str? # Timezone of the data. It should be the same as the Home Assistant timezone.
+      last_days: int? # Number of days of data to retrieve.
+      reset: bool? # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
