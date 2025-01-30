@@ -18,3 +18,173 @@ homeassistant:
   host: "!secret homeassistant.host"
   port: "!secret homeassistant.port"
   token: "!secret homeassistant.token"
+
+pricing:
+  value_added_tax:
+    reduced:
+      - date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+        rate: 0.0550
+    standard:
+      - date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+        rate: 0.20
+  consumption:
+    - date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      price: 0.07790
+      price_unit: "€"
+      quantity_unit: "kWh"
+      vat: level_1
+    - date: "2023-07-01"
+      price: 0.05392
+    - date: "2023-08-01"
+      price: 0.05568
+    - date: "2023-09-01"
+      price: 0.05412
+    - date: "2023-10-01"
+      price: 0.06333
+    - date: "2023-11-01"
+      price: 0.06716
+    - date: "2023-12-01"
+      price: 0.07235
+    - date: "2024-01-01"
+      price: 0.06888
+    - date: "2024-02-01"
+      price: 0.05972  
+    - date: "2024-03-01"
+      price: 0.05506
+    - date: "2024-04-01"
+      price: 0.04842
+    - date: "2025-01-01"
+      price: 0.07807
+  subscription:
+    - date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      price: 19.83
+      price_unit: "€"
+      time_unit: "month"
+      vat: level_2
+    - date: "2023-07-01"
+      price: 20.36
+  transport:
+    - date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      price: 34.38
+      price_unit: "€"
+      time_unit: "year"
+      vat: level_1
+  energy_taxes:
+    - date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      price: 0.00837
+      price_unit: "€"
+      quantity_unit: "kWh"
+      vat: level_2
+    - date: "2024-01-01"
+      price: 0.01637
+
+prices: # Cost formula: cost = consumption * (consumption_price * (1 + consumption_vat) + energy_taxes * (1 + energy_taxes_vat)) + subscription * subscription_vat.
+  - date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.07790 # Consumption price in € per kWh (excluding VAT).
+    subscription: 19.83 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.00837 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.
+  - date: "2023-07-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.05392 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.00837 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.
+  - date: "2023-08-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.05568 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.00837 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.
+  - date: "2023-09-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.05412 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.00837 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.         
+  - date: "2023-10-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.06333 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.00837 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.
+  - date: "2023-11-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.06716 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.00837 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.       
+  - date: "2023-12-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.07235 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.00837 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.        
+  - date: "2024-01-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.06888 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.01637 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.
+  - date: "2024-02-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.05972 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.01637 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.     
+  - date: "2024-03-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.05506 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.01637 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.
+  - date: "2024-04-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.04842 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.01637 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.
+
+  - date: "2025-01-01" # Date of the price. Format is "YYYY-MM-DD".
+    consumption: 0.07807 # Consumption price in € per kWh (excluding VAT).
+    subscription: 20.36 # Subscription price in € per month (excluding VAT).
+    transport: 34.38 # Transport price in € per year (excluding VAT).
+    energy_taxes: 0.01637 # Taxes in € per kWh.
+    consumption_vat: 0.0550 # VAT rate on consumption.
+    subscription_vat: 0.20 # VAT rate on subscription.
+    transport_vat: 0.0550 # VAT rate on transport.
+    energy_taxes_vat: 0.20 # VAT rate on energy taxes.      

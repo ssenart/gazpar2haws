@@ -1,12 +1,15 @@
 import logging
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Any
 
 import pygazpar  # type: ignore
 import pytz
 
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
+
+from gazpar2haws.model import ConsumptionQuantityArray, QuantityUnit
+
 
 Logger = logging.getLogger(__name__)
 
@@ -118,6 +121,8 @@ class Gazpar:
         await self._publish_entity(
             volume_sensor_name, pygazpar.PropertyName.VOLUME.value, "m³"
         )
+
+        # Publish energy sensor
         await self._publish_entity(
             energy_sensor_name, pygazpar.PropertyName.ENERGY.value, "kWh"
         )
@@ -160,16 +165,16 @@ class Gazpar:
         total = last_value
         for reading in daily:
             # Parse date format DD/MM/YYYY into datetime.
-            date = datetime.strptime(
+            reading_date = datetime.strptime(
                 reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y"
             )
 
             # Set the timezone
-            date = timezone.localize(date)
+            reading_date = timezone.localize(reading_date)
 
             # Skip all readings before the last statistic date.
-            if date <= last_date:
-                Logger.debug(f"Skip date: {date} <= {last_date}")
+            if reading_date <= last_date:
+                Logger.debug(f"Skip date: {reading_date} <= {last_date}")
                 continue
 
             # Compute the total volume and energy
@@ -177,11 +182,11 @@ class Gazpar:
                 total += reading[property_name]
             else:
                 Logger.warning(
-                    f"Missing property {property_name} for date {date}. Skipping..."
+                    f"Missing property {property_name} for date {reading_date}. Skipping..."
                 )
                 continue
 
-            statistics.append({"start": date.isoformat(), "state": total, "sum": total})
+            statistics.append({"start": reading_date.isoformat(), "state": total, "sum": total})
 
         # Publish statistics to Home Assistant
         try:
@@ -193,6 +198,56 @@ class Gazpar:
                 f"Error while importing statistics to Home Assistant: {traceback.format_exc()}"
             )
             raise
+
+    # ----------------------------------
+    # Get the consumption quantities.
+    def get_consumption_quantities(self, start_date: date, end_date: date) -> ConsumptionQuantityArray:
+
+        # Instantiate the right data source.
+        data_source = self._create_data_source()
+
+        # Initialize PyGazpar client
+        client = pygazpar.Client(data_source)
+
+        try:
+            data = client.loadDateRange(
+                pceIdentifier=self._pce_identifier,
+                startDate=start_date,
+                endDate=end_date,
+                frequencies=[pygazpar.Frequency.DAILY],
+            )
+        except Exception:  # pylint: disable=broad-except
+            Logger.warning(
+                f"Error while fetching data from GrDF: {traceback.format_exc()}"
+            )
+            data = {}
+
+        # Fill the quantity array.
+        quantities = ConsumptionQuantityArray(start_date=start_date, end_date=end_date, quantity_unit=QuantityUnit.KWH)
+        daily = data.get(pygazpar.Frequency.DAILY.value)
+        for reading in daily:
+            # Parse date format DD/MM/YYYY into datetime.
+            reading_date = datetime.strptime(
+                reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y"
+            ).date()
+
+            # Skip all readings before the start date.
+            if reading_date < start_date:
+                Logger.debug(f"Skip date: {reading_date} < {start_date}")
+                continue
+
+            # Skip all readings after the end date.
+            if reading_date > end_date:
+                Logger.debug(f"Skip date: {reading_date} > {end_date}")
+                continue
+
+            if quantities.quantity_array is None:
+                raise ValueError("Quantity array is not initialized")
+
+            # Fill the quantity array.
+            quantities.quantity_array[reading_date] = reading[pygazpar.PropertyName.ENERGY.value]
+
+        return quantities
 
     # ----------------------------------
     # Create the data source.

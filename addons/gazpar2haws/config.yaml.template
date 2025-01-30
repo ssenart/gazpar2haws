@@ -14,7 +14,7 @@ hassio_api: true
 options:
   scan_interval: 480 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.{{name}}.
       username: "" # Email address used to connect to the GrDF website.
       password: "" # Password used to connect to the GrDF website.
       pce_identifier: "" # PCE identifier of the meter. It should be a positive integer.
@@ -24,7 +24,7 @@ options:
 schema:
   scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-    - name: str # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+    - name: str # Name of the device in home assistant. It will be used as the entity_id: sensor.{{name}}.
       username: email # Email address used to connect to the GrDF website.
       password: password # Password used to connect to the GrDF website.
       pce_identifier: match(^0|[1-9][0-9]*$) # PCE identifier of the meter. It should be a positive integer.

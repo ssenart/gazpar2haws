@@ -8,7 +8,6 @@ from gazpar2haws import __main__
 
 
 # ----------------------------------
-# @pytest.mark.skip(reason="Requires Home Assistant server")
 @pytest.mark.asyncio
 async def test_main():
 

@@ -6,6 +6,8 @@ from gazpar2haws import config_utils
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
 
+from datetime import date
+
 
 # ----------------------------------
 class TestGazpar:
@@ -51,3 +53,15 @@ class TestGazpar:
         await gazpar.publish()
 
         await self._haws.disconnect()
+
+    # ----------------------------------
+    def test_get_consumption_quantities(self):
+
+        gazpar = Gazpar(self._grdf_device_config, self._haws)
+
+        start_date = date(2024, 1, 1)
+        end_date = date(2024, 1, 31)
+
+        consumption_quantities = gazpar.get_consumption_quantities(start_date, end_date)
+
+        assert consumption_quantities is not None
