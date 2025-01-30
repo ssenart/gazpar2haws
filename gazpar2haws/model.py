@@ -5,6 +5,8 @@ from pydantic import BaseModel, model_validator
 
 from gazpar2haws.date_array import DateArray
 
+from typing import Optional
+
 
 class TimeUnit(str, Enum):
     HOUR = "hour"
@@ -52,12 +54,12 @@ class VATRateRepository(BaseModel):
 class ConsumptionQuantityArray(BaseModel):
     start_date: date
     end_date: date
-    quantity_array: DateArray | None = None
+    quantity_array: Optional[DateArray] = None
     quantity_unit: QuantityUnit
 
     @model_validator(mode="after")
     def set_quantity_array(self):
-        self.quantity_array = DateArray(_start_date=self.start_date, _end_date=self.end_date)
+        self.quantity_array = DateArray(start_date=self.start_date, end_date=self.end_date)
         return self
 
 

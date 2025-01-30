@@ -6,12 +6,19 @@ import numpy as np
 
 from pydantic import BaseModel, model_validator
 
+from typing import Optional
+
 
 class DateArray(BaseModel):
 
     start_date: dt.date
     end_date: dt.date
-    array: np.ndarray | None = None
+    array: Optional[np.ndarray] = None
+
+    class Config:
+
+        # allow pydantic external types.
+        arbitrary_types_allowed = True
 
     @model_validator(mode="after")
     def set_array(self):
