@@ -14,6 +14,7 @@ class DateArray(BaseModel):
     start_date: dt.date
     end_date: dt.date
     array: Optional[np.ndarray] = None
+    initial_value: Optional[float] = None
 
     class Config:
 
@@ -22,7 +23,10 @@ class DateArray(BaseModel):
 
     @model_validator(mode="after")
     def set_array(self):
-        self.array = np.zeros((self.end_date - self.start_date).days + 1)
+        if self.initial_value is not None:
+            self.array = np.full((self.end_date - self.start_date).days + 1, self.initial_value)
+        else:
+            self.array = np.zeros((self.end_date - self.start_date).days + 1)
         return self
 
     def get(self, date: dt.date) -> float:
@@ -33,10 +37,12 @@ class DateArray(BaseModel):
         return self.array[(date - self.start_date).days]
 
     @overload
-    def __getitem__(self, date: dt.date) -> float: ...
+    def __getitem__(self, date: dt.date) -> float:
+        ...
 
     @overload
-    def __getitem__(self, date_slice: slice) -> np.ndarray: ...
+    def __getitem__(self, date_slice: slice) -> np.ndarray:
+        ...
 
     def __getitem__(self, key):
         if isinstance(key, dt.date):
@@ -47,10 +53,12 @@ class DateArray(BaseModel):
             raise TypeError("Key must be a date or a slice of dates")
 
     @overload
-    def __setitem__(self, date: dt.date, value: float): ...
+    def __setitem__(self, date: dt.date, value: float):
+        ...
 
     @overload
-    def __setitem__(self, date_slice: slice, value: float): ...
+    def __setitem__(self, date_slice: slice, value: float):
+        ...
 
     def __setitem__(self, key, value: float):
 

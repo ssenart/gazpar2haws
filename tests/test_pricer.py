@@ -2,19 +2,21 @@
 
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.pricer import Pricer
+from gazpar2haws.model import ConsumptionQuantityArray, DateArray
 
 from datetime import date
+
 
 # ----------------------------------
 class TestPricer:
 
     # ----------------------------------
     def setup_method(self):
-        
+
         # Load configuration
         config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")
 
-        self._pricer = Pricer(config.pricing)
+        self._pricer = Pricer(config.pricing)  # pylint: disable=W0201
 
     # ----------------------------------
     def test_get_consumption_price_array_inside(self):
@@ -134,3 +136,25 @@ class TestPricer:
         assert len(consumption_price_array.price_array) == 5
         assert consumption_price_array.price_array[start_date] == 0.07807
         assert consumption_price_array.price_array[end_date] == 0.07807
+
+    # ----------------------------------
+    def test_compute(self):
+        
+        start_date = date(2023, 8, 20)
+        end_date = date(2023, 8, 25)
+
+        quantities = ConsumptionQuantityArray(
+            start_date=start_date,
+            end_date=end_date,
+            quantity_unit="kWh",
+            quantity_array=DateArray(start_date=start_date, end_date=end_date, initial_value=1.0)
+        )
+
+        cost_array = self._pricer.compute(quantities)
+
+        assert cost_array.start_date == start_date
+        assert cost_array.end_date == end_date
+        assert cost_array.cost_unit == "€"
+        assert len(cost_array.cost_array) == 6
+        assert cost_array.cost_array[start_date] == 5.568
+        assert cost_array.cost_array[end_date] == 11.136
