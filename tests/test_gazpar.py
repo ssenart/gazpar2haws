@@ -59,8 +59,8 @@ class TestGazpar:
 
         gazpar = Gazpar(self._grdf_device_config, self._haws)
 
-        start_date = date(2024, 1, 1)
-        end_date = date(2024, 1, 31)
+        start_date = date(2019, 6, 1)
+        end_date = date(2019, 6, 30)
 
         consumption_quantities = gazpar.get_consumption_quantities(start_date, end_date)
 

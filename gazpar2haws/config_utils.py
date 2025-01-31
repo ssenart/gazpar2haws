@@ -57,5 +57,8 @@ class ConfigLoader:
         except (KeyError, TypeError):
             return default
 
+    def dict(self) -> dict:
+        return self.config
+
     def dumps(self) -> str:
         return yaml.dump(self.raw_config)
