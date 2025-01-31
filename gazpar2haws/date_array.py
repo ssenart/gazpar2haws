@@ -6,7 +6,7 @@ import numpy as np
 
 from pydantic import BaseModel, model_validator
 
-from typing import Optional
+from typing import Optional, overload
 
 
 class DateArray(BaseModel):
@@ -32,16 +32,34 @@ class DateArray(BaseModel):
 
         return self.array[(date - self.start_date).days]
 
-    def __getitem__(self, date: dt.date) -> float:
+    @overload
+    def __getitem__(self, date: dt.date) -> float: ...
 
-        return self.get(date)
+    @overload
+    def __getitem__(self, date_slice: slice) -> np.ndarray: ...
 
-    def __setitem__(self, date: dt.date, value: float):
+    def __getitem__(self, key):
+        if isinstance(key, dt.date):
+            return self.get(key)
+        elif isinstance(key, slice):
+            return self.array[(key.start - self.start_date).days:(key.stop - self.start_date).days + 1]
+        else:
+            raise TypeError("Key must be a date or a slice of dates")
 
-        if self.array is None:
-            raise ValueError("Array is not initialized")
+    @overload
+    def __setitem__(self, date: dt.date, value: float): ...
 
-        self.array[(date - self.start_date).days] = value
+    @overload
+    def __setitem__(self, date_slice: slice, value: float): ...
+
+    def __setitem__(self, key, value: float):
+
+        if isinstance(key, dt.date):
+            self.array[(key - self.start_date).days] = value
+        elif isinstance(key, slice):
+            self.array[(key.start - self.start_date).days:(key.stop - self.start_date).days + 1] = value
+        else:
+            raise TypeError("Key must be a date or a slice of dates")
 
     def __len__(self) -> int:
 

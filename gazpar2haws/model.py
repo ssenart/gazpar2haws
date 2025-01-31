@@ -1,30 +1,11 @@
 from datetime import date
-from enum import Enum
 
 from pydantic import BaseModel, model_validator
 
 from gazpar2haws.date_array import DateArray
+from gazpar2haws.configuration import PriceUnit, QuantityUnit, TimeUnit
 
 from typing import Optional
-
-
-class TimeUnit(str, Enum):
-    HOUR = "hour"
-    DAY = "day"
-    MONTH = "month"
-    YEAR = "year"
-
-
-class PriceUnit(str, Enum):
-    EURO = "€"
-    CENT = "¢"
-
-
-class QuantityUnit(str, Enum):
-    KWH = "kWh"
-    WH = "Wh"
-    M3 = "m³"
-    LITER = "l"
 
 
 class Flow(BaseModel):
@@ -63,13 +44,18 @@ class ConsumptionQuantityArray(BaseModel):
         return self
 
 
-class ConsumptionPrice(BaseModel):
+class ConsumptionPriceArray(BaseModel):
     start_date: date
     end_date: date
-    price: float
+    price_array: Optional[DateArray] = None
     price_unit: PriceUnit
     quantity_unit: QuantityUnit
-    vat_level: VATRate
+    vat_id: str
+
+    @model_validator(mode="after")
+    def set_quantity_array(self):
+        self.quantity_array = DateArray(start_date=self.start_date, end_date=self.end_date)
+        return self
 
 
 class SubscriptionPrice(BaseModel):

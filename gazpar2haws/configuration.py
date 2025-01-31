@@ -1,9 +1,9 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, EmailStr, SecretStr
 from typing import Optional
 from datetime import date
-import yaml
 from enum import Enum
 from gazpar2haws import config_utils
+from gazpar2haws.date_array import DateArray
 
 
 class LoggingLevel(str, Enum):
@@ -44,6 +44,9 @@ class Device(BaseModel):
     name: str
     data_source: Optional[str] = None
     as_of_date: Optional[date] = None
+    username: Optional[EmailStr] = None
+    password: Optional[SecretStr] = None
+    pce_identifier: Optional[SecretStr] = None
     timezone: Optional[str] = "Europe/Paris"
     last_days: Optional[int] = 365
     reset: Optional[bool] = False
@@ -67,13 +70,25 @@ class Rate(BaseModel):
     rate: float
 
 
-class ConsumptionPrice(BaseModel):
+class Consumption(BaseModel):
     start_date: date
     end_date: Optional[date] = None
-    price: float
-    price_unit: Optional[PriceUnit] = PriceUnit.EURO
-    quantity_unit: Optional[QuantityUnit] = QuantityUnit.KWH
+    price_unit: PriceUnit = PriceUnit.EURO
+    quantity_unit: QuantityUnit = QuantityUnit.KWH
     vat_id: Optional[str] = None
+
+
+class ConsumptionPrice(Consumption):
+    price: float
+
+
+class ConsumptionPriceArray(Consumption):
+    price_array: Optional[DateArray] = None
+
+    @model_validator(mode="after")
+    def set_price_array(self):
+        self.price_array = DateArray(start_date=self.start_date, end_date=self.end_date)  # pylint: disable=attribute-defined-outside-init
+        return self
 
 
 class SubscriptionPrice(BaseModel):
