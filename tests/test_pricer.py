@@ -1,10 +1,12 @@
 """Test pricer module."""
 
-from gazpar2haws.configuration import Configuration
-from gazpar2haws.pricer import Pricer
-from gazpar2haws.model import ConsumptionQuantityArray, DateArray, PriceUnit, QuantityUnit, TimeUnit
-
+import math
 from datetime import date
+
+from gazpar2haws.configuration import Configuration
+from gazpar2haws.model import (ConsumptionQuantityArray, DateArray, PriceUnit,
+                               QuantityUnit, TimeUnit)
+from gazpar2haws.pricer import Pricer
 
 
 # ----------------------------------
@@ -24,7 +26,7 @@ class TestPricer:
         start_date = date(2023, 8, 20)
         end_date = date(2023, 8, 25)
 
-        consumption_price_array = self._pricer.get_consumption_price_array(start_date=start_date, end_date=end_date)
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -41,7 +43,7 @@ class TestPricer:
         start_date = date(2023, 8, 20)
         end_date = date(2023, 9, 5)
 
-        consumption_price_array = self._pricer.get_consumption_price_array(start_date=start_date, end_date=end_date)
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -58,7 +60,7 @@ class TestPricer:
         start_date = date(2023, 5, 25)
         end_date = date(2023, 6, 5)
 
-        consumption_price_array = self._pricer.get_consumption_price_array(start_date=start_date, end_date=end_date)
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -75,7 +77,7 @@ class TestPricer:
         start_date = date(2024, 12, 25)
         end_date = date(2025, 1, 5)
 
-        consumption_price_array = self._pricer.get_consumption_price_array(start_date=start_date, end_date=end_date)
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -92,7 +94,7 @@ class TestPricer:
         start_date = date(2023, 7, 20)
         end_date = date(2023, 9, 5)
 
-        consumption_price_array = self._pricer.get_consumption_price_array(start_date=start_date, end_date=end_date)
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -109,7 +111,7 @@ class TestPricer:
         start_date = date(2023, 5, 1)
         end_date = date(2023, 5, 5)
 
-        consumption_price_array = self._pricer.get_consumption_price_array(start_date=start_date, end_date=end_date)
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -126,7 +128,7 @@ class TestPricer:
         start_date = date(2025, 5, 1)
         end_date = date(2025, 5, 5)
 
-        consumption_price_array = self._pricer.get_consumption_price_array(start_date=start_date, end_date=end_date)
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -143,7 +145,7 @@ class TestPricer:
         start_date = date(2023, 8, 20)
         end_date = date(2023, 8, 25)
 
-        vat_rate_array_by_id = self._pricer.get_vat_rate_array_by_id(start_date=start_date, end_date=end_date)
+        vat_rate_array_by_id = Pricer.get_vat_rate_array_by_id(start_date=start_date, end_date=end_date, vat_rates=self._pricer.pricing_data().vat)
 
         assert len(vat_rate_array_by_id) == 2
         assert vat_rate_array_by_id.get("reduced") is not None
@@ -196,6 +198,21 @@ class TestPricer:
         assert self._pricer.get_convertion_factor(cent_per_day, cent_per_year, dt) == 365
 
     # ----------------------------------
+    def test_convert(self):
+
+        consumption_prices = self._pricer._pricing.consumption_prices  # pylint: disable=W0212
+
+        converted_prices = self._pricer.convert(consumption_prices, (PriceUnit.CENT, QuantityUnit.WH))
+
+        for i in range(len(consumption_prices) - 1):
+            consumption_price = consumption_prices[i]
+            converted_price = converted_prices[i]
+
+            assert converted_price.price_unit == PriceUnit.CENT
+            assert converted_price.base_unit == QuantityUnit.WH
+            assert converted_price.value == 0.1 * consumption_price.value
+
+    # ----------------------------------
     def test_compute(self):
 
         start_date = date(2023, 8, 20)
@@ -208,11 +225,11 @@ class TestPricer:
             quantity_array=DateArray(start_date=start_date, end_date=end_date, initial_value=1.0)
         )
 
-        cost_array = self._pricer.compute(quantities)
+        cost_array = self._pricer.compute(quantities, PriceUnit.EURO)
 
         assert cost_array.start_date == start_date
         assert cost_array.end_date == end_date
         assert cost_array.cost_unit == "€"
         assert len(cost_array.cost_array) == 6
-        assert cost_array.cost_array[start_date] == 5.568
-        assert cost_array.cost_array[end_date] == 11.136
+        assert math.isclose(cost_array.cost_array[start_date], 0.81501597, rel_tol=1e-6)
+        assert math.isclose(cost_array.cost_array[end_date], 0.81501597, rel_tol=1e-6)
