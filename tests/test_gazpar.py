@@ -65,3 +65,20 @@ class TestGazpar:
         consumption_quantities = gazpar.get_consumption_quantities(start_date, end_date)
 
         assert consumption_quantities is not None
+
+    # ----------------------------------
+    @pytest.mark.asyncio
+    async def test_push_date_array(self):
+
+        gazpar = Gazpar(self._grdf_device_config, self._haws)
+
+        await self._haws.connect()
+
+        start_date = date(2019, 6, 1)
+        end_date = date(2019, 6, 30)
+
+        consumption_quantities = gazpar.get_consumption_quantities(start_date, end_date)
+
+        await gazpar.push_date_array("sensor.gazpar2haws_test", consumption_quantities.value_unit, consumption_quantities.value_array, 1000000)
+
+        await self._haws.disconnect()

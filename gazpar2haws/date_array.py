@@ -29,6 +29,7 @@ class DateArray(BaseModel):
             self.array = np.zeros((self.end_date - self.start_date).days + 1)
         return self
 
+    # ----------------------------------
     def get(self, date: dt.date) -> float:
 
         if self.array is None:
@@ -36,6 +37,22 @@ class DateArray(BaseModel):
 
         return self.array[(date - self.start_date).days]
 
+    # ----------------------------------
+    def cumsum(self) -> DateArray:
+
+        if self.array is None:
+            raise ValueError("Array is not initialized")
+
+        result = DateArray(start_date=self.start_date, end_date=self.end_date)
+        result.array = np.cumsum(self.array)
+        return result
+
+    # ----------------------------------
+    def is_aligned_with(self, other: DateArray) -> bool:
+
+        return self.start_date == other.start_date and self.end_date == other.end_date and len(self) == len(other)  # pylint: disable=protected-access
+
+    # ----------------------------------
     @overload
     def __getitem__(self, index: int) -> float:
         ...
@@ -57,6 +74,7 @@ class DateArray(BaseModel):
             return self.array[(key.start - self.start_date).days:(key.stop - self.start_date).days + 1]        
         raise TypeError("Key must be a date or a slice of dates")
 
+    # ----------------------------------
     @overload
     def __setitem__(self, index: int, value: float):
         ...
@@ -81,6 +99,7 @@ class DateArray(BaseModel):
         else:
             raise TypeError("Key must be a date or a slice of dates")
 
+    # ----------------------------------
     def __len__(self) -> int:
 
         if self.array is None:
@@ -88,10 +107,22 @@ class DateArray(BaseModel):
 
         return len(self.array)
 
-    def is_aligned_with(self, other: DateArray) -> bool:
+    # ----------------------------------
+    def __iter__(self):
+        self._index = 0  # pylint: disable=attribute-defined-outside-init
+        return self
 
-        return self.start_date == other.start_date and self.end_date == other.end_date and len(self) == len(other)  # pylint: disable=protected-access
+    # ----------------------------------
+    def __next__(self):
+        if self._index < len(self.array):
+            current_date = self.start_date + dt.timedelta(days=self._index)
+            result = (current_date, self.array[self._index])
+            self._index += 1
+            return result
+        else:
+            raise StopIteration
 
+    # ----------------------------------
     @overload
     def __add__(self, other: DateArray) -> DateArray:
         ...
@@ -120,6 +151,7 @@ class DateArray(BaseModel):
 
         raise TypeError("Other must be a date array or a number")
 
+    # ----------------------------------
     @overload
     def __sub__(self, other: DateArray) -> DateArray:
         ...
@@ -148,6 +180,7 @@ class DateArray(BaseModel):
 
         raise TypeError("Other must be a date array or a number")
 
+    # ----------------------------------
     @overload
     def __mul__(self, other: DateArray) -> DateArray:
         ...
@@ -176,6 +209,7 @@ class DateArray(BaseModel):
 
         raise TypeError("Other must be a date array or a number")
 
+    # ----------------------------------
     @overload
     def __truediv__(self, other: DateArray) -> DateArray:
         ...
@@ -203,3 +237,8 @@ class DateArray(BaseModel):
             return result
 
         raise TypeError("Other must be a date array or a number")
+
+    # ----------------------------------
+    def __repr__(self) -> str:
+
+        return f"DateArray(start_date={self.start_date}, end_date={self.end_date}, array={self.array})"

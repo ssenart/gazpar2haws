@@ -9,6 +9,7 @@ import pytz
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
 
 from gazpar2haws.model import ConsumptionQuantityArray, QuantityUnit, TimeUnit
+from gazpar2haws.date_array import DateArray
 
 
 Logger = logging.getLogger(__name__)
@@ -248,6 +249,35 @@ class Gazpar:
             quantities.value_array[reading_date] = reading[pygazpar.PropertyName.ENERGY.value]
 
         return quantities
+
+    # ----------------------------------
+    # Push a date array to Home Assistant.
+    async def push_date_array(self, entity_id: str, unit_of_measurement: str, date_array: DateArray, initial_value: float):
+
+        # Compute the cumulative sum of the values.
+        total_array = date_array.cumsum() + initial_value
+
+        # Timezone
+        timezone = pytz.timezone(self._timezone)
+
+        # Fill the statistics.
+        statistics = []
+        for dt, total in total_array:
+            # Set the timezone            
+            date_time = datetime.combine(dt, datetime.min.time())
+            date_time = timezone.localize(date_time)
+            statistics.append({"start": date_time.isoformat(), "state": total, "sum": total})
+
+        # Publish statistics to Home Assistant
+        try:
+            await self._homeassistant.import_statistics(
+                entity_id, "recorder", "gazpar2haws", unit_of_measurement, statistics
+            )
+        except Exception:
+            Logger.warning(
+                f"Error while importing statistics to Home Assistant: {traceback.format_exc()}"
+            )
+            raise
 
     # ----------------------------------
     # Create the data source.
