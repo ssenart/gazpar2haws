@@ -121,9 +121,13 @@ BaseUnit = TypeVar('BaseUnit')
 
 
 # ----------------------------------
-class Price(BaseModel, Generic[ValueUnit, BaseUnit]):
-    price_unit: Optional[ValueUnit] = None
+class Unit(BaseModel, Generic[ValueUnit, BaseUnit]):
+    value_unit: Optional[ValueUnit] = None
     base_unit: Optional[BaseUnit] = None
+
+
+# ----------------------------------
+class Price(Unit[ValueUnit, BaseUnit]):
     vat_id: Optional[str] = None
 
 
@@ -181,8 +185,8 @@ class Pricing(BaseModel):
 
             if "start_date" not in prices[0]:
                 raise ValueError(f"Missing start_date in first element of {price_list}")
-            if "price_unit" not in prices[0]:
-                raise ValueError(f"Missing price_unit in first element of {price_list}")
+            if "value_unit" not in prices[0]:
+                raise ValueError(f"Missing value_unit in first element of {price_list}")
             if "base_unit" not in prices[0]:
                 raise ValueError(f"Missing base_unit in first element of {price_list}")
             if "vat_id" not in prices[0]:
@@ -191,8 +195,8 @@ class Pricing(BaseModel):
             for i in range(len(prices) - 1):
                 if "end_date" not in prices[i]:
                     prices[i]["end_date"] = prices[i + 1]["start_date"]
-                if "price_unit" not in prices[i + 1]:
-                    prices[i + 1]["price_unit"] = prices[i]["price_unit"]
+                if "value_unit" not in prices[i + 1]:
+                    prices[i + 1]["value_unit"] = prices[i]["value_unit"]
                 if "base_unit" not in prices[i + 1]:
                     prices[i + 1]["base_unit"] = prices[i]["base_unit"]
                 if "vat_id" not in prices[i + 1]:
@@ -202,24 +206,10 @@ class Pricing(BaseModel):
 
 
 # ----------------------------------
-class ConsumptionQuantityArray(BaseModel):
-    start_date: date
-    end_date: date
-    quantity_array: Optional[DateArray] = None
-    quantity_unit: QuantityUnit
-
-    @model_validator(mode="after")
-    def set_quantity_array(self):
-        if self.quantity_array is None:
-            self.quantity_array = DateArray(
-                start_date=self.start_date, end_date=self.end_date
-            )
-        return self
+class ConsumptionQuantityArray(Unit[QuantityUnit, TimeUnit], ValueArray):
+    pass
 
 
 # ----------------------------------
-class CostArray(BaseModel):
-    start_date: date
-    end_date: date
-    cost_array: Optional[DateArray] = None
-    cost_unit: PriceUnit
+class CostArray(Unit[PriceUnit, TimeUnit], ValueArray):
+    pass

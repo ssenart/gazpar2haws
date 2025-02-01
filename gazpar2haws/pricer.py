@@ -50,16 +50,22 @@ class Pricer:
 
         end_date = quantities.end_date
 
-        if quantities.quantity_array is None:
-            raise ValueError("quantities.quantity_array is None")
+        if quantities.value_array is None:
+            raise ValueError("quantities.value_array is None")
 
-        quantity_array = quantities.quantity_array
+        if quantities.value_unit is None:
+            raise ValueError("quantities.value_unit is None")
+
+        if quantities.base_unit is None:
+            raise ValueError("quantities.base_unit is None")
+
+        quantity_array = quantities.value_array
 
         # Convert all pricing data to the same unit as the quantities.
-        consumption_prices = Pricer.convert(self._pricing.consumption_prices, (price_unit, quantities.quantity_unit))
-        subscription_prices = Pricer.convert(self._pricing.subscription_prices, (price_unit, TimeUnit.DAY))
-        transport_prices = Pricer.convert(self._pricing.transport_prices, (price_unit, TimeUnit.DAY))
-        energy_taxes = Pricer.convert(self._pricing.energy_taxes, (price_unit, quantities.quantity_unit))
+        consumption_prices = Pricer.convert(self._pricing.consumption_prices, (price_unit, quantities.value_unit))
+        subscription_prices = Pricer.convert(self._pricing.subscription_prices, (price_unit, quantities.base_unit))
+        transport_prices = Pricer.convert(self._pricing.transport_prices, (price_unit, quantities.base_unit))
+        energy_taxes = Pricer.convert(self._pricing.energy_taxes, (price_unit, quantities.value_unit))
 
         # Transform to the vectorized form.
         vat_rate_array_by_id = self.get_vat_rate_array_by_id(
@@ -85,10 +91,11 @@ class Pricer:
         res = CostArray(
             start_date=start_date,
             end_date=end_date,
-            cost_unit=price_unit,
+            value_unit=price_unit,
+            base_unit=quantities.base_unit
         )
 
-        res.cost_array = quantity_array * (consumption_price_array.value_array + energy_taxes_price_array.value_array) + subscription_price_array.value_array + transport_price_array.value_array  # type: ignore
+        res.value_array = quantity_array * (consumption_price_array.value_array + energy_taxes_price_array.value_array) + subscription_price_array.value_array + transport_price_array.value_array  # type: ignore
 
         return res
 
@@ -132,7 +139,7 @@ class Pricer:
         res = ConsumptionPriceArray(
             start_date=start_date,
             end_date=end_date,
-            price_unit=first_consumption_price.price_unit,
+            value_unit=first_consumption_price.value_unit,
             base_unit=first_consumption_price.base_unit,
             vat_id=first_consumption_price.vat_id,
         )
@@ -157,7 +164,7 @@ class Pricer:
         res = SubscriptionPriceArray(
             start_date=start_date,
             end_date=end_date,
-            price_unit=first_subscription_price.price_unit,
+            value_unit=first_subscription_price.value_unit,
             base_unit=first_subscription_price.base_unit,
             vat_id=first_subscription_price.vat_id,
         )
@@ -182,7 +189,7 @@ class Pricer:
         res = TransportPriceArray(
             start_date=start_date,
             end_date=end_date,
-            price_unit=first_transport_price.price_unit,
+            value_unit=first_transport_price.value_unit,
             base_unit=first_transport_price.base_unit,
             vat_id=first_transport_price.vat_id,
         )
@@ -205,7 +212,7 @@ class Pricer:
         res = EnergyTaxesPriceArray(
             start_date=start_date,
             end_date=end_date,
-            price_unit=first_energy_taxes_price.price_unit,
+            value_unit=first_energy_taxes_price.value_unit,
             base_unit=first_energy_taxes_price.base_unit,
             vat_id=first_energy_taxes_price.vat_id,
         )
@@ -413,8 +420,8 @@ class Pricer:
 
         res = list[PriceValue[ValueUnit, BaseUnit]]()
         for price_value in price_values:
-            if price_value.price_unit is None:
-                raise ValueError("price_value.price_unit is None")
+            if price_value.value_unit is None:
+                raise ValueError("price_value.value_unit is None")
             if price_value.base_unit is None:
                 raise ValueError("price_value.base_unit is None")
 
@@ -423,9 +430,9 @@ class Pricer:
                     start_date=price_value.start_date,
                     end_date=price_value.end_date,
                     value=price_value.value * cls.get_convertion_factor(
-                        (price_value.price_unit, price_value.base_unit), to_unit, price_value.start_date  # type: ignore
+                        (price_value.value_unit, price_value.base_unit), to_unit, price_value.start_date  # type: ignore
                     ),
-                    price_unit=to_unit[0],
+                    value_unit=to_unit[0],
                     base_unit=to_unit[1],
                     vat_id=price_value.vat_id,
                 )

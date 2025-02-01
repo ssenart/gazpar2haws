@@ -30,7 +30,7 @@ class TestPricer:
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
-        assert consumption_price_array.price_unit == "€"
+        assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
         assert len(consumption_price_array.value_array) == 6
@@ -47,7 +47,7 @@ class TestPricer:
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
-        assert consumption_price_array.price_unit == "€"
+        assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
         assert len(consumption_price_array.value_array) == 17
@@ -64,7 +64,7 @@ class TestPricer:
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
-        assert consumption_price_array.price_unit == "€"
+        assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
         assert len(consumption_price_array.value_array) == 12
@@ -81,7 +81,7 @@ class TestPricer:
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
-        assert consumption_price_array.price_unit == "€"
+        assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
         assert len(consumption_price_array.value_array) == 12
@@ -98,7 +98,7 @@ class TestPricer:
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
-        assert consumption_price_array.price_unit == "€"
+        assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
         assert len(consumption_price_array.value_array) == 48
@@ -115,7 +115,7 @@ class TestPricer:
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
-        assert consumption_price_array.price_unit == "€"
+        assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
         assert len(consumption_price_array.value_array) == 5
@@ -132,7 +132,7 @@ class TestPricer:
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
-        assert consumption_price_array.price_unit == "€"
+        assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
         assert len(consumption_price_array.value_array) == 5
@@ -208,7 +208,7 @@ class TestPricer:
             consumption_price = consumption_prices[i]
             converted_price = converted_prices[i]
 
-            assert converted_price.price_unit == PriceUnit.CENT
+            assert converted_price.value_unit == PriceUnit.CENT
             assert converted_price.base_unit == QuantityUnit.WH
             assert converted_price.value == 0.1 * consumption_price.value
 
@@ -221,15 +221,17 @@ class TestPricer:
         quantities = ConsumptionQuantityArray(
             start_date=start_date,
             end_date=end_date,
-            quantity_unit="kWh",
-            quantity_array=DateArray(start_date=start_date, end_date=end_date, initial_value=1.0)
+            value_unit="kWh",
+            base_unit="day",
         )
+
+        quantities.value_array = DateArray(start_date=start_date, end_date=end_date, initial_value=1.0)
 
         cost_array = self._pricer.compute(quantities, PriceUnit.EURO)
 
         assert cost_array.start_date == start_date
         assert cost_array.end_date == end_date
-        assert cost_array.cost_unit == "€"
-        assert len(cost_array.cost_array) == 6
-        assert math.isclose(cost_array.cost_array[start_date], 0.81501597, rel_tol=1e-6)
-        assert math.isclose(cost_array.cost_array[end_date], 0.81501597, rel_tol=1e-6)
+        assert cost_array.value_unit == "€"
+        assert len(cost_array.value_array) == 6
+        assert math.isclose(cost_array.value_array[start_date], 0.81501597, rel_tol=1e-6)
+        assert math.isclose(cost_array.value_array[end_date], 0.81501597, rel_tol=1e-6)

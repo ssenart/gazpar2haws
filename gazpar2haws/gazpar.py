@@ -8,7 +8,7 @@ import pytz
 
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
 
-from gazpar2haws.model import ConsumptionQuantityArray, QuantityUnit
+from gazpar2haws.model import ConsumptionQuantityArray, QuantityUnit, TimeUnit
 
 
 Logger = logging.getLogger(__name__)
@@ -223,7 +223,7 @@ class Gazpar:
             data = {}
 
         # Fill the quantity array.
-        quantities = ConsumptionQuantityArray(start_date=start_date, end_date=end_date, quantity_unit=QuantityUnit.KWH)
+        quantities = ConsumptionQuantityArray(start_date=start_date, end_date=end_date, value_unit=QuantityUnit.KWH, base_unit=TimeUnit.DAY)
         daily = data.get(pygazpar.Frequency.DAILY.value)
         for reading in daily:
             # Parse date format DD/MM/YYYY into datetime.
@@ -241,11 +241,11 @@ class Gazpar:
                 Logger.debug(f"Skip date: {reading_date} > {end_date}")
                 continue
 
-            if quantities.quantity_array is None:
+            if quantities.value_array is None:
                 raise ValueError("Quantity array is not initialized")
 
             # Fill the quantity array.
-            quantities.quantity_array[reading_date] = reading[pygazpar.PropertyName.ENERGY.value]
+            quantities.value_array[reading_date] = reading[pygazpar.PropertyName.ENERGY.value]
 
         return quantities
 
