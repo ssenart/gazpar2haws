@@ -2,10 +2,12 @@ import calendar
 from datetime import date, timedelta
 
 from gazpar2haws.model import (ConsumptionPriceArray, ConsumptionQuantityArray,
-                               CostArray, EnergyTaxesPriceArray, Price,
-                               PriceArray, PriceUnit, Pricing, QuantityUnit,
+                               CostArray, EnergyTaxesPriceArray, Value,
+                               ValueArray, PriceUnit, Pricing, QuantityUnit,
                                SubscriptionPriceArray, TimeUnit,
-                               TransportPriceArray)
+                               TransportPriceArray, VatRate, VatRateArray, PriceValue, ValueUnit, BaseUnit)
+
+from typing import Optional, Tuple, overload
 
 
 class Pricer:
@@ -54,6 +56,29 @@ class Pricer:
         return res
 
     # ----------------------------------
+    def get_vat_rate_array_by_id(self, start_date: date, end_date: date) -> dict[str, VatRateArray]:
+
+        if self._pricing.vat is None or len(self._pricing.vat) == 0:
+            raise ValueError("self._pricing.vat is None or empty")
+
+        res = dict[str, VatRateArray]()
+        vat_rate_by_id = dict[str, list[VatRate]]()
+        for vat_rate in self._pricing.vat:
+            res[vat_rate.id] = VatRateArray(
+                id=vat_rate.id,
+                start_date=start_date,
+                end_date=end_date
+            )
+            if vat_rate.id not in vat_rate_by_id:
+                vat_rate_by_id[vat_rate.id] = list[VatRate]()
+            vat_rate_by_id[vat_rate.id].append(vat_rate)
+
+        for vat_id, vat_rates in vat_rate_by_id.items():
+            self._fill_value_array(res[vat_id], vat_rates)  # type: ignore
+
+        return res
+
+    # ----------------------------------
     def get_consumption_price_array(self, start_date: date, end_date: date) -> ConsumptionPriceArray:
 
         if self._pricing.consumption_prices is None or len(self._pricing.consumption_prices) == 0:
@@ -65,11 +90,11 @@ class Pricer:
             start_date=start_date,
             end_date=end_date,
             price_unit=first_consumption_price.price_unit,
-            quantity_unit=first_consumption_price.quantity_unit,
+            base_unit=first_consumption_price.base_unit,
             vat_id=first_consumption_price.vat_id
         )
 
-        self._fill_price_array(res, self._pricing.consumption_prices)  # type: ignore
+        self._fill_value_array(res, self._pricing.consumption_prices)  # type: ignore
 
         return res
 
@@ -85,11 +110,11 @@ class Pricer:
             start_date=start_date,
             end_date=end_date,
             price_unit=first_subscription_price.price_unit,
-            time_unit=first_subscription_price.time_unit,
+            base_unit=first_subscription_price.base_unit,
             vat_id=first_subscription_price.vat_id
         )
 
-        self._fill_price_array(res, self._pricing.subscription_prices)  # type: ignore
+        self._fill_value_array(res, self._pricing.subscription_prices)  # type: ignore
 
         return res
 
@@ -105,11 +130,11 @@ class Pricer:
             start_date=start_date,
             end_date=end_date,
             price_unit=first_transport_price.price_unit,
-            time_unit=first_transport_price.time_unit,
+            base_unit=first_transport_price.base_unit,
             vat_id=first_transport_price.vat_id
         )
 
-        self._fill_price_array(res, self._pricing.transport_prices)  # type: ignore
+        self._fill_value_array(res, self._pricing.transport_prices)  # type: ignore
 
         return res
 
@@ -125,68 +150,103 @@ class Pricer:
             start_date=start_date,
             end_date=end_date,
             price_unit=first_energy_taxes_price.price_unit,
-            quantity_unit=first_energy_taxes_price.quantity_unit,
+            base_unit=first_energy_taxes_price.base_unit,
             vat_id=first_energy_taxes_price.vat_id
         )
 
-        self._fill_price_array(res, self._pricing.energy_taxes)  # type: ignore
+        self._fill_value_array(res, self._pricing.energy_taxes)  # type: ignore
 
         return res
 
     # ----------------------------------
-    def _fill_price_array(self, out_price_array: PriceArray, in_prices: list[Price]) -> None:
+    def _fill_value_array(self, out_value_array: ValueArray, in_values: list[Value]) -> None:
 
-        if out_price_array is None:
-            raise ValueError("out_price_array is None")
+        if out_value_array is None:
+            raise ValueError("out_value_array is None")
 
-        if out_price_array.start_date is None:
-            raise ValueError("out_price_array.start_date is None")
+        if out_value_array.start_date is None:
+            raise ValueError("out_value_array.start_date is None")
 
-        start_date = out_price_array.start_date
+        start_date = out_value_array.start_date
 
-        if out_price_array.end_date is None:
-            raise ValueError("out_price_array.end_date is None")
+        if out_value_array.end_date is None:
+            raise ValueError("out_value_array.end_date is None")
 
-        end_date = out_price_array.end_date
+        end_date = out_value_array.end_date
 
-        if out_price_array.price_array is None:
-            raise ValueError("out_price_array.price_array is None")
+        if out_value_array.value_array is None:
+            raise ValueError("out_value_array.value_array is None")
 
-        price_array = out_price_array.price_array
+        value_array = out_value_array.value_array
 
-        if in_prices is None or len(in_prices) == 0:
-            raise ValueError("in_prices is None or empty")
+        if in_values is None or len(in_values) == 0:
+            raise ValueError("in_values is None or empty")
 
-        first_price = in_prices[0]
-        last_price = in_prices[-1]
+        first_value = in_values[0]
+        last_value = in_values[-1]
 
-        if first_price.start_date > end_date:
-            # Fully before first price period.
-            price_array[start_date:end_date] = first_price.price  # type: ignore
-        elif last_price.end_date is not None and last_price.end_date < start_date:
-            # Fully after last price period.
-            price_array[start_date:end_date] = last_price.price  # type: ignore
+        if first_value.start_date > end_date:
+            # Fully before first value period.
+            value_array[start_date:end_date] = first_value.value  # type: ignore
+        elif last_value.end_date is not None and last_value.end_date < start_date:
+            # Fully after last value period.
+            value_array[start_date:end_date] = last_value.value  # type: ignore
         else:
-            if start_date < first_price.start_date:
-                # Partially before first price period.
-                price_array[start_date:first_price.start_date] = first_price.price  # type: ignore
-            if last_price.end_date is not None and end_date > last_price.end_date:
-                # Partially after last price period.
-                price_array[last_price.end_date:end_date] = last_price.price  # type: ignore
-            # Inside price periods.
-            for price in in_prices:
-                latest_start = max(price.start_date, start_date)
-                earliest_end = min(price.end_date if price.end_date is not None else end_date, end_date)
+            if start_date < first_value.start_date:
+                # Partially before first value period.
+                value_array[start_date:first_value.start_date] = first_value.value  # type: ignore
+            if last_value.end_date is not None and end_date > last_value.end_date:
+                # Partially after last value period.
+                value_array[last_value.end_date:end_date] = last_value.value  # type: ignore
+            # Inside value periods.
+            for value in in_values:
+                latest_start = max(value.start_date, start_date)
+                earliest_end = min(value.end_date if value.end_date is not None else end_date, end_date)
                 current_date = latest_start
                 while current_date <= earliest_end:
-                    price_array[current_date] = price.price
+                    value_array[current_date] = value.value
                     current_date += timedelta(days=1)
 
     # ----------------------------------
-    def convert_price_with_price_unit(self, price: float, from_price_unit: PriceUnit, to_price_unit: PriceUnit) -> float:
+    def get_time_unit_convertion_factor(self, from_time_unit: TimeUnit, to_time_unit: TimeUnit, dt: date) -> float:
+
+        if from_time_unit == to_time_unit:
+            return 1.0
+
+        def days_in_month(year: int, month: int) -> int:
+            return calendar.monthrange(year, month)[1]
+
+        def days_in_year(year: int) -> int:
+            return 366 if calendar.isleap(year) else 365
+
+        if from_time_unit == TimeUnit.MONTH or to_time_unit == TimeUnit.MONTH:
+            switcher = {
+                TimeUnit.DAY: 1.0 / days_in_month(dt.year, dt.month),
+                TimeUnit.WEEK: 7.0 / days_in_month(dt.year, dt.month),
+                TimeUnit.MONTH: 1.0,
+                TimeUnit.YEAR: 12.0,
+            }
+        else:
+            switcher = {
+                TimeUnit.DAY: 1.0,
+                TimeUnit.WEEK: 7.0,
+                TimeUnit.MONTH: days_in_month(dt.year, dt.month),
+                TimeUnit.YEAR: days_in_year(dt.year),
+            }
+
+        if from_time_unit not in switcher:
+            raise ValueError(f"from_time_unit {from_time_unit} not in switcher")
+
+        if to_time_unit not in switcher:
+            raise ValueError(f"to_time_unit {to_time_unit} not in switcher")
+
+        return switcher[to_time_unit] / switcher[from_time_unit]
+
+    # ----------------------------------
+    def get_price_unit_convertion_factor(self, from_price_unit: PriceUnit, to_price_unit: PriceUnit) -> float:
 
         if from_price_unit == to_price_unit:
-            return price
+            return 1.0
 
         switcher = {
             PriceUnit.EURO: 1.0,
@@ -199,13 +259,13 @@ class Pricer:
         if to_price_unit not in switcher:
             raise ValueError(f"to_price_unit {to_price_unit} not in switcher")
 
-        return price * switcher.get(from_price_unit) / switcher.get(to_price_unit)
+        return switcher[to_price_unit] / switcher[from_price_unit]
 
     # ----------------------------------
-    def convert_quantity(self, quantity: float, from_quantity_unit: QuantityUnit, to_quantity_unit: QuantityUnit) -> float:
+    def get_quantity_unit_convertion_factor(self, from_quantity_unit: QuantityUnit, to_quantity_unit: QuantityUnit) -> float:
 
         if from_quantity_unit == to_quantity_unit:
-            return quantity
+            return 1.0
 
         switcher = {
             QuantityUnit.WH: 1.0,
@@ -219,31 +279,25 @@ class Pricer:
         if to_quantity_unit not in switcher:
             raise ValueError(f"to_quantity_unit {to_quantity_unit} not in switcher")
 
-        return quantity * switcher.get(from_quantity_unit) / switcher.get(to_quantity_unit)
+        return switcher[to_quantity_unit] / switcher[from_quantity_unit]
 
     # ----------------------------------
-    def convert_price_with_time_unit(self, price: float, from_time_unit: TimeUnit, to_time_unit: TimeUnit, dt: date) -> float:
+    @overload
+    def get_convertion_factor(self, from_unit: Tuple[PriceUnit, QuantityUnit], to_unit: Tuple[PriceUnit, QuantityUnit], dt: Optional[date] = None) -> float:
+        ...
 
-        if from_time_unit == to_time_unit:
-            return price
+    @overload
+    def get_convertion_factor(self, from_unit: Tuple[PriceUnit, TimeUnit], to_unit: Tuple[PriceUnit, TimeUnit], dt: Optional[date] = None) -> float:
+        ...
 
-        def days_in_month(year: int, month: int) -> int:
-            return calendar.monthrange(year, month)[1]
-
-        def days_in_year(year: int) -> int:
-            return 366 if calendar.isleap(year) else 365
-
-        switcher = {
-            TimeUnit.DAY: 1.0,
-            TimeUnit.WEEK: 7.0,
-            TimeUnit.MONTH: days_in_month(dt.year, dt.month),
-            TimeUnit.YEAR: days_in_year(dt.year),
-        }
-
-        if from_time_unit not in switcher:
-            raise ValueError(f"from_time_unit {from_time_unit} not in switcher")
-
-        if to_time_unit not in switcher:
-            raise ValueError(f"to_time_unit {to_time_unit} not in switcher")
-
-        return price * switcher[from_time_unit] / switcher[to_time_unit]
+    def get_convertion_factor(self, from_unit, to_unit, dt: Optional[date] = None) -> float:
+        if type(from_unit) is not type(to_unit):
+            raise ValueError(f"from_unit {from_unit} and to_unit {to_unit} must be of the same type")
+        if isinstance(from_unit, tuple) and isinstance(from_unit[0], PriceUnit) and isinstance(from_unit[1], QuantityUnit):
+            return self.get_price_unit_convertion_factor(from_unit[0], to_unit[0]) * self.get_quantity_unit_convertion_factor(from_unit[1], to_unit[1])
+        elif isinstance(from_unit, tuple) and isinstance(from_unit[0], PriceUnit) and isinstance(from_unit[1], TimeUnit):
+            if dt is None:
+                raise ValueError(f"dt must not be None when from_unit {from_unit} and to_unit {to_unit} are of type Tuple[PriceUnit, TimeUnit]")
+            return self.get_price_unit_convertion_factor(from_unit[0], to_unit[0]) * self.get_time_unit_convertion_factor(from_unit[1], to_unit[1], dt)
+        else:
+            raise ValueError(f"from_unit {from_unit} and to_unit {to_unit} must be of type Tuple[PriceUnit, QuantityUnit] or Tuple[PriceUnit, TimeUnit]")

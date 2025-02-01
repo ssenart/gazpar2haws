@@ -2,7 +2,7 @@
 
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.pricer import Pricer
-from gazpar2haws.model import ConsumptionQuantityArray, DateArray
+from gazpar2haws.model import ConsumptionQuantityArray, DateArray, PriceUnit, QuantityUnit, TimeUnit
 
 from datetime import date
 
@@ -29,11 +29,11 @@ class TestPricer:
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.price_unit == "€"
-        assert consumption_price_array.quantity_unit == "kWh"
+        assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
-        assert len(consumption_price_array.price_array) == 6
-        assert consumption_price_array.price_array[start_date] == 0.05568
-        assert consumption_price_array.price_array[end_date] == 0.05568
+        assert len(consumption_price_array.value_array) == 6
+        assert consumption_price_array.value_array[start_date] == 0.05568
+        assert consumption_price_array.value_array[end_date] == 0.05568
 
     # ----------------------------------
     def test_get_consumption_price_array_accross_middle(self):
@@ -46,11 +46,11 @@ class TestPricer:
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.price_unit == "€"
-        assert consumption_price_array.quantity_unit == "kWh"
+        assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
-        assert len(consumption_price_array.price_array) == 17
-        assert consumption_price_array.price_array[start_date] == 0.05568
-        assert consumption_price_array.price_array[end_date] == 0.05412
+        assert len(consumption_price_array.value_array) == 17
+        assert consumption_price_array.value_array[start_date] == 0.05568
+        assert consumption_price_array.value_array[end_date] == 0.05412
 
     # ----------------------------------
     def test_get_consumption_price_array_accross_start(self):
@@ -63,11 +63,11 @@ class TestPricer:
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.price_unit == "€"
-        assert consumption_price_array.quantity_unit == "kWh"
+        assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
-        assert len(consumption_price_array.price_array) == 12
-        assert consumption_price_array.price_array[start_date] == 0.07790
-        assert consumption_price_array.price_array[end_date] == 0.07790
+        assert len(consumption_price_array.value_array) == 12
+        assert consumption_price_array.value_array[start_date] == 0.07790
+        assert consumption_price_array.value_array[end_date] == 0.07790
 
     # ----------------------------------
     def test_get_consumption_price_array_accross_end(self):
@@ -80,11 +80,11 @@ class TestPricer:
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.price_unit == "€"
-        assert consumption_price_array.quantity_unit == "kWh"
+        assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
-        assert len(consumption_price_array.price_array) == 12
-        assert consumption_price_array.price_array[start_date] == 0.04842
-        assert consumption_price_array.price_array[end_date] == 0.07807
+        assert len(consumption_price_array.value_array) == 12
+        assert consumption_price_array.value_array[start_date] == 0.04842
+        assert consumption_price_array.value_array[end_date] == 0.07807
 
     # ----------------------------------
     def test_get_consumption_price_array_outside(self):
@@ -97,11 +97,11 @@ class TestPricer:
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.price_unit == "€"
-        assert consumption_price_array.quantity_unit == "kWh"
+        assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
-        assert len(consumption_price_array.price_array) == 48
-        assert consumption_price_array.price_array[start_date] == 0.05392
-        assert consumption_price_array.price_array[end_date] == 0.05412
+        assert len(consumption_price_array.value_array) == 48
+        assert consumption_price_array.value_array[start_date] == 0.05392
+        assert consumption_price_array.value_array[end_date] == 0.05412
 
     # ----------------------------------
     def test_get_consumption_price_array_before(self):
@@ -114,11 +114,11 @@ class TestPricer:
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.price_unit == "€"
-        assert consumption_price_array.quantity_unit == "kWh"
+        assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
-        assert len(consumption_price_array.price_array) == 5
-        assert consumption_price_array.price_array[start_date] == 0.07790
-        assert consumption_price_array.price_array[end_date] == 0.07790
+        assert len(consumption_price_array.value_array) == 5
+        assert consumption_price_array.value_array[start_date] == 0.07790
+        assert consumption_price_array.value_array[end_date] == 0.07790
 
     # ----------------------------------
     def test_get_consumption_price_array_after(self):
@@ -131,15 +131,73 @@ class TestPricer:
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.price_unit == "€"
-        assert consumption_price_array.quantity_unit == "kWh"
+        assert consumption_price_array.base_unit == "kWh"
         assert consumption_price_array.vat_id == "reduced"
-        assert len(consumption_price_array.price_array) == 5
-        assert consumption_price_array.price_array[start_date] == 0.07807
-        assert consumption_price_array.price_array[end_date] == 0.07807
+        assert len(consumption_price_array.value_array) == 5
+        assert consumption_price_array.value_array[start_date] == 0.07807
+        assert consumption_price_array.value_array[end_date] == 0.07807
+
+    # ----------------------------------
+    def test_get_vat_rate_array_by_id(self):
+
+        start_date = date(2023, 8, 20)
+        end_date = date(2023, 8, 25)
+
+        vat_rate_array_by_id = self._pricer.get_vat_rate_array_by_id(start_date=start_date, end_date=end_date)
+
+        assert len(vat_rate_array_by_id) == 2
+        assert vat_rate_array_by_id.get("reduced") is not None
+        assert vat_rate_array_by_id.get("standard") is not None
+        assert vat_rate_array_by_id.get("reduced").start_date == start_date
+        assert vat_rate_array_by_id.get("reduced").end_date == end_date
+        assert len(vat_rate_array_by_id.get("reduced").value_array) == 6
+        assert vat_rate_array_by_id.get("reduced").value_array[start_date] == 0.055
+        assert vat_rate_array_by_id.get("reduced").value_array[end_date] == 0.055
+        assert vat_rate_array_by_id.get("standard").start_date == start_date
+        assert vat_rate_array_by_id.get("standard").end_date == end_date
+        assert len(vat_rate_array_by_id.get("standard").value_array) == 6
+        assert vat_rate_array_by_id.get("standard").value_array[start_date] == 0.2
+        assert vat_rate_array_by_id.get("standard").value_array[end_date] == 0.2
+
+    # ----------------------------------
+    def test_get_convertion_factor(self):
+
+        dt = date(2023, 8, 20)
+
+        euro_per_kwh = (PriceUnit.EURO, QuantityUnit.KWH)
+        cent_per_kwh = (PriceUnit.CENT, QuantityUnit.KWH)
+        euro_per_mwh = (PriceUnit.EURO, QuantityUnit.MWH)
+        cent_per_mwh = (PriceUnit.CENT, QuantityUnit.MWH)
+
+        euro_per_year = (PriceUnit.EURO, TimeUnit.YEAR)
+        cent_per_year = (PriceUnit.CENT, TimeUnit.YEAR)
+        euro_per_month = (PriceUnit.EURO, TimeUnit.MONTH)
+        cent_per_month = (PriceUnit.CENT, TimeUnit.MONTH)
+        euro_per_day = (PriceUnit.EURO, TimeUnit.DAY)
+        cent_per_day = (PriceUnit.CENT, TimeUnit.DAY)
+
+        assert self._pricer.get_convertion_factor(euro_per_kwh, euro_per_kwh) == 1.0
+        assert self._pricer.get_convertion_factor(euro_per_kwh, cent_per_kwh) == 100.0
+        assert self._pricer.get_convertion_factor(cent_per_kwh, euro_per_kwh) == 0.01
+
+        assert self._pricer.get_convertion_factor(euro_per_kwh, euro_per_mwh) == 1000.0
+        assert self._pricer.get_convertion_factor(euro_per_mwh, euro_per_kwh) == 0.001
+
+        assert self._pricer.get_convertion_factor(cent_per_mwh, euro_per_kwh) == 0.00001
+
+        assert self._pricer.get_convertion_factor(euro_per_year, euro_per_month, dt) == 1 / 12
+        assert self._pricer.get_convertion_factor(euro_per_month, euro_per_year, dt) == 12
+        assert self._pricer.get_convertion_factor(euro_per_year, euro_per_day, dt) == 1 / 365
+        assert self._pricer.get_convertion_factor(euro_per_day, euro_per_year, dt) == 365
+
+        assert self._pricer.get_convertion_factor(cent_per_year, cent_per_month, dt) == 1 / 12
+        assert self._pricer.get_convertion_factor(cent_per_month, cent_per_year, dt) == 12
+        assert self._pricer.get_convertion_factor(cent_per_year, cent_per_day, dt) == 1 / 365
+        assert self._pricer.get_convertion_factor(cent_per_day, cent_per_year, dt) == 365
 
     # ----------------------------------
     def test_compute(self):
-        
+
         start_date = date(2023, 8, 20)
         end_date = date(2023, 8, 25)
 

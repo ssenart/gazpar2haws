@@ -6,7 +6,10 @@ from pydantic import BaseModel, EmailStr, SecretStr, model_validator
 
 from gazpar2haws.date_array import DateArray
 
+from typing import Generic, TypeVar
 
+
+# ----------------------------------
 class LoggingLevel(str, Enum):
     DEBUG = "debug"
     INFO = "info"
@@ -15,6 +18,7 @@ class LoggingLevel(str, Enum):
     CRITICAL = "critical"
 
 
+# ----------------------------------
 class TimeUnit(str, Enum):
     DAY = "day"
     WEEK = "week"
@@ -22,11 +26,13 @@ class TimeUnit(str, Enum):
     YEAR = "year"
 
 
+# ----------------------------------
 class PriceUnit(str, Enum):
     EURO = "€"
     CENT = "¢"
 
 
+# ----------------------------------
 class QuantityUnit(str, Enum):
     MWH = "MWh"
     KWH = "kWh"
@@ -35,6 +41,7 @@ class QuantityUnit(str, Enum):
     LITER = "l"
 
 
+# ----------------------------------
 class Logging(BaseModel):
     file: str
     console: bool
@@ -42,6 +49,7 @@ class Logging(BaseModel):
     format: str
 
 
+# ----------------------------------
 class Device(BaseModel):
     name: str
     data_source: Optional[str] = None
@@ -54,11 +62,13 @@ class Device(BaseModel):
     reset: Optional[bool] = False
 
 
+# ----------------------------------
 class Grdf(BaseModel):
     scan_interval: Optional[int] = 480
     devices: list[Device]
 
 
+# ----------------------------------
 class HomeAssistant(BaseModel):
     host: str
     port: int
@@ -66,112 +76,132 @@ class HomeAssistant(BaseModel):
     token: str
 
 
+# ----------------------------------
 class Period(BaseModel):
     start_date: date
     end_date: Optional[date] = None
 
 
-class Rate(Period):
-    rate: float
+# ----------------------------------
+class Value(Period):
+    value: float
 
 
-class Price(Period):
-    price: float
-
-
-class PriceArray(Period):
-    price_array: Optional[DateArray] = None
-
-
-class Consumption(BaseModel):
-    price_unit: PriceUnit = PriceUnit.EURO
-    quantity_unit: QuantityUnit = QuantityUnit.KWH
-    vat_id: Optional[str] = None
-
-
-class ConsumptionPrice(Consumption, Price):
-    pass
-
-
-class ConsumptionPriceArray(Consumption, PriceArray):
+# ----------------------------------
+class ValueArray(Period):
+    value_array: Optional[DateArray] = None
 
     @model_validator(mode="after")
-    def set_price_array(self):
-        self.price_array = DateArray(start_date=self.start_date, end_date=self.end_date)  # pylint: disable=attribute-defined-outside-init
+    def set_value_array(self):
+        self.value_array = DateArray(
+            start_date=self.start_date, end_date=self.end_date
+        )  # pylint: disable=attribute-defined-outside-init
         return self
 
 
-class Subscription(BaseModel):
-    price_unit: Optional[PriceUnit] = PriceUnit.EURO
-    time_unit: Optional[TimeUnit] = TimeUnit.MONTH
-    vat_id: Optional[str] = None
+# ----------------------------------
+class Vat(BaseModel):
+    id: str
 
 
-class SubscriptionPrice(Subscription, Price):
+# ----------------------------------
+class VatRate(Vat, Value):
     pass
 
 
-class SubscriptionPriceArray(Subscription, PriceArray):
-
-    @model_validator(mode="after")
-    def set_price_array(self):
-        self.price_array = DateArray(start_date=self.start_date, end_date=self.end_date)  # pylint: disable=attribute-defined-outside-init
-        return self
-
-
-class Transport(BaseModel):
-    price_unit: Optional[PriceUnit] = PriceUnit.EURO
-    time_unit: Optional[TimeUnit] = TimeUnit.YEAR
-    vat_id: Optional[str] = None
-
-
-class TransportPrice(Transport, Price):
+# ----------------------------------
+class VatRateArray(Vat, ValueArray):
     pass
 
 
-class TransportPriceArray(Transport, PriceArray):
-
-    @model_validator(mode="after")
-    def set_price_array(self):
-        self.price_array = DateArray(start_date=self.start_date, end_date=self.end_date)  # pylint: disable=attribute-defined-outside-init
-        return self
+# ----------------------------------
+# Define type variables
+ValueUnit = TypeVar('ValueUnit')
+BaseUnit = TypeVar('BaseUnit')
 
 
-class EnergyTaxes(BaseModel):
-    price_unit: Optional[PriceUnit] = PriceUnit.EURO
-    quantity_unit: Optional[QuantityUnit] = QuantityUnit.KWH
+# ----------------------------------
+class Price(BaseModel, Generic[ValueUnit, BaseUnit]):
+    price_unit: Optional[ValueUnit] = None
+    base_unit: Optional[BaseUnit] = None
     vat_id: Optional[str] = None
 
 
-class EnergyTaxesPrice(EnergyTaxes, Price):
+# ----------------------------------
+class PriceValue(Price[ValueUnit, BaseUnit], Value):
     pass
 
 
-class EnergyTaxesPriceArray(EnergyTaxes, PriceArray):
-
-    @model_validator(mode="after")
-    def set_price_array(self):
-        self.price_array = DateArray(start_date=self.start_date, end_date=self.end_date)  # pylint: disable=attribute-defined-outside-init
-        return self
+# ----------------------------------
+class PriceValueArray(Price[ValueUnit, BaseUnit], ValueArray):
+    pass
 
 
+# ----------------------------------
+class ConsumptionPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):
+    pass
+
+
+# ----------------------------------
+class SubscriptionPriceArray(PriceValueArray[PriceUnit, TimeUnit]):
+    pass
+
+
+# ----------------------------------
+class TransportPriceArray(PriceValueArray[PriceUnit, TimeUnit]):
+    pass
+
+
+# ----------------------------------
+class EnergyTaxesPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):
+    pass
+
+
+# ----------------------------------
 class Pricing(BaseModel):
-    value_added_tax: dict[str, list[Rate]]
-    consumption_prices: list[ConsumptionPrice]
-    subscription_prices: list[SubscriptionPrice]
-    transport_prices: list[TransportPrice]
-    energy_taxes: list[EnergyTaxesPrice]
+    vat: list[VatRate]
+    consumption_prices: list[PriceValue[PriceUnit, QuantityUnit]]
+    subscription_prices: list[PriceValue[PriceUnit, TimeUnit]]
+    transport_prices: list[PriceValue[PriceUnit, TimeUnit]]
+    energy_taxes: list[PriceValue[PriceUnit, QuantityUnit]]
 
     @model_validator(mode="before")
     @classmethod
-    def set_end_dates(cls, values):
-        for price_list in ['consumption_prices', 'subscription_prices', 'transport_prices', 'energy_taxes']:
+    def propagates_properties(cls, values):
+        for price_list in [
+            "consumption_prices",
+            "subscription_prices",
+            "transport_prices",
+            "energy_taxes",
+        ]:
             prices = values.get(price_list, [])
+
+            if len(prices) == 0:
+                continue
+
+            if "start_date" not in prices[0]:
+                raise ValueError(f"Missing start_date in first element of {price_list}")
+            if "price_unit" not in prices[0]:
+                raise ValueError(f"Missing price_unit in first element of {price_list}")
+            if "base_unit" not in prices[0]:
+                raise ValueError(f"Missing base_unit in first element of {price_list}")
+            if "vat_id" not in prices[0]:
+                raise ValueError(f"Missing vat_id in first element of {price_list}")
+
             for i in range(len(prices) - 1):
-                prices[i]['end_date'] = prices[i + 1]['start_date']
+                if "end_date" not in prices[i]:
+                    prices[i]["end_date"] = prices[i + 1]["start_date"]
+                if "price_unit" not in prices[i + 1]:
+                    prices[i + 1]["price_unit"] = prices[i]["price_unit"]
+                if "base_unit" not in prices[i + 1]:
+                    prices[i + 1]["base_unit"] = prices[i]["base_unit"]
+                if "vat_id" not in prices[i + 1]:
+                    prices[i + 1]["vat_id"] = prices[i]["vat_id"]
+
         return values
 
 
+# ----------------------------------
 class ConsumptionQuantityArray(BaseModel):
     start_date: date
     end_date: date
@@ -181,13 +211,15 @@ class ConsumptionQuantityArray(BaseModel):
     @model_validator(mode="after")
     def set_quantity_array(self):
         if self.quantity_array is None:
-            self.quantity_array = DateArray(start_date=self.start_date, end_date=self.end_date)
+            self.quantity_array = DateArray(
+                start_date=self.start_date, end_date=self.end_date
+            )
         return self
 
 
+# ----------------------------------
 class CostArray(BaseModel):
     start_date: date
     end_date: date
     cost_array: Optional[DateArray] = None
     cost_unit: PriceUnit
-
