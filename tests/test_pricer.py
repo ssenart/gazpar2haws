@@ -5,7 +5,7 @@ from datetime import date
 
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.model import (ConsumptionQuantityArray, DateArray, PriceUnit,
-                               QuantityUnit, TimeUnit)
+                               QuantityUnit, TimeUnit, VatRateArray)
 from gazpar2haws.pricer import Pricer
 
 
@@ -26,7 +26,12 @@ class TestPricer:
         start_date = date(2023, 8, 20)
         end_date = date(2023, 8, 25)
 
-        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+        }
+
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -43,7 +48,12 @@ class TestPricer:
         start_date = date(2023, 8, 20)
         end_date = date(2023, 9, 5)
 
-        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+        }
+
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -60,7 +70,12 @@ class TestPricer:
         start_date = date(2023, 5, 25)
         end_date = date(2023, 6, 5)
 
-        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+        }
+
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -77,7 +92,12 @@ class TestPricer:
         start_date = date(2024, 12, 25)
         end_date = date(2025, 1, 5)
 
-        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+        }
+
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -94,7 +114,12 @@ class TestPricer:
         start_date = date(2023, 7, 20)
         end_date = date(2023, 9, 5)
 
-        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+        }
+
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -111,7 +136,12 @@ class TestPricer:
         start_date = date(2023, 5, 1)
         end_date = date(2023, 5, 5)
 
-        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+        }
+
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -128,7 +158,12 @@ class TestPricer:
         start_date = date(2025, 5, 1)
         end_date = date(2025, 5, 5)
 
-        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices)
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+        }
+
+        consumption_price_array = Pricer.get_consumption_price_array(start_date=start_date, end_date=end_date, consumption_prices=self._pricer.pricing_data().consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id)
 
         assert consumption_price_array.start_date == start_date
         assert consumption_price_array.end_date == end_date
@@ -233,5 +268,5 @@ class TestPricer:
         assert cost_array.end_date == end_date
         assert cost_array.value_unit == "€"
         assert len(cost_array.value_array) == 6
-        assert math.isclose(cost_array.value_array[start_date], 0.81501597, rel_tol=1e-6)
-        assert math.isclose(cost_array.value_array[end_date], 0.81501597, rel_tol=1e-6)
+        assert math.isclose(cost_array.value_array[start_date], 0.95628776, rel_tol=1e-6)
+        assert math.isclose(cost_array.value_array[end_date], 0.95628776, rel_tol=1e-6)

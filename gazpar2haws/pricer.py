@@ -73,19 +73,19 @@ class Pricer:
         )
 
         consumption_price_array = self.get_consumption_price_array(
-            start_date=start_date, end_date=end_date, consumption_prices=consumption_prices
+            start_date=start_date, end_date=end_date, consumption_prices=consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id
         )
 
         subscription_price_array = self.get_subscription_price_array(
-            start_date=start_date, end_date=end_date, subscription_prices=subscription_prices
+            start_date=start_date, end_date=end_date, subscription_prices=subscription_prices, vat_rate_array_by_id=vat_rate_array_by_id
         )
 
         transport_price_array = self.get_transport_price_array(
-            start_date=start_date, end_date=end_date, transport_prices=transport_prices
+            start_date=start_date, end_date=end_date, transport_prices=transport_prices, vat_rate_array_by_id=vat_rate_array_by_id
         )
 
         energy_taxes_price_array = self.get_energy_taxes_price_array(
-            start_date=start_date, end_date=end_date, energy_taxes_prices=energy_taxes
+            start_date=start_date, end_date=end_date, energy_taxes_prices=energy_taxes, vat_rate_array_by_id=vat_rate_array_by_id
         )
 
         res = CostArray(
@@ -126,7 +126,7 @@ class Pricer:
     # ----------------------------------
     @classmethod
     def get_consumption_price_array(
-        cls, start_date: date, end_date: date, consumption_prices: list[PriceValue[PriceUnit, QuantityUnit]]
+        cls, start_date: date, end_date: date, consumption_prices: list[PriceValue[PriceUnit, QuantityUnit]], vat_rate_array_by_id: dict[str, VatRateArray]
     ) -> ConsumptionPriceArray:
 
         if (
@@ -144,14 +144,14 @@ class Pricer:
             vat_id=first_consumption_price.vat_id,
         )
 
-        cls._fill_value_array(res, consumption_prices)  # type: ignore
+        cls._fill_price_array(res, consumption_prices, vat_rate_array_by_id)  # type: ignore
 
         return res
 
     # ----------------------------------
     @classmethod
     def get_subscription_price_array(
-        cls, start_date: date, end_date: date, subscription_prices: list[PriceValue[PriceUnit, TimeUnit]]
+        cls, start_date: date, end_date: date, subscription_prices: list[PriceValue[PriceUnit, TimeUnit]], vat_rate_array_by_id: dict[str, VatRateArray]
     ) -> SubscriptionPriceArray:
 
         if (
@@ -169,14 +169,14 @@ class Pricer:
             vat_id=first_subscription_price.vat_id,
         )
 
-        cls._fill_value_array(res, subscription_prices)  # type: ignore
+        cls._fill_price_array(res, subscription_prices, vat_rate_array_by_id)  # type: ignore
 
         return res
 
     # ----------------------------------
     @classmethod
     def get_transport_price_array(
-        cls, start_date: date, end_date: date, transport_prices: list[PriceValue[PriceUnit, TimeUnit]]
+        cls, start_date: date, end_date: date, transport_prices: list[PriceValue[PriceUnit, TimeUnit]], vat_rate_array_by_id: dict[str, VatRateArray]
     ) -> TransportPriceArray:
 
         if (
@@ -194,14 +194,14 @@ class Pricer:
             vat_id=first_transport_price.vat_id,
         )
 
-        cls._fill_value_array(res, transport_prices)  # type: ignore
+        cls._fill_price_array(res, transport_prices, vat_rate_array_by_id)  # type: ignore
 
         return res
 
     # ----------------------------------
     @classmethod
     def get_energy_taxes_price_array(
-        cls, start_date: date, end_date: date, energy_taxes_prices: list[PriceValue[PriceUnit, QuantityUnit]]
+        cls, start_date: date, end_date: date, energy_taxes_prices: list[PriceValue[PriceUnit, QuantityUnit]], vat_rate_array_by_id: dict[str, VatRateArray]
     ) -> EnergyTaxesPriceArray:
 
         if energy_taxes_prices is None or len(energy_taxes_prices) == 0:
@@ -217,7 +217,7 @@ class Pricer:
             vat_id=first_energy_taxes_price.vat_id,
         )
 
-        cls._fill_value_array(res, energy_taxes_prices)  # type: ignore
+        cls._fill_price_array(res, energy_taxes_prices, vat_rate_array_by_id)  # type: ignore
 
         return res
 
@@ -273,6 +273,60 @@ class Pricer:
                 current_date = latest_start
                 while current_date <= earliest_end:
                     value_array[current_date] = value.value
+                    current_date += timedelta(days=1)
+
+    # ----------------------------------
+    @classmethod
+    def _fill_price_array(
+        cls, out_value_array: ValueArray, in_values: list[PriceValue], vat_rate_array_by_id: dict[str, VatRateArray]
+    ) -> None:
+
+        if out_value_array is None:
+            raise ValueError("out_value_array is None")
+
+        if out_value_array.start_date is None:
+            raise ValueError("out_value_array.start_date is None")
+
+        start_date = out_value_array.start_date
+
+        if out_value_array.end_date is None:
+            raise ValueError("out_value_array.end_date is None")
+
+        end_date = out_value_array.end_date
+
+        if out_value_array.value_array is None:
+            raise ValueError("out_value_array.value_array is None")
+
+        value_array = out_value_array.value_array
+
+        if in_values is None or len(in_values) == 0:
+            raise ValueError("in_values is None or empty")
+
+        first_value = in_values[0]
+        last_value = in_values[-1]
+
+        if first_value.start_date > end_date:
+            # Fully before first value period.
+            value_array[start_date:end_date] = first_value.value * (1 + vat_rate_array_by_id[first_value.vat_id].value_array[start_date:end_date])  # type: ignore
+        elif last_value.end_date is not None and last_value.end_date < start_date:
+            # Fully after last value period.
+            value_array[start_date:end_date] = last_value.value * (1 + vat_rate_array_by_id[last_value.vat_id].value_array[start_date:end_date])  # type: ignore
+        else:
+            if start_date < first_value.start_date:
+                # Partially before first value period.
+                value_array[start_date:first_value.start_date] = first_value.value * (1 + vat_rate_array_by_id[first_value.vat_id].value_array[start_date:first_value.start_date])  # type: ignore
+            if last_value.end_date is not None and end_date > last_value.end_date:
+                # Partially after last value period.
+                value_array[last_value.end_date:end_date] = last_value.value * (1 + vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date:end_date])  # type: ignore
+            # Inside value periods.
+            for value in in_values:
+                latest_start = max(value.start_date, start_date)
+                earliest_end = min(
+                    value.end_date if value.end_date is not None else end_date, end_date
+                )
+                current_date = latest_start
+                while current_date <= earliest_end:
+                    value_array[current_date] = value.value * (1 + vat_rate_array_by_id[value.vat_id].value_array[current_date])  # type: ignore
                     current_date += timedelta(days=1)
 
     # ----------------------------------

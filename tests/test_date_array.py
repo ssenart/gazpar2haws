@@ -35,3 +35,13 @@ def test_date_array():
     date_array8 = date_array / date_array4
 
     assert len(date_array8) == 31
+
+    date_array9 = date_array + 1
+
+    for i in range(31):
+        assert date_array9[i] == 1
+
+    date_array10 = date_array9 * 5
+
+    for i in range(31):
+        assert date_array10[i] == 5

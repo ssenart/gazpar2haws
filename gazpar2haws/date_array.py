@@ -37,6 +37,10 @@ class DateArray(BaseModel):
         return self.array[(date - self.start_date).days]
 
     @overload
+    def __getitem__(self, index: int) -> float:
+        ...
+
+    @overload
     def __getitem__(self, date: dt.date) -> float:
         ...
 
@@ -45,12 +49,17 @@ class DateArray(BaseModel):
         ...
 
     def __getitem__(self, key):
+        if isinstance(key, int):
+            return self.array[key]
         if isinstance(key, dt.date):
             return self.get(key)
-        elif isinstance(key, slice):
-            return self.array[(key.start - self.start_date).days:(key.stop - self.start_date).days + 1]
-        else:
-            raise TypeError("Key must be a date or a slice of dates")
+        if isinstance(key, slice):
+            return self.array[(key.start - self.start_date).days:(key.stop - self.start_date).days + 1]        
+        raise TypeError("Key must be a date or a slice of dates")
+
+    @overload
+    def __setitem__(self, index: int, value: float):
+        ...
 
     @overload
     def __setitem__(self, date: dt.date, value: float):
@@ -61,8 +70,11 @@ class DateArray(BaseModel):
         ...
 
     def __setitem__(self, key, value: float):
-
-        if isinstance(key, dt.date):
+        if self.array is None:
+            raise ValueError("Array is not initialized")
+        if isinstance(key, int):
+            self.array[key] = value
+        elif isinstance(key, dt.date):
             self.array[(key - self.start_date).days] = value
         elif isinstance(key, slice):
             self.array[(key.start - self.start_date).days:(key.stop - self.start_date).days + 1] = value
@@ -80,58 +92,114 @@ class DateArray(BaseModel):
 
         return self.start_date == other.start_date and self.end_date == other.end_date and len(self) == len(other)  # pylint: disable=protected-access
 
+    @overload
     def __add__(self, other: DateArray) -> DateArray:
+        ...
 
-        if self.array is None or other.array is None:
+    @overload
+    def __add__(self, other: float) -> DateArray:
+        ...
+
+    def __add__(self, other) -> DateArray:
+
+        if self.array is None:
             raise ValueError("Array is not initialized")
 
-        if not self.is_aligned_with(other):
-            raise ValueError("Date arrays are not aligned")
+        if isinstance(other, (int, float)):
+            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result.array = self.array + other
+            return result
+        if isinstance(other, DateArray):
+            if other.array is None:
+                raise ValueError("Array is not initialized")
+            if not self.is_aligned_with(other):
+                raise ValueError("Date arrays are not aligned")
+            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result.array = self.array + other.array  # pylint: disable=protected-access
+            return result
 
-        result = DateArray(start_date=self.start_date, end_date=self.end_date)
+        raise TypeError("Other must be a date array or a number")
 
-        result.array = self.array + other.array  # pylint: disable=protected-access
-
-        return result
-
+    @overload
     def __sub__(self, other: DateArray) -> DateArray:
+        ...
 
-        if self.array is None or other.array is None:
+    @overload
+    def __sub__(self, other: float) -> DateArray:
+        ...
+
+    def __sub__(self, other) -> DateArray:
+
+        if self.array is None:
             raise ValueError("Array is not initialized")
 
-        if not self.is_aligned_with(other):
-            raise ValueError("Date arrays are not aligned")
+        if isinstance(other, (int, float)):
+            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result.array = self.array - other
+            return result
+        if isinstance(other, DateArray):
+            if other.array is None:
+                raise ValueError("Array is not initialized")
+            if not self.is_aligned_with(other):
+                raise ValueError("Date arrays are not aligned")
+            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result.array = self.array - other.array  # pylint: disable=protected-access
+            return result
 
-        result = DateArray(start_date=self.start_date, end_date=self.end_date)
+        raise TypeError("Other must be a date array or a number")
 
-        result.array = self.array - other.array
-
-        return result
-
+    @overload
     def __mul__(self, other: DateArray) -> DateArray:
+        ...
 
-        if self.array is None or other.array is None:
+    @overload
+    def __mul__(self, other: float) -> DateArray:
+        ...
+
+    def __mul__(self, other) -> DateArray:
+
+        if self.array is None:
             raise ValueError("Array is not initialized")
 
-        if not self.is_aligned_with(other):
-            raise ValueError("Date arrays are not aligned")
+        if isinstance(other, (int, float)):
+            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result.array = self.array * other
+            return result
+        if isinstance(other, DateArray):
+            if other.array is None:
+                raise ValueError("Array is not initialized")
+            if not self.is_aligned_with(other):
+                raise ValueError("Date arrays are not aligned")
+            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result.array = self.array * other.array  # pylint: disable=protected-access
+            return result
 
-        result = DateArray(start_date=self.start_date, end_date=self.end_date)
+        raise TypeError("Other must be a date array or a number")
 
-        result.array = self.array * other.array
-
-        return result
-
+    @overload
     def __truediv__(self, other: DateArray) -> DateArray:
+        ...
 
-        if self.array is None or other.array is None:
+    @overload
+    def __truediv__(self, other: float) -> DateArray:
+        ...
+
+    def __truediv__(self, other) -> DateArray:
+
+        if self.array is None:
             raise ValueError("Array is not initialized")
 
-        if not self.is_aligned_with(other):
-            raise ValueError("Date arrays are not aligned")
+        if isinstance(other, (int, float)):
+            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result.array = self.array / other
+            return result
+        if isinstance(other, DateArray):
+            if other.array is None:
+                raise ValueError("Array is not initialized")
+            if not self.is_aligned_with(other):
+                raise ValueError("Date arrays are not aligned")
+            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result.array = self.array / other.array  # pylint: disable=protected-access
+            return result
 
-        result = DateArray(start_date=self.start_date, end_date=self.end_date)
-
-        result.array = self.array / other.array
-
-        return result
+        raise TypeError("Other must be a date array or a number")
