@@ -23,10 +23,11 @@ class DateArray(BaseModel):
 
     @model_validator(mode="after")
     def set_array(self):
-        if self.initial_value is not None:
-            self.array = np.full((self.end_date - self.start_date).days + 1, self.initial_value)
-        else:
-            self.array = np.zeros((self.end_date - self.start_date).days + 1)
+        if self.array is None:
+            if self.initial_value is not None:
+                self.array = np.full((self.end_date - self.start_date).days + 1, self.initial_value)
+            else:
+                self.array = np.zeros((self.end_date - self.start_date).days + 1)
         return self
 
     # ----------------------------------

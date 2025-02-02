@@ -4,6 +4,7 @@ import pytest
 
 from gazpar2haws import config_utils
 from gazpar2haws.bridge import Bridge
+from gazpar2haws.configuration import Configuration
 
 
 # ----------------------------------
@@ -12,11 +13,7 @@ from gazpar2haws.bridge import Bridge
 async def test_run():
 
     # Load configuration
-    config = config_utils.ConfigLoader(
-        "tests/config/configuration.yaml", "tests/config/secrets.yaml"
-    )
-    config.load_secrets()
-    config.load_config()
+    config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")  # pylint: disable=W0201
 
     bridge = Bridge(config)
     await bridge.run()

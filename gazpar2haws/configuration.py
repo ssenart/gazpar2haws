@@ -3,6 +3,9 @@ from pydantic import BaseModel
 from gazpar2haws import config_utils
 from gazpar2haws.model import Grdf, HomeAssistant, Logging, Pricing
 
+import yaml
+import json
+
 
 class Configuration(BaseModel):
 
@@ -20,3 +23,6 @@ class Configuration(BaseModel):
         config.load_config()
 
         return cls(**config.dict())
+
+    def dumps(self) -> str:
+        return yaml.dump(self.model_dump(mode="json"), allow_unicode=True)

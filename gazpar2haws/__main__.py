@@ -3,8 +3,9 @@ import asyncio
 import logging
 import traceback
 
-from gazpar2haws import __version__, config_utils
+from gazpar2haws import __version__
 from gazpar2haws.bridge import Bridge
+from gazpar2haws.configuration import Configuration
 
 Logger = logging.getLogger(__name__)
 
@@ -38,17 +39,15 @@ async def main():
 
     try:
         # Load configuration files
-        config = config_utils.ConfigLoader(args.config, args.secrets)
-        config.load_secrets()
-        config.load_config()
+        config = Configuration.load(args.config, args.secrets)
 
         print(f"Gazpar2HAWS version: {__version__}")
 
         # Set up logging
-        logging_file = config.get("logging.file")
-        logging_console = bool(config.get("logging.console"))
-        logging_level = config.get("logging.level")
-        logging_format = config.get("logging.format")
+        logging_file = config.logging.file
+        logging_console = config.logging.console
+        logging_level = config.logging.level
+        logging_format = config.logging.format
 
         # Convert logging level to integer
         if logging_level.upper() == "DEBUG":
@@ -96,7 +95,7 @@ async def main():
         )
         Logger.error(errorMessage)
         print(errorMessage)
-        return 1
+        raise
 
 
 # ----------------------------------

@@ -2,11 +2,14 @@ from datetime import date
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, SecretStr, model_validator
+from pydantic import BaseModel, EmailStr, SecretStr, DirectoryPath, model_validator
+from pydantic_extra_types.timezone_name import TimeZoneName
 
 from gazpar2haws.date_array import DateArray
 
 from typing import Generic, TypeVar
+
+from pathlib import Path
 
 
 # ----------------------------------
@@ -52,14 +55,29 @@ class Logging(BaseModel):
 # ----------------------------------
 class Device(BaseModel):
     name: str
-    data_source: Optional[str] = None
-    as_of_date: Optional[date] = None
+    data_source: str = "json"
+    tmp_dir: DirectoryPath = DirectoryPath("/tmp")
+    as_of_date: date = date.today()
     username: Optional[EmailStr] = None
     password: Optional[SecretStr] = None
     pce_identifier: Optional[SecretStr] = None
-    timezone: Optional[str] = "Europe/Paris"
-    last_days: Optional[int] = 365
-    reset: Optional[bool] = False
+    timezone: TimeZoneName = TimeZoneName("Europe/Paris")
+    last_days: int = 365
+    reset: bool = False
+
+    @model_validator(mode="after")
+    def validate_properties(self):
+        if self.data_source not in ["json", "excel", "test"]:
+            raise ValueError(f"Invalid data_source{self.data_source} (expected values: json, excel, test)")
+        if self.data_source != "test" and self.username is None:
+            raise ValueError("Missing username")
+        if self.data_source != "test" and self.password is None:
+            raise ValueError("Missing password")
+        if self.data_source != "test" and self.pce_identifier is None:
+            raise ValueError("Missing pce_identifier")
+        if self.data_source == "excel" and self.tmp_dir is None or not Path(self.tmp_dir).is_dir():
+            raise ValueError(f"Invalid tmp_dir {self.tmp_dir}")
+        return self
 
 
 # ----------------------------------
@@ -72,8 +90,8 @@ class Grdf(BaseModel):
 class HomeAssistant(BaseModel):
     host: str
     port: int
-    endpoint: Optional[str] = "/api/websocket"
-    token: str
+    endpoint: str = "/api/websocket"
+    token: SecretStr
 
 
 # ----------------------------------
@@ -93,9 +111,10 @@ class ValueArray(Period):
 
     @model_validator(mode="after")
     def set_value_array(self):
-        self.value_array = DateArray(
-            start_date=self.start_date, end_date=self.end_date
-        )  # pylint: disable=attribute-defined-outside-init
+        if self.value_array is None:
+            self.value_array = DateArray(
+                start_date=self.start_date, end_date=self.end_date
+            )  # pylint: disable=attribute-defined-outside-init
         return self
 
 
