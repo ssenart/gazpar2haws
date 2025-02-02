@@ -34,8 +34,8 @@ class Gazpar:
     ):
 
         self._homeassistant = homeassistant
-        self._grdfConfig = device_config
-        self._pricingConfig = pricing_config
+        self._grdf_config = device_config
+        self._pricing_config = pricing_config
 
         # GrDF configuration: name
         self._name = device_config.name
@@ -140,24 +140,7 @@ class Gazpar:
             end_date,
         )
 
-        # Compute the cost from the energy
-        quantities = ConsumptionQuantityArray(
-            start_date=last_date_and_value_by_sensor[energy_sensor_name][0],
-            end_date=end_date,
-            value_unit=QuantityUnit.KWH,
-            base_unit=TimeUnit.DAY,
-            value_array=energy_array,
-        )
-
-        # Compute the cost
-        if energy_array is not None:
-            pricer = Pricer(self._pricingConfig)
-
-            cost_array = pricer.compute(quantities, PriceUnit.EURO)
-        else:
-            cost_array = None
-
-        # Publish the volume, energy and cost to Home Assistant
+        # Publish the volume and energy to Home Assistant
         if volume_array is not None:
             await self.publish_date_array(
                 volume_sensor_name,
@@ -178,6 +161,28 @@ class Gazpar:
         else:
             Logger.info("No energy data to publish")
 
+        if self._pricing_config is None:
+            Logger.info("No pricing configuration provided")
+            return
+        
+        # Compute the cost from the energy
+        quantities = ConsumptionQuantityArray(
+            start_date=last_date_and_value_by_sensor[energy_sensor_name][0],
+            end_date=end_date,
+            value_unit=QuantityUnit.KWH,
+            base_unit=TimeUnit.DAY,
+            value_array=energy_array,
+        )
+
+        # Compute the cost
+        if energy_array is not None:
+            pricer = Pricer(self._pricing_config)
+
+            cost_array = pricer.compute(quantities, PriceUnit.EURO)
+        else:
+            cost_array = None
+
+        # Publish the cost to Home Assistant
         if cost_array is not None:
             await self.publish_date_array(
                 cost_sensor_name,

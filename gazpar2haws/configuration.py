@@ -1,3 +1,5 @@
+from typing import Optional
+
 import yaml
 from pydantic import BaseModel
 
@@ -10,7 +12,7 @@ class Configuration(BaseModel):
     logging: Logging
     grdf: Grdf
     homeassistant: HomeAssistant
-    pricing: Pricing
+    pricing: Optional[Pricing] = None
 
     @classmethod
     def load(cls, config_file: str, secrets_file: str):
