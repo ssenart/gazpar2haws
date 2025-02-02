@@ -92,9 +92,7 @@ class HomeAssistantWS:
             raise HomeAssistantWSException(f"Invalid response message: {response_data}")
 
         if not response_data.get("success"):
-            raise HomeAssistantWSException(
-                f"Request failed: {response_data.get('error')}"
-            )
+            raise HomeAssistantWSException(f"Request failed: {response_data.get('error')}")
 
         return response_data.get("result")
 
@@ -122,17 +120,13 @@ class HomeAssistantWS:
         return response
 
     # ----------------------------------
-    async def exists_statistic_id(
-        self, entity_id: str, statistic_type: str | None = None
-    ) -> bool:
+    async def exists_statistic_id(self, entity_id: str, statistic_type: str | None = None) -> bool:
 
         Logger.debug(f"Checking if {entity_id} exists...")
 
         statistic_ids = await self.list_statistic_ids(statistic_type)
 
-        entity_ids = [
-            statistic_id.get("statistic_id") for statistic_id in statistic_ids
-        ]
+        entity_ids = [statistic_id.get("statistic_id") for statistic_id in statistic_ids]
 
         exists_statistic = entity_id in entity_ids
 
@@ -141,13 +135,9 @@ class HomeAssistantWS:
         return exists_statistic
 
     # ----------------------------------
-    async def statistics_during_period(
-        self, entity_ids: list[str], start_time: datetime, end_time: datetime
-    ) -> dict:
+    async def statistics_during_period(self, entity_ids: list[str], start_time: datetime, end_time: datetime) -> dict:
 
-        Logger.debug(
-            f"Getting {entity_ids} statistics during period from {start_time} to {end_time}..."
-        )
+        Logger.debug(f"Getting {entity_ids} statistics during period from {start_time} to {end_time}...")
 
         # Subscribe to statistics
         statistics_message = {
@@ -166,16 +156,12 @@ class HomeAssistantWS:
                 f"Invalid statistics_during_period response type: got {type(response)} instead of dict"
             )
 
-        Logger.debug(
-            f"Received {entity_ids} statistics during period from {start_time} to {end_time}"
-        )
+        Logger.debug(f"Received {entity_ids} statistics during period from {start_time} to {end_time}")
 
         return response
 
     # ----------------------------------
-    async def get_last_statistic(
-        self, entity_id: str, as_of_date: datetime, depth_days: int
-    ) -> dict:
+    async def get_last_statistic(self, entity_id: str, as_of_date: datetime, depth_days: int) -> dict:
 
         Logger.debug(f"Getting last statistic for {entity_id}...")
 
@@ -201,9 +187,7 @@ class HomeAssistantWS:
         statistics: list[dict],
     ):
 
-        Logger.debug(
-            f"Importing {len(statistics)} statistics for {entity_id} from {source}..."
-        )
+        Logger.debug(f"Importing {len(statistics)} statistics for {entity_id} from {source}...")
 
         if len(statistics) == 0:
             Logger.debug("No statistics to import")
@@ -225,9 +209,7 @@ class HomeAssistantWS:
 
         await self.send_message(import_statistics_message)
 
-        Logger.debug(
-            f"Imported {len(statistics)} statistics for {entity_id} from {source}"
-        )
+        Logger.debug(f"Imported {len(statistics)} statistics for {entity_id} from {source}")
 
     # ----------------------------------
     async def clear_statistics(self, entity_ids: list[str]):

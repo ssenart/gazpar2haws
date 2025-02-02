@@ -34,9 +34,7 @@ class TestHomeAssistantWS:
         )
         ha_token = self._config.get("homeassistant.token")
 
-        self._haws = HomeAssistantWS(  # pylint: disable=W0201
-            ha_host, ha_port, ha_endpoint, ha_token
-        )
+        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)  # pylint: disable=W0201
 
     # ----------------------------------
     # @pytest.mark.skip(reason="Requires Home Assistant server")
@@ -67,9 +65,7 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        exists_statistic_id = await self._haws.exists_statistic_id(
-            "sensor.gazpar2haws_volume"
-        )
+        exists_statistic_id = await self._haws.exists_statistic_id("sensor.gazpar2haws_volume")
 
         assert exists_statistic_id is not None
 
@@ -82,9 +78,7 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        statistics = await self._haws.get_last_statistic(
-            "sensor.gazpar2haws_volume", datetime.now(), 30
-        )
+        statistics = await self._haws.get_last_statistic("sensor.gazpar2haws_volume", datetime.now(), 30)
 
         assert statistics is not None
 
@@ -103,9 +97,7 @@ class TestHomeAssistantWS:
             {"start": "2020-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
         ]
 
-        await self._haws.import_statistics(
-            "sensor.gazpar2haws_volume", "recorder", "test", "m³", statistics
-        )
+        await self._haws.import_statistics("sensor.gazpar2haws_volume", "recorder", "test", "m³", statistics)
 
         await self._haws.disconnect()
 
@@ -116,8 +108,6 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        await self._haws.clear_statistics(
-            ["sensor.gazpar2haws_energy", "sensor.gazpar2haws_volume"]
-        )
+        await self._haws.clear_statistics(["sensor.gazpar2haws_energy", "sensor.gazpar2haws_volume"])
 
         await self._haws.disconnect()

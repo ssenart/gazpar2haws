@@ -36,9 +36,7 @@ class TestGazpar:
         ha_endpoint = self._config.homeassistant.endpoint
         ha_token = self._config.homeassistant.token.get_secret_value()
 
-        self._haws = HomeAssistantWS(  # pylint: disable=W0201
-            ha_host, ha_port, ha_endpoint, ha_token
-        )
+        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)  # pylint: disable=W0201
 
         self._grdf_device_config = self._config.grdf.devices[0]  # pylint: disable=W0201
         self._pricing_config = self._config.pricing  # pylint: disable=W0201
@@ -76,9 +74,7 @@ class TestGazpar:
 
         await self._haws.connect()
 
-        last_date, last_value = await gazpar.find_last_date_and_value(
-            "sensor.gazpar2haws_test"
-        )
+        last_date, last_value = await gazpar.find_last_date_and_value("sensor.gazpar2haws_test")
 
         assert last_date is not None
         assert last_value is not None
@@ -104,9 +100,7 @@ class TestGazpar:
             daily_history, pygazpar.PropertyName.ENERGY.value, start_date, end_date
         )
 
-        await gazpar.publish_date_array(
-            "sensor.gazpar2haws_test", "kWh", energy_array, 0
-        )
+        await gazpar.publish_date_array("sensor.gazpar2haws_test", "kWh", energy_array, 0)
 
         await self._haws.disconnect()
 
@@ -146,9 +140,7 @@ class TestGazpar:
         else:
             cost_array = None
 
-        await gazpar.publish_date_array(
-            "sensor.gazpar2haws_energy_test", "kWh", energy_array, 0
-        )
+        await gazpar.publish_date_array("sensor.gazpar2haws_energy_test", "kWh", energy_array, 0)
 
         await gazpar.publish_date_array(
             "sensor.gazpar2haws_cost_test",

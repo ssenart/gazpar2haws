@@ -19,9 +19,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
     def set_array(self):
         if self.array is None:
             if self.initial_value is not None:
-                self.array = np.full(
-                    (self.end_date - self.start_date).days + 1, self.initial_value
-                )
+                self.array = np.full((self.end_date - self.start_date).days + 1, self.initial_value)
             else:
                 self.array = np.zeros((self.end_date - self.start_date).days + 1)
         return self
@@ -53,16 +51,13 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
 
     # ----------------------------------
     @overload
-    def __getitem__(self, index: int) -> float:
-        ...
+    def __getitem__(self, index: int) -> float: ...
 
     @overload
-    def __getitem__(self, date: dt.date) -> float:
-        ...
+    def __getitem__(self, date: dt.date) -> float: ...
 
     @overload
-    def __getitem__(self, date_slice: slice) -> np.ndarray:
-        ...
+    def __getitem__(self, date_slice: slice) -> np.ndarray: ...
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -70,23 +65,18 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
         if isinstance(key, dt.date):
             return self.get(key)
         if isinstance(key, slice):
-            return self.array[
-                (key.start - self.start_date).days: (key.stop - self.start_date).days + 1
-            ]
+            return self.array[(key.start - self.start_date).days : (key.stop - self.start_date).days + 1]
         raise TypeError("Key must be a date or a slice of dates")
 
     # ----------------------------------
     @overload
-    def __setitem__(self, index: int, value: float):
-        ...
+    def __setitem__(self, index: int, value: float): ...
 
     @overload
-    def __setitem__(self, date: dt.date, value: float):
-        ...
+    def __setitem__(self, date: dt.date, value: float): ...
 
     @overload
-    def __setitem__(self, date_slice: slice, value: float):
-        ...
+    def __setitem__(self, date_slice: slice, value: float): ...
 
     def __setitem__(self, key, value: float):
         if self.array is None:
@@ -96,9 +86,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
         elif isinstance(key, dt.date):
             self.array[(key - self.start_date).days] = value
         elif isinstance(key, slice):
-            self.array[
-                (key.start - self.start_date).days: (key.stop - self.start_date).days + 1
-            ] = value
+            self.array[(key.start - self.start_date).days : (key.stop - self.start_date).days + 1] = value
         else:
             raise TypeError("Key must be a date or a slice of dates")
 
@@ -126,12 +114,10 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
 
     # ----------------------------------
     @overload
-    def __add__(self, other: DateArray) -> DateArray:
-        ...
+    def __add__(self, other: DateArray) -> DateArray: ...
 
     @overload
-    def __add__(self, other: float) -> DateArray:
-        ...
+    def __add__(self, other: float) -> DateArray: ...
 
     def __add__(self, other) -> DateArray:
 
@@ -155,12 +141,10 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
 
     # ----------------------------------
     @overload
-    def __sub__(self, other: DateArray) -> DateArray:
-        ...
+    def __sub__(self, other: DateArray) -> DateArray: ...
 
     @overload
-    def __sub__(self, other: float) -> DateArray:
-        ...
+    def __sub__(self, other: float) -> DateArray: ...
 
     def __sub__(self, other) -> DateArray:
 
@@ -184,12 +168,10 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
 
     # ----------------------------------
     @overload
-    def __mul__(self, other: DateArray) -> DateArray:
-        ...
+    def __mul__(self, other: DateArray) -> DateArray: ...
 
     @overload
-    def __mul__(self, other: float) -> DateArray:
-        ...
+    def __mul__(self, other: float) -> DateArray: ...
 
     def __mul__(self, other) -> DateArray:
 
@@ -213,12 +195,10 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
 
     # ----------------------------------
     @overload
-    def __truediv__(self, other: DateArray) -> DateArray:
-        ...
+    def __truediv__(self, other: DateArray) -> DateArray: ...
 
     @overload
-    def __truediv__(self, other: float) -> DateArray:
-        ...
+    def __truediv__(self, other: float) -> DateArray: ...
 
     def __truediv__(self, other) -> DateArray:
 

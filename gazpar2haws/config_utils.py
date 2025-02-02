@@ -29,9 +29,7 @@ class ConfigLoader:
                 self.raw_config = yaml.safe_load(file)
             self.config = self._resolve_secrets(self.raw_config)
         else:
-            raise FileNotFoundError(
-                f"Configuration file '{self.config_file}' not found."
-            )
+            raise FileNotFoundError(f"Configuration file '{self.config_file}' not found.")
 
     def _resolve_secrets(self, data):
         """Recursively resolve `!secret` keys in the configuration."""

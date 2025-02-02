@@ -47,17 +47,11 @@ class Gazpar:
         self._username = device_config.username
 
         # GrDF configuration: password
-        self._password = (
-            device_config.password.get_secret_value()
-            if device_config.password is not None
-            else None
-        )
+        self._password = device_config.password.get_secret_value() if device_config.password is not None else None
 
         # GrDF configuration: pce_identifier
         self._pce_identifier = (
-            device_config.pce_identifier.get_secret_value()
-            if device_config.pce_identifier is not None
-            else None
+            device_config.pce_identifier.get_secret_value() if device_config.pce_identifier is not None else None
         )
 
         # GrDF configuration: tmp_dir
@@ -94,26 +88,16 @@ class Gazpar:
         # Eventually reset the sensor in Home Assistant
         if self._reset:
             try:
-                await self._homeassistant.clear_statistics(
-                    [volume_sensor_name, energy_sensor_name]
-                )
+                await self._homeassistant.clear_statistics([volume_sensor_name, energy_sensor_name])
             except Exception:
-                Logger.warning(
-                    f"Error while resetting the sensor in Home Assistant: {traceback.format_exc()}"
-                )
+                Logger.warning(f"Error while resetting the sensor in Home Assistant: {traceback.format_exc()}")
                 raise
 
         last_date_and_value_by_sensor = dict[str, tuple[date, float]]()
 
-        last_date_and_value_by_sensor[volume_sensor_name] = (
-            await self.find_last_date_and_value(volume_sensor_name)
-        )
-        last_date_and_value_by_sensor[energy_sensor_name] = (
-            await self.find_last_date_and_value(energy_sensor_name)
-        )
-        last_date_and_value_by_sensor[cost_sensor_name] = (
-            await self.find_last_date_and_value(cost_sensor_name)
-        )
+        last_date_and_value_by_sensor[volume_sensor_name] = await self.find_last_date_and_value(volume_sensor_name)
+        last_date_and_value_by_sensor[energy_sensor_name] = await self.find_last_date_and_value(energy_sensor_name)
+        last_date_and_value_by_sensor[cost_sensor_name] = await self.find_last_date_and_value(cost_sensor_name)
 
         # Compute the start date as the minimum of the last dates
         start_date = min(v[0] for v in last_date_and_value_by_sensor.values())
@@ -195,9 +179,7 @@ class Gazpar:
 
     # ----------------------------------
     # Fetch daily Gazpar history.
-    def fetch_daily_gazpar_history(
-        self, start_date: date, end_date: date
-    ) -> MeterReadings:
+    def fetch_daily_gazpar_history(self, start_date: date, end_date: date) -> MeterReadings:
 
         # Instantiate the right data source.
         data_source = self._create_data_source()
@@ -214,9 +196,7 @@ class Gazpar:
             )
             res = history[pygazpar.Frequency.DAILY.value]
         except Exception:  # pylint: disable=broad-except
-            Logger.warning(
-                f"Error while fetching data from GrDF: {traceback.format_exc()}"
-            )
+            Logger.warning(f"Error while fetching data from GrDF: {traceback.format_exc()}")
             res = MeterReadings()
 
         return res
@@ -236,9 +216,7 @@ class Gazpar:
 
         for reading in readings:
             # Parse date format DD/MM/YYYY into datetime.
-            reading_date = datetime.strptime(
-                reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y"
-            ).date()
+            reading_date = datetime.strptime(reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y").date()
 
             # Skip all readings before the start date.
             if reading_date < start_date:
@@ -280,9 +258,7 @@ class Gazpar:
             # Set the timezone
             date_time = datetime.combine(dt, datetime.min.time())
             date_time = timezone.localize(date_time)
-            statistics.append(
-                {"start": date_time.isoformat(), "state": total, "sum": total}
-            )
+            statistics.append({"start": date_time.isoformat(), "state": total, "sum": total})
 
         # Publish statistics to Home Assistant
         try:
@@ -290,9 +266,7 @@ class Gazpar:
                 entity_id, "recorder", "gazpar2haws", unit_of_measurement, statistics
             )
         except Exception:
-            Logger.warning(
-                f"Error while importing statistics to Home Assistant: {traceback.format_exc()}"
-            )
+            Logger.warning(f"Error while importing statistics to Home Assistant: {traceback.format_exc()}")
             raise
 
     # ----------------------------------
@@ -310,9 +284,7 @@ class Gazpar:
                     tmpDirectory=self._tmp_dir,
                 )
 
-        return pygazpar.JsonWebDataSource(
-            username=self._username, password=self._password
-        )
+        return pygazpar.JsonWebDataSource(username=self._username, password=self._password)
 
     # ----------------------------------
     # Find last date, value of the entity.
@@ -320,9 +292,7 @@ class Gazpar:
 
         # Check the existence of the sensor in Home Assistant
         try:
-            exists_statistic_id = await self._homeassistant.exists_statistic_id(
-                entity_id, "sum"
-            )
+            exists_statistic_id = await self._homeassistant.exists_statistic_id(entity_id, "sum")
         except Exception:
             Logger.warning(
                 f"Error while checking the existence of the entity '{entity_id}' in Home Assistant: {traceback.format_exc()}"
@@ -335,9 +305,7 @@ class Gazpar:
                 as_of_date = datetime.combine(self._as_of_date, datetime.min.time())
                 as_of_date = pytz.timezone(self._timezone).localize(as_of_date)
 
-                last_statistic = await self._homeassistant.get_last_statistic(
-                    entity_id, as_of_date, self._last_days
-                )
+                last_statistic = await self._homeassistant.get_last_statistic(entity_id, as_of_date, self._last_days)
             except HomeAssistantWSException:
                 Logger.warning(
                     f"Error while fetching last statistics of the entity '{entity_id}' from Home Assistant: {traceback.format_exc()}"
@@ -353,9 +321,7 @@ class Gazpar:
                 # Get the last meter value
                 last_value = float(str(last_statistic.get("sum")))
 
-                Logger.debug(
-                    f"Entity '{entity_id}' => Last date: {last_date}, last value: {last_value}"
-                )
+                Logger.debug(f"Entity '{entity_id}' => Last date: {last_date}, last value: {last_value}")
 
                 return last_date, last_value
 
@@ -369,8 +335,6 @@ class Gazpar:
         # If no statistic, the last value is initialized to zero
         last_value = 0
 
-        Logger.debug(
-            f"Entity '{entity_id}' => Last date: {last_date}, last value: {last_value}"
-        )
+        Logger.debug(f"Entity '{entity_id}' => Last date: {last_date}, last value: {last_value}")
 
         return last_date, last_value

@@ -22,9 +22,7 @@ class TestPricer:
     def setup_method(self):
 
         # Load configuration
-        config = Configuration.load(
-            "tests/config/configuration.yaml", "tests/config/secrets.yaml"
-        )
+        config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")
 
         self._pricer = Pricer(config.pricing)  # pylint: disable=W0201
 
@@ -35,12 +33,8 @@ class TestPricer:
         end_date = date(2023, 8, 25)
 
         vat_rate_array_by_id = {
-            "reduced": VatRateArray(
-                id="reduced", start_date=start_date, end_date=end_date
-            ),
-            "standard": VatRateArray(
-                id="standard", start_date=start_date, end_date=end_date
-            ),
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -66,12 +60,8 @@ class TestPricer:
         end_date = date(2023, 9, 5)
 
         vat_rate_array_by_id = {
-            "reduced": VatRateArray(
-                id="reduced", start_date=start_date, end_date=end_date
-            ),
-            "standard": VatRateArray(
-                id="standard", start_date=start_date, end_date=end_date
-            ),
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -97,12 +87,8 @@ class TestPricer:
         end_date = date(2023, 6, 5)
 
         vat_rate_array_by_id = {
-            "reduced": VatRateArray(
-                id="reduced", start_date=start_date, end_date=end_date
-            ),
-            "standard": VatRateArray(
-                id="standard", start_date=start_date, end_date=end_date
-            ),
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -128,12 +114,8 @@ class TestPricer:
         end_date = date(2025, 1, 5)
 
         vat_rate_array_by_id = {
-            "reduced": VatRateArray(
-                id="reduced", start_date=start_date, end_date=end_date
-            ),
-            "standard": VatRateArray(
-                id="standard", start_date=start_date, end_date=end_date
-            ),
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -159,12 +141,8 @@ class TestPricer:
         end_date = date(2023, 9, 5)
 
         vat_rate_array_by_id = {
-            "reduced": VatRateArray(
-                id="reduced", start_date=start_date, end_date=end_date
-            ),
-            "standard": VatRateArray(
-                id="standard", start_date=start_date, end_date=end_date
-            ),
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -190,12 +168,8 @@ class TestPricer:
         end_date = date(2023, 5, 5)
 
         vat_rate_array_by_id = {
-            "reduced": VatRateArray(
-                id="reduced", start_date=start_date, end_date=end_date
-            ),
-            "standard": VatRateArray(
-                id="standard", start_date=start_date, end_date=end_date
-            ),
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -221,12 +195,8 @@ class TestPricer:
         end_date = date(2025, 5, 5)
 
         vat_rate_array_by_id = {
-            "reduced": VatRateArray(
-                id="reduced", start_date=start_date, end_date=end_date
-            ),
-            "standard": VatRateArray(
-                id="standard", start_date=start_date, end_date=end_date
-            ),
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -297,42 +267,22 @@ class TestPricer:
 
         assert self._pricer.get_convertion_factor(cent_per_mwh, euro_per_kwh) == 0.00001
 
-        assert (
-            self._pricer.get_convertion_factor(euro_per_year, euro_per_month, dt) == 1 / 12
-        )
-        assert (
-            self._pricer.get_convertion_factor(euro_per_month, euro_per_year, dt) == 12
-        )
-        assert (
-            self._pricer.get_convertion_factor(euro_per_year, euro_per_day, dt) == 1 / 365
-        )
-        assert (
-            self._pricer.get_convertion_factor(euro_per_day, euro_per_year, dt) == 365
-        )
+        assert self._pricer.get_convertion_factor(euro_per_year, euro_per_month, dt) == 1 / 12
+        assert self._pricer.get_convertion_factor(euro_per_month, euro_per_year, dt) == 12
+        assert self._pricer.get_convertion_factor(euro_per_year, euro_per_day, dt) == 1 / 365
+        assert self._pricer.get_convertion_factor(euro_per_day, euro_per_year, dt) == 365
 
-        assert (
-            self._pricer.get_convertion_factor(cent_per_year, cent_per_month, dt) == 1 / 12
-        )
-        assert (
-            self._pricer.get_convertion_factor(cent_per_month, cent_per_year, dt) == 12
-        )
-        assert (
-            self._pricer.get_convertion_factor(cent_per_year, cent_per_day, dt) == 1 / 365
-        )
-        assert (
-            self._pricer.get_convertion_factor(cent_per_day, cent_per_year, dt) == 365
-        )
+        assert self._pricer.get_convertion_factor(cent_per_year, cent_per_month, dt) == 1 / 12
+        assert self._pricer.get_convertion_factor(cent_per_month, cent_per_year, dt) == 12
+        assert self._pricer.get_convertion_factor(cent_per_year, cent_per_day, dt) == 1 / 365
+        assert self._pricer.get_convertion_factor(cent_per_day, cent_per_year, dt) == 365
 
     # ----------------------------------
     def test_convert(self):
 
-        consumption_prices = (
-            self._pricer.pricing_data().consumption_prices
-        )
+        consumption_prices = self._pricer.pricing_data().consumption_prices
 
-        converted_prices = self._pricer.convert(
-            consumption_prices, (PriceUnit.CENT, QuantityUnit.WH)
-        )
+        converted_prices = self._pricer.convert(consumption_prices, (PriceUnit.CENT, QuantityUnit.WH))
 
         for i in range(len(consumption_prices) - 1):
             consumption_price = consumption_prices[i]
@@ -355,9 +305,7 @@ class TestPricer:
             base_unit="day",
         )
 
-        quantities.value_array = DateArray(
-            start_date=start_date, end_date=end_date, initial_value=1.0
-        )
+        quantities.value_array = DateArray(start_date=start_date, end_date=end_date, initial_value=1.0)
 
         cost_array = self._pricer.compute(quantities, PriceUnit.EURO)
 
@@ -365,7 +313,5 @@ class TestPricer:
         assert cost_array.end_date == end_date
         assert cost_array.value_unit == "€"
         assert len(cost_array.value_array) == 6
-        assert math.isclose(
-            cost_array.value_array[start_date], 0.86912910, rel_tol=1e-6
-        )
+        assert math.isclose(cost_array.value_array[start_date], 0.86912910, rel_tol=1e-6)
         assert math.isclose(cost_array.value_array[end_date], 0.86912910, rel_tol=1e-6)

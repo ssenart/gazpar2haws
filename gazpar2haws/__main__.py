@@ -17,9 +17,7 @@ async def main():
         prog="gazpar2haws",
         description="Gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface.",
     )
-    parser.add_argument(
-        "-v", "--version", action="version", version="Gazpar2HAWS version"
-    )
+    parser.add_argument("-v", "--version", action="version", version="Gazpar2HAWS version")
     parser.add_argument(
         "-c",
         "--config",
@@ -69,9 +67,7 @@ async def main():
             # Add a console handler manually
             console_handler = logging.StreamHandler()
             console_handler.setLevel(level)  # Set logging level for the console
-            console_handler.setFormatter(
-                logging.Formatter(logging_format)
-            )  # Customize console format
+            console_handler.setFormatter(logging.Formatter(logging_format))  # Customize console format
 
             # Get the root logger and add the console handler
             logging.getLogger().addHandler(console_handler)
@@ -90,9 +86,7 @@ async def main():
         return 0
 
     except Exception:  # pylint: disable=broad-except
-        errorMessage = (
-            f"An error occured while running Gazpar2HAWS: {traceback.format_exc()}"
-        )
+        errorMessage = f"An error occured while running Gazpar2HAWS: {traceback.format_exc()}"
         Logger.error(errorMessage)
         print(errorMessage)
         raise

@@ -34,9 +34,7 @@ class Pricer:
         return self._pricing
 
     # ----------------------------------
-    def compute(
-        self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit
-    ) -> CostArray:
+    def compute(self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit) -> CostArray:
 
         if quantities is None:
             raise ValueError("quantities is None")
@@ -63,18 +61,10 @@ class Pricer:
         quantity_array = quantities.value_array
 
         # Convert all pricing data to the same unit as the quantities.
-        consumption_prices = Pricer.convert(
-            self._pricing.consumption_prices, (price_unit, quantities.value_unit)
-        )
-        subscription_prices = Pricer.convert(
-            self._pricing.subscription_prices, (price_unit, quantities.base_unit)
-        )
-        transport_prices = Pricer.convert(
-            self._pricing.transport_prices, (price_unit, quantities.base_unit)
-        )
-        energy_taxes = Pricer.convert(
-            self._pricing.energy_taxes, (price_unit, quantities.value_unit)
-        )
+        consumption_prices = Pricer.convert(self._pricing.consumption_prices, (price_unit, quantities.value_unit))
+        subscription_prices = Pricer.convert(self._pricing.subscription_prices, (price_unit, quantities.base_unit))
+        transport_prices = Pricer.convert(self._pricing.transport_prices, (price_unit, quantities.base_unit))
+        energy_taxes = Pricer.convert(self._pricing.energy_taxes, (price_unit, quantities.value_unit))
 
         # Transform to the vectorized form.
         vat_rate_array_by_id = self.get_vat_rate_array_by_id(
@@ -132,9 +122,7 @@ class Pricer:
         res = dict[str, VatRateArray]()
         vat_rate_by_id = dict[str, list[VatRate]]()
         for vat_rate in vat_rates:
-            res[vat_rate.id] = VatRateArray(
-                id=vat_rate.id, start_date=start_date, end_date=end_date
-            )
+            res[vat_rate.id] = VatRateArray(id=vat_rate.id, start_date=start_date, end_date=end_date)
             if vat_rate.id not in vat_rate_by_id:
                 vat_rate_by_id[vat_rate.id] = list[VatRate]()
             vat_rate_by_id[vat_rate.id].append(vat_rate)
@@ -254,9 +242,7 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def _fill_value_array(
-        cls, out_value_array: ValueArray, in_values: list[Value]
-    ) -> None:
+    def _fill_value_array(cls, out_value_array: ValueArray, in_values: list[Value]) -> None:
 
         if out_value_array is None:
             raise ValueError("out_value_array is None")
@@ -291,16 +277,14 @@ class Pricer:
         else:
             if start_date < first_value.start_date:
                 # Partially before first value period.
-                value_array[start_date: first_value.start_date] = first_value.value  # type: ignore
+                value_array[start_date : first_value.start_date] = first_value.value  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
-                value_array[last_value.end_date: end_date] = last_value.value  # type: ignore
+                value_array[last_value.end_date : end_date] = last_value.value  # type: ignore
             # Inside value periods.
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
-                earliest_end = min(
-                    value.end_date if value.end_date is not None else end_date, end_date
-                )
+                earliest_end = min(value.end_date if value.end_date is not None else end_date, end_date)
                 current_date = latest_start
                 while current_date <= earliest_end:
                     value_array[current_date] = value.value
@@ -348,16 +332,14 @@ class Pricer:
         else:
             if start_date < first_value.start_date:
                 # Partially before first value period.
-                value_array[start_date: first_value.start_date] = first_value.value * (1 + vat_rate_array_by_id[first_value.vat_id].value_array[start_date: first_value.start_date])  # type: ignore
+                value_array[start_date : first_value.start_date] = first_value.value * (1 + vat_rate_array_by_id[first_value.vat_id].value_array[start_date : first_value.start_date])  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
-                value_array[last_value.end_date: end_date] = last_value.value * (1 + vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date: end_date])  # type: ignore
+                value_array[last_value.end_date : end_date] = last_value.value * (1 + vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date : end_date])  # type: ignore
             # Inside value periods.
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
-                earliest_end = min(
-                    value.end_date if value.end_date is not None else end_date, end_date
-                )
+                earliest_end = min(value.end_date if value.end_date is not None else end_date, end_date)
                 current_date = latest_start
                 while current_date <= earliest_end:
                     value_array[current_date] = value.value * (1 + vat_rate_array_by_id[value.vat_id].value_array[current_date])  # type: ignore
@@ -365,9 +347,7 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def get_time_unit_convertion_factor(
-        cls, from_time_unit: TimeUnit, to_time_unit: TimeUnit, dt: date
-    ) -> float:
+    def get_time_unit_convertion_factor(cls, from_time_unit: TimeUnit, to_time_unit: TimeUnit, dt: date) -> float:
 
         if from_time_unit == to_time_unit:
             return 1.0
@@ -403,9 +383,7 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def get_price_unit_convertion_factor(
-        cls, from_price_unit: PriceUnit, to_price_unit: PriceUnit
-    ) -> float:
+    def get_price_unit_convertion_factor(cls, from_price_unit: PriceUnit, to_price_unit: PriceUnit) -> float:
 
         if from_price_unit == to_price_unit:
             return 1.0
@@ -454,8 +432,7 @@ class Pricer:
         from_unit: Tuple[PriceUnit, QuantityUnit],
         to_unit: Tuple[PriceUnit, QuantityUnit],
         dt: Optional[date] = None,
-    ) -> float:
-        ...
+    ) -> float: ...
 
     @overload
     @classmethod
@@ -464,33 +441,28 @@ class Pricer:
         from_unit: Tuple[PriceUnit, TimeUnit],
         to_unit: Tuple[PriceUnit, TimeUnit],
         dt: Optional[date] = None,
-    ) -> float:
-        ...
+    ) -> float: ...
 
     @classmethod
-    def get_convertion_factor(
-        cls, from_unit, to_unit, dt: Optional[date] = None
-    ) -> float:
+    def get_convertion_factor(cls, from_unit, to_unit, dt: Optional[date] = None) -> float:
         if type(from_unit) is not type(to_unit):
-            raise ValueError(
-                f"from_unit {from_unit} and to_unit {to_unit} must be of the same type"
-            )
+            raise ValueError(f"from_unit {from_unit} and to_unit {to_unit} must be of the same type")
         if (
-            isinstance(from_unit, tuple) and isinstance(from_unit[0], PriceUnit) and isinstance(from_unit[1], QuantityUnit)
+            isinstance(from_unit, tuple)
+            and isinstance(from_unit[0], PriceUnit)
+            and isinstance(from_unit[1], QuantityUnit)
         ):
             return cls.get_price_unit_convertion_factor(
                 from_unit[0], to_unit[0]
             ) * cls.get_quantity_unit_convertion_factor(from_unit[1], to_unit[1])
-        if (
-            isinstance(from_unit, tuple) and isinstance(from_unit[0], PriceUnit) and isinstance(from_unit[1], TimeUnit)
-        ):
+        if isinstance(from_unit, tuple) and isinstance(from_unit[0], PriceUnit) and isinstance(from_unit[1], TimeUnit):
             if dt is None:
                 raise ValueError(
                     f"dt must not be None when from_unit {from_unit} and to_unit {to_unit} are of type Tuple[PriceUnit, TimeUnit]"
                 )
-            return cls.get_price_unit_convertion_factor(
-                from_unit[0], to_unit[0]
-            ) * cls.get_time_unit_convertion_factor(from_unit[1], to_unit[1], dt)
+            return cls.get_price_unit_convertion_factor(from_unit[0], to_unit[0]) * cls.get_time_unit_convertion_factor(
+                from_unit[1], to_unit[1], dt
+            )
 
         raise ValueError(
             f"from_unit {from_unit} and to_unit {to_unit} must be of type Tuple[PriceUnit, QuantityUnit] or Tuple[PriceUnit, TimeUnit]"
@@ -521,7 +493,8 @@ class Pricer:
                 PriceValue(
                     start_date=price_value.start_date,
                     end_date=price_value.end_date,
-                    value=price_value.value * cls.get_convertion_factor(
+                    value=price_value.value
+                    * cls.get_convertion_factor(
                         (price_value.value_unit, price_value.base_unit), to_unit, price_value.start_date  # type: ignore
                     ),
                     value_unit=to_unit[0],
