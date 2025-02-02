@@ -119,12 +119,18 @@ class Gazpar:
         # Publish the volume, energy and cost to Home Assistant
         if volume_array is not None:
             await self.publish_date_array(volume_sensor_name, "m³", volume_array, last_date_and_value_by_sensor[volume_sensor_name][1])
+        else:
+            Logger.info("No volume data to publish")
 
         if energy_array is not None:
             await self.publish_date_array(energy_sensor_name, "kWh", energy_array, last_date_and_value_by_sensor[energy_sensor_name][1])
+        else:
+            Logger.info("No energy data to publish")
 
         if cost_array is not None:
             await self.publish_date_array(cost_sensor_name, cost_array.value_unit, cost_array.value_array, last_date_and_value_by_sensor[cost_sensor_name][1])
+        else:
+            Logger.info("No cost data to publish")
 
     # ----------------------------------
     # Fetch daily Gazpar history.
@@ -167,12 +173,12 @@ class Gazpar:
 
             # Skip all readings before the start date.
             if reading_date < start_date:
-                Logger.debug(f"Skip date: {reading_date} < {start_date}")
+                # Logger.debug(f"Skip date: {reading_date} < {start_date}")
                 continue
 
             # Skip all readings after the end date.
             if reading_date > end_date:
-                Logger.debug(f"Skip date: {reading_date} > {end_date}")
+                # Logger.debug(f"Skip date: {reading_date} > {end_date}")
                 continue
 
             # Fill the quantity array.
@@ -244,7 +250,7 @@ class Gazpar:
             )
         except Exception:
             Logger.warning(
-                f"Error while checking the existence of the sensor in Home Assistant: {traceback.format_exc()}"
+                f"Error while checking the existence of the entity '{entity_id}' in Home Assistant: {traceback.format_exc()}"
             )
             raise
 
@@ -259,7 +265,7 @@ class Gazpar:
                 )
             except HomeAssistantWSException:
                 Logger.warning(
-                    f"Error while fetching last statistics from Home Assistant: {traceback.format_exc()}"
+                    f"Error while fetching last statistics of the entity '{entity_id}' from Home Assistant: {traceback.format_exc()}"
                 )
 
             if last_statistic:
@@ -273,14 +279,14 @@ class Gazpar:
                 last_value = float(str(last_statistic.get("sum")))
 
                 Logger.debug(
-                    f"Last date: {last_date}, last value: {last_value}"
+                    f"Entity '{entity_id}' => Last date: {last_date}, last value: {last_value}"
                 )
 
                 return last_date, last_value
 
-            Logger.debug(f"No statistics found for the existing sensor {entity_id}.")
+            Logger.debug(f"Entity '{entity_id}' => No statistics found.")
         else:
-            Logger.debug(f"Sensor {entity_id} does not exist in Home Assistant.")
+            Logger.debug(f"Entity '{entity_id}' does not exist in Home Assistant.")
 
         # Compute the corresponding last_date
         last_date = (self._as_of_date - timedelta(days=self._last_days))
@@ -289,7 +295,7 @@ class Gazpar:
         last_value = 0
 
         Logger.debug(
-            f"Last date: {last_date}, last value: {last_value}"
+            f"Entity '{entity_id}' => Last date: {last_date}, last value: {last_value}"
         )
 
         return last_date, last_value
