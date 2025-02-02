@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import datetime as dt
+from typing import Optional, overload
 
 import numpy as np
-
 from pydantic import BaseModel, model_validator
-
-from typing import Optional, overload
 
 
 class DateArray(BaseModel):
@@ -25,7 +23,9 @@ class DateArray(BaseModel):
     def set_array(self):
         if self.array is None:
             if self.initial_value is not None:
-                self.array = np.full((self.end_date - self.start_date).days + 1, self.initial_value)
+                self.array = np.full(
+                    (self.end_date - self.start_date).days + 1, self.initial_value
+                )
             else:
                 self.array = np.zeros((self.end_date - self.start_date).days + 1)
         return self
@@ -51,7 +51,9 @@ class DateArray(BaseModel):
     # ----------------------------------
     def is_aligned_with(self, other: DateArray) -> bool:
 
-        return self.start_date == other.start_date and self.end_date == other.end_date and len(self) == len(other)  # pylint: disable=protected-access
+        return (
+            self.start_date == other.start_date and self.end_date == other.end_date and len(self) == len(other)
+        )  # pylint: disable=protected-access
 
     # ----------------------------------
     @overload
@@ -72,7 +74,9 @@ class DateArray(BaseModel):
         if isinstance(key, dt.date):
             return self.get(key)
         if isinstance(key, slice):
-            return self.array[(key.start - self.start_date).days:(key.stop - self.start_date).days + 1]        
+            return self.array[
+                (key.start - self.start_date).days: (key.stop - self.start_date).days + 1
+            ]
         raise TypeError("Key must be a date or a slice of dates")
 
     # ----------------------------------
@@ -96,7 +100,9 @@ class DateArray(BaseModel):
         elif isinstance(key, dt.date):
             self.array[(key - self.start_date).days] = value
         elif isinstance(key, slice):
-            self.array[(key.start - self.start_date).days:(key.stop - self.start_date).days + 1] = value
+            self.array[
+                (key.start - self.start_date).days: (key.stop - self.start_date).days + 1
+            ] = value
         else:
             raise TypeError("Key must be a date or a slice of dates")
 

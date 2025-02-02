@@ -1,15 +1,13 @@
 from datetime import date
 from enum import Enum
-from typing import Optional
+from pathlib import Path
+from typing import Generic, Optional, TypeVar
 
-from pydantic import BaseModel, EmailStr, SecretStr, DirectoryPath, model_validator
+from pydantic import (BaseModel, DirectoryPath, EmailStr, SecretStr,
+                      model_validator)
 from pydantic_extra_types.timezone_name import TimeZoneName
 
 from gazpar2haws.date_array import DateArray
-
-from typing import Generic, TypeVar
-
-from pathlib import Path
 
 
 # ----------------------------------
@@ -68,14 +66,18 @@ class Device(BaseModel):
     @model_validator(mode="after")
     def validate_properties(self):
         if self.data_source not in ["json", "excel", "test"]:
-            raise ValueError(f"Invalid data_source{self.data_source} (expected values: json, excel, test)")
+            raise ValueError(
+                f"Invalid data_source{self.data_source} (expected values: json, excel, test)"
+            )
         if self.data_source != "test" and self.username is None:
             raise ValueError("Missing username")
         if self.data_source != "test" and self.password is None:
             raise ValueError("Missing password")
         if self.data_source != "test" and self.pce_identifier is None:
             raise ValueError("Missing pce_identifier")
-        if self.data_source == "excel" and self.tmp_dir is None or not Path(self.tmp_dir).is_dir():
+        if (
+            self.data_source == "excel" and self.tmp_dir is None or not Path(self.tmp_dir).is_dir()
+        ):
             raise ValueError(f"Invalid tmp_dir {self.tmp_dir}")
         return self
 
@@ -135,8 +137,8 @@ class VatRateArray(Vat, ValueArray):
 
 # ----------------------------------
 # Define type variables
-ValueUnit = TypeVar('ValueUnit')
-BaseUnit = TypeVar('BaseUnit')
+ValueUnit = TypeVar("ValueUnit")
+BaseUnit = TypeVar("BaseUnit")
 
 
 # ----------------------------------

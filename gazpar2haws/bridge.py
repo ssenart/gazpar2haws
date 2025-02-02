@@ -2,9 +2,9 @@ import asyncio
 import logging
 import signal
 
+from gazpar2haws.configuration import Configuration
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
-from gazpar2haws.configuration import Configuration
 
 Logger = logging.getLogger(__name__)
 
@@ -37,7 +37,9 @@ class Bridge:
         self._gazpar = []
 
         for grdf_device_config in config.grdf.devices:
-            self._gazpar.append(Gazpar(grdf_device_config, config.pricing, self._homeassistant))
+            self._gazpar.append(
+                Gazpar(grdf_device_config, config.pricing, self._homeassistant)
+            )
 
         # Set up signal handler
         signal.signal(signal.SIGINT, self.handle_signal)

@@ -1,6 +1,7 @@
 import logging
 import traceback
 from datetime import date, datetime, timedelta
+from typing import Optional
 
 import pygazpar  # type: ignore
 import pytz
@@ -8,10 +9,15 @@ from pygazpar.datasource import MeterReadings  # type: ignore
 
 from gazpar2haws.date_array import DateArray
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
-from gazpar2haws.model import (ConsumptionQuantityArray, Device, Pricing,
-                               QuantityUnit, TimeUnit, PriceUnit)
+from gazpar2haws.model import (
+    ConsumptionQuantityArray,
+    Device,
+    PriceUnit,
+    Pricing,
+    QuantityUnit,
+    TimeUnit,
+)
 from gazpar2haws.pricer import Pricer
-from typing import Optional
 
 Logger = logging.getLogger(__name__)
 
@@ -20,7 +26,12 @@ Logger = logging.getLogger(__name__)
 class Gazpar:
 
     # ----------------------------------
-    def __init__(self, device_config: Device, pricing_config: Pricing, homeassistant: HomeAssistantWS):
+    def __init__(
+        self,
+        device_config: Device,
+        pricing_config: Pricing,
+        homeassistant: HomeAssistantWS,
+    ):
 
         self._homeassistant = homeassistant
         self._grdfConfig = device_config
@@ -36,10 +47,18 @@ class Gazpar:
         self._username = device_config.username
 
         # GrDF configuration: password
-        self._password = device_config.password.get_secret_value() if device_config.password is not None else None
+        self._password = (
+            device_config.password.get_secret_value()
+            if device_config.password is not None
+            else None
+        )
 
         # GrDF configuration: pce_identifier
-        self._pce_identifier = device_config.pce_identifier.get_secret_value() if device_config.pce_identifier is not None else None
+        self._pce_identifier = (
+            device_config.pce_identifier.get_secret_value()
+            if device_config.pce_identifier is not None
+            else None
+        )
 
         # GrDF configuration: tmp_dir
         self._tmp_dir = device_config.tmp_dir
@@ -86,9 +105,15 @@ class Gazpar:
 
         last_date_and_value_by_sensor = dict[str, tuple[date, float]]()
 
-        last_date_and_value_by_sensor[volume_sensor_name] = await self.find_last_date_and_value(volume_sensor_name)
-        last_date_and_value_by_sensor[energy_sensor_name] = await self.find_last_date_and_value(energy_sensor_name)
-        last_date_and_value_by_sensor[cost_sensor_name] = await self.find_last_date_and_value(cost_sensor_name)
+        last_date_and_value_by_sensor[volume_sensor_name] = (
+            await self.find_last_date_and_value(volume_sensor_name)
+        )
+        last_date_and_value_by_sensor[energy_sensor_name] = (
+            await self.find_last_date_and_value(energy_sensor_name)
+        )
+        last_date_and_value_by_sensor[cost_sensor_name] = (
+            await self.find_last_date_and_value(cost_sensor_name)
+        )
 
         # Compute the start date as the minimum of the last dates
         start_date = min([v[0] for v in last_date_and_value_by_sensor.values()])
@@ -100,13 +125,29 @@ class Gazpar:
         daily_history = self.fetch_daily_gazpar_history(start_date, end_date)
 
         # Extract the volume from the daily history
-        volume_array = self.extract_property_from_daily_gazpar_history(daily_history, pygazpar.PropertyName.VOLUME.value, last_date_and_value_by_sensor[volume_sensor_name][0], end_date)
+        volume_array = self.extract_property_from_daily_gazpar_history(
+            daily_history,
+            pygazpar.PropertyName.VOLUME.value,
+            last_date_and_value_by_sensor[volume_sensor_name][0],
+            end_date,
+        )
 
         # Extract the energy from the daily history
-        energy_array = self.extract_property_from_daily_gazpar_history(daily_history, pygazpar.PropertyName.ENERGY.value, last_date_and_value_by_sensor[energy_sensor_name][0], end_date)
+        energy_array = self.extract_property_from_daily_gazpar_history(
+            daily_history,
+            pygazpar.PropertyName.ENERGY.value,
+            last_date_and_value_by_sensor[energy_sensor_name][0],
+            end_date,
+        )
 
         # Compute the cost from the energy
-        quantities = ConsumptionQuantityArray(start_date=last_date_and_value_by_sensor[energy_sensor_name][0], end_date=end_date, value_unit=QuantityUnit.KWH, base_unit=TimeUnit.DAY, value_array=energy_array)
+        quantities = ConsumptionQuantityArray(
+            start_date=last_date_and_value_by_sensor[energy_sensor_name][0],
+            end_date=end_date,
+            value_unit=QuantityUnit.KWH,
+            base_unit=TimeUnit.DAY,
+            value_array=energy_array,
+        )
 
         # Compute the cost
         if energy_array is not None:
@@ -118,23 +159,40 @@ class Gazpar:
 
         # Publish the volume, energy and cost to Home Assistant
         if volume_array is not None:
-            await self.publish_date_array(volume_sensor_name, "m³", volume_array, last_date_and_value_by_sensor[volume_sensor_name][1])
+            await self.publish_date_array(
+                volume_sensor_name,
+                "m³",
+                volume_array,
+                last_date_and_value_by_sensor[volume_sensor_name][1],
+            )
         else:
             Logger.info("No volume data to publish")
 
         if energy_array is not None:
-            await self.publish_date_array(energy_sensor_name, "kWh", energy_array, last_date_and_value_by_sensor[energy_sensor_name][1])
+            await self.publish_date_array(
+                energy_sensor_name,
+                "kWh",
+                energy_array,
+                last_date_and_value_by_sensor[energy_sensor_name][1],
+            )
         else:
             Logger.info("No energy data to publish")
 
         if cost_array is not None:
-            await self.publish_date_array(cost_sensor_name, cost_array.value_unit, cost_array.value_array, last_date_and_value_by_sensor[cost_sensor_name][1])
+            await self.publish_date_array(
+                cost_sensor_name,
+                cost_array.value_unit,
+                cost_array.value_array,
+                last_date_and_value_by_sensor[cost_sensor_name][1],
+            )
         else:
             Logger.info("No cost data to publish")
 
     # ----------------------------------
     # Fetch daily Gazpar history.
-    def fetch_daily_gazpar_history(self, start_date: date, end_date: date) -> MeterReadings:
+    def fetch_daily_gazpar_history(
+        self, start_date: date, end_date: date
+    ) -> MeterReadings:
 
         # Instantiate the right data source.
         data_source = self._create_data_source()
@@ -160,7 +218,13 @@ class Gazpar:
 
     # ----------------------------------
     # Extract a given property from the daily Gazpar history and return a DateArray.
-    def extract_property_from_daily_gazpar_history(self, readings: MeterReadings, property_name: str, start_date: date, end_date: date) -> Optional[DateArray]:
+    def extract_property_from_daily_gazpar_history(
+        self,
+        readings: MeterReadings,
+        property_name: str,
+        start_date: date,
+        end_date: date,
+    ) -> Optional[DateArray]:
 
         # Fill the quantity array.
         res: Optional[DateArray] = None
@@ -191,7 +255,13 @@ class Gazpar:
 
     # ----------------------------------
     # Push a date array to Home Assistant.
-    async def publish_date_array(self, entity_id: str, unit_of_measurement: str, date_array: DateArray, initial_value: float):
+    async def publish_date_array(
+        self,
+        entity_id: str,
+        unit_of_measurement: str,
+        date_array: DateArray,
+        initial_value: float,
+    ):
 
         # Compute the cumulative sum of the values.
         total_array = date_array.cumsum() + initial_value
@@ -205,7 +275,9 @@ class Gazpar:
             # Set the timezone
             date_time = datetime.combine(dt, datetime.min.time())
             date_time = timezone.localize(date_time)
-            statistics.append({"start": date_time.isoformat(), "state": total, "sum": total})
+            statistics.append(
+                {"start": date_time.isoformat(), "state": total, "sum": total}
+            )
 
         # Publish statistics to Home Assistant
         try:
@@ -239,9 +311,7 @@ class Gazpar:
 
     # ----------------------------------
     # Find last date, value of the entity.
-    async def find_last_date_and_value(
-        self, entity_id: str
-    ) -> tuple[date, float]:
+    async def find_last_date_and_value(self, entity_id: str) -> tuple[date, float]:
 
         # Check the existence of the sensor in Home Assistant
         try:
@@ -289,7 +359,7 @@ class Gazpar:
             Logger.debug(f"Entity '{entity_id}' does not exist in Home Assistant.")
 
         # Compute the corresponding last_date
-        last_date = (self._as_of_date - timedelta(days=self._last_days))
+        last_date = self._as_of_date - timedelta(days=self._last_days)
 
         # If no statistic, the last value is initialized to zero
         last_value = 0

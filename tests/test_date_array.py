@@ -1,5 +1,8 @@
-from gazpar2haws.date_array import DateArray
+"""Test the date_array module."""
+
 from datetime import date
+
+from gazpar2haws.date_array import DateArray
 
 
 def test_date_array():
@@ -39,7 +42,7 @@ def test_date_array():
     date_array9 = date_array + 1
 
     for i in range(31):
-        assert date_array9[i] == 1
+        assert date_array9[i] == 1  # pylint: disable=unsubscriptable-object
 
     date_array10 = date_array9 * 5
 

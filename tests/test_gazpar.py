@@ -1,15 +1,20 @@
 """Test gazpar module."""
 
+from datetime import date
+
+import pygazpar  # type: ignore
 import pytest
-import pygazpar
 
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
-
-from datetime import date
+from gazpar2haws.model import (
+    ConsumptionQuantityArray,
+    PriceUnit,
+    QuantityUnit,
+    TimeUnit,
+)
 from gazpar2haws.pricer import Pricer
-from gazpar2haws.model import PriceUnit, QuantityUnit, ConsumptionQuantityArray, TimeUnit
 
 
 # ----------------------------------
@@ -22,7 +27,9 @@ class TestGazpar:
         """
 
         # Load configuration
-        self._config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")  # pylint: disable=W0201
+        self._config = Configuration.load(  # pylint: disable=W0201
+            "tests/config/configuration.yaml", "tests/config/secrets.yaml"
+        )
 
         ha_host = self._config.homeassistant.host
         ha_port = self._config.homeassistant.port
@@ -69,7 +76,9 @@ class TestGazpar:
 
         await self._haws.connect()
 
-        last_date, last_value = await gazpar.find_last_date_and_value("sensor.gazpar2haws_test")
+        last_date, last_value = await gazpar.find_last_date_and_value(
+            "sensor.gazpar2haws_test"
+        )
 
         assert last_date is not None
         assert last_value is not None
@@ -91,9 +100,13 @@ class TestGazpar:
         daily_history = gazpar.fetch_daily_gazpar_history(start_date, end_date)
 
         # Extract the energy from the daily history
-        energy_array = gazpar.extract_property_from_daily_gazpar_history(daily_history, pygazpar.PropertyName.ENERGY.value, start_date, end_date)
+        energy_array = gazpar.extract_property_from_daily_gazpar_history(
+            daily_history, pygazpar.PropertyName.ENERGY.value, start_date, end_date
+        )
 
-        await gazpar.publish_date_array("sensor.gazpar2haws_test", "kWh", energy_array, 0)
+        await gazpar.publish_date_array(
+            "sensor.gazpar2haws_test", "kWh", energy_array, 0
+        )
 
         await self._haws.disconnect()
 
@@ -112,10 +125,18 @@ class TestGazpar:
         daily_history = gazpar.fetch_daily_gazpar_history(start_date, end_date)
 
         # Extract the energy from the daily history
-        energy_array = gazpar.extract_property_from_daily_gazpar_history(daily_history, pygazpar.PropertyName.ENERGY.value, start_date, end_date)
+        energy_array = gazpar.extract_property_from_daily_gazpar_history(
+            daily_history, pygazpar.PropertyName.ENERGY.value, start_date, end_date
+        )
 
         # Compute the cost from the energy
-        quantities = ConsumptionQuantityArray(start_date=start_date, end_date=end_date, value_unit=QuantityUnit.KWH, base_unit=TimeUnit.DAY, value_array=energy_array)
+        quantities = ConsumptionQuantityArray(
+            start_date=start_date,
+            end_date=end_date,
+            value_unit=QuantityUnit.KWH,
+            base_unit=TimeUnit.DAY,
+            value_array=energy_array,
+        )
 
         # Compute the cost
         if energy_array is not None:
@@ -125,8 +146,15 @@ class TestGazpar:
         else:
             cost_array = None
 
-        await gazpar.publish_date_array("sensor.gazpar2haws_energy_test", "kWh", energy_array, 0)
+        await gazpar.publish_date_array(
+            "sensor.gazpar2haws_energy_test", "kWh", energy_array, 0
+        )
 
-        await gazpar.publish_date_array("sensor.gazpar2haws_cost_test", cost_array.value_unit, cost_array.value_array, 0)
+        await gazpar.publish_date_array(
+            "sensor.gazpar2haws_cost_test",
+            cost_array.value_unit,
+            cost_array.value_array,
+            0,
+        )
 
-        await self._haws.disconnect()    
+        await self._haws.disconnect()

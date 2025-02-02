@@ -1,10 +1,8 @@
+import yaml
 from pydantic import BaseModel
 
 from gazpar2haws import config_utils
 from gazpar2haws.model import Grdf, HomeAssistant, Logging, Pricing
-
-import yaml
-import json
 
 
 class Configuration(BaseModel):

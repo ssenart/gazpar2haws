@@ -1,27 +1,26 @@
 import calendar
 from datetime import date, timedelta
+from typing import Optional, Tuple, overload
 
 from gazpar2haws.model import (
+    BaseUnit,
     ConsumptionPriceArray,
     ConsumptionQuantityArray,
     CostArray,
     EnergyTaxesPriceArray,
-    Value,
-    ValueArray,
     PriceUnit,
+    PriceValue,
     Pricing,
     QuantityUnit,
     SubscriptionPriceArray,
     TimeUnit,
     TransportPriceArray,
+    Value,
+    ValueArray,
+    ValueUnit,
     VatRate,
     VatRateArray,
-    PriceValue,
-    ValueUnit,
-    BaseUnit
 )
-
-from typing import Optional, Tuple, overload
 
 
 class Pricer:
@@ -35,7 +34,9 @@ class Pricer:
         return self._pricing
 
     # ----------------------------------
-    def compute(self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit) -> CostArray:
+    def compute(
+        self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit
+    ) -> CostArray:
 
         if quantities is None:
             raise ValueError("quantities is None")
@@ -62,10 +63,18 @@ class Pricer:
         quantity_array = quantities.value_array
 
         # Convert all pricing data to the same unit as the quantities.
-        consumption_prices = Pricer.convert(self._pricing.consumption_prices, (price_unit, quantities.value_unit))
-        subscription_prices = Pricer.convert(self._pricing.subscription_prices, (price_unit, quantities.base_unit))
-        transport_prices = Pricer.convert(self._pricing.transport_prices, (price_unit, quantities.base_unit))
-        energy_taxes = Pricer.convert(self._pricing.energy_taxes, (price_unit, quantities.value_unit))
+        consumption_prices = Pricer.convert(
+            self._pricing.consumption_prices, (price_unit, quantities.value_unit)
+        )
+        subscription_prices = Pricer.convert(
+            self._pricing.subscription_prices, (price_unit, quantities.base_unit)
+        )
+        transport_prices = Pricer.convert(
+            self._pricing.transport_prices, (price_unit, quantities.base_unit)
+        )
+        energy_taxes = Pricer.convert(
+            self._pricing.energy_taxes, (price_unit, quantities.value_unit)
+        )
 
         # Transform to the vectorized form.
         vat_rate_array_by_id = self.get_vat_rate_array_by_id(
@@ -73,26 +82,38 @@ class Pricer:
         )
 
         consumption_price_array = self.get_consumption_price_array(
-            start_date=start_date, end_date=end_date, consumption_prices=consumption_prices, vat_rate_array_by_id=vat_rate_array_by_id
+            start_date=start_date,
+            end_date=end_date,
+            consumption_prices=consumption_prices,
+            vat_rate_array_by_id=vat_rate_array_by_id,
         )
 
         subscription_price_array = self.get_subscription_price_array(
-            start_date=start_date, end_date=end_date, subscription_prices=subscription_prices, vat_rate_array_by_id=vat_rate_array_by_id
+            start_date=start_date,
+            end_date=end_date,
+            subscription_prices=subscription_prices,
+            vat_rate_array_by_id=vat_rate_array_by_id,
         )
 
         transport_price_array = self.get_transport_price_array(
-            start_date=start_date, end_date=end_date, transport_prices=transport_prices, vat_rate_array_by_id=vat_rate_array_by_id
+            start_date=start_date,
+            end_date=end_date,
+            transport_prices=transport_prices,
+            vat_rate_array_by_id=vat_rate_array_by_id,
         )
 
         energy_taxes_price_array = self.get_energy_taxes_price_array(
-            start_date=start_date, end_date=end_date, energy_taxes_prices=energy_taxes, vat_rate_array_by_id=vat_rate_array_by_id
+            start_date=start_date,
+            end_date=end_date,
+            energy_taxes_prices=energy_taxes,
+            vat_rate_array_by_id=vat_rate_array_by_id,
         )
 
         res = CostArray(
             start_date=start_date,
             end_date=end_date,
             value_unit=price_unit,
-            base_unit=quantities.base_unit
+            base_unit=quantities.base_unit,
         )
 
         res.value_array = quantity_array * (consumption_price_array.value_array + energy_taxes_price_array.value_array) + subscription_price_array.value_array + transport_price_array.value_array  # type: ignore
@@ -126,12 +147,14 @@ class Pricer:
     # ----------------------------------
     @classmethod
     def get_consumption_price_array(
-        cls, start_date: date, end_date: date, consumption_prices: list[PriceValue[PriceUnit, QuantityUnit]], vat_rate_array_by_id: dict[str, VatRateArray]
+        cls,
+        start_date: date,
+        end_date: date,
+        consumption_prices: list[PriceValue[PriceUnit, QuantityUnit]],
+        vat_rate_array_by_id: dict[str, VatRateArray],
     ) -> ConsumptionPriceArray:
 
-        if (
-            consumption_prices is None or len(consumption_prices) == 0
-        ):
+        if consumption_prices is None or len(consumption_prices) == 0:
             raise ValueError("consumption_prices is None or empty")
 
         first_consumption_price = consumption_prices[0]
@@ -151,12 +174,14 @@ class Pricer:
     # ----------------------------------
     @classmethod
     def get_subscription_price_array(
-        cls, start_date: date, end_date: date, subscription_prices: list[PriceValue[PriceUnit, TimeUnit]], vat_rate_array_by_id: dict[str, VatRateArray]
+        cls,
+        start_date: date,
+        end_date: date,
+        subscription_prices: list[PriceValue[PriceUnit, TimeUnit]],
+        vat_rate_array_by_id: dict[str, VatRateArray],
     ) -> SubscriptionPriceArray:
 
-        if (
-            subscription_prices is None or len(subscription_prices) == 0
-        ):
+        if subscription_prices is None or len(subscription_prices) == 0:
             raise ValueError("subscription_prices is None or empty")
 
         first_subscription_price = subscription_prices[0]
@@ -176,12 +201,14 @@ class Pricer:
     # ----------------------------------
     @classmethod
     def get_transport_price_array(
-        cls, start_date: date, end_date: date, transport_prices: list[PriceValue[PriceUnit, TimeUnit]], vat_rate_array_by_id: dict[str, VatRateArray]
+        cls,
+        start_date: date,
+        end_date: date,
+        transport_prices: list[PriceValue[PriceUnit, TimeUnit]],
+        vat_rate_array_by_id: dict[str, VatRateArray],
     ) -> TransportPriceArray:
 
-        if (
-            transport_prices is None or len(transport_prices) == 0
-        ):
+        if transport_prices is None or len(transport_prices) == 0:
             raise ValueError("transport_prices is None or empty")
 
         first_transport_price = transport_prices[0]
@@ -201,7 +228,11 @@ class Pricer:
     # ----------------------------------
     @classmethod
     def get_energy_taxes_price_array(
-        cls, start_date: date, end_date: date, energy_taxes_prices: list[PriceValue[PriceUnit, QuantityUnit]], vat_rate_array_by_id: dict[str, VatRateArray]
+        cls,
+        start_date: date,
+        end_date: date,
+        energy_taxes_prices: list[PriceValue[PriceUnit, QuantityUnit]],
+        vat_rate_array_by_id: dict[str, VatRateArray],
     ) -> EnergyTaxesPriceArray:
 
         if energy_taxes_prices is None or len(energy_taxes_prices) == 0:
@@ -260,10 +291,10 @@ class Pricer:
         else:
             if start_date < first_value.start_date:
                 # Partially before first value period.
-                value_array[start_date:first_value.start_date] = first_value.value  # type: ignore
+                value_array[start_date: first_value.start_date] = first_value.value  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
-                value_array[last_value.end_date:end_date] = last_value.value  # type: ignore
+                value_array[last_value.end_date: end_date] = last_value.value  # type: ignore
             # Inside value periods.
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
@@ -278,7 +309,10 @@ class Pricer:
     # ----------------------------------
     @classmethod
     def _fill_price_array(
-        cls, out_value_array: ValueArray, in_values: list[PriceValue], vat_rate_array_by_id: dict[str, VatRateArray]
+        cls,
+        out_value_array: ValueArray,
+        in_values: list[PriceValue],
+        vat_rate_array_by_id: dict[str, VatRateArray],
     ) -> None:
 
         if out_value_array is None:
@@ -314,10 +348,10 @@ class Pricer:
         else:
             if start_date < first_value.start_date:
                 # Partially before first value period.
-                value_array[start_date:first_value.start_date] = first_value.value * (1 + vat_rate_array_by_id[first_value.vat_id].value_array[start_date:first_value.start_date])  # type: ignore
+                value_array[start_date: first_value.start_date] = first_value.value * (1 + vat_rate_array_by_id[first_value.vat_id].value_array[start_date: first_value.start_date])  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
-                value_array[last_value.end_date:end_date] = last_value.value * (1 + vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date:end_date])  # type: ignore
+                value_array[last_value.end_date: end_date] = last_value.value * (1 + vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date: end_date])  # type: ignore
             # Inside value periods.
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
@@ -464,7 +498,11 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def convert(cls, price_values: list[PriceValue[ValueUnit, BaseUnit]], to_unit: Tuple[ValueUnit, BaseUnit]) -> list[PriceValue[ValueUnit, BaseUnit]]:
+    def convert(
+        cls,
+        price_values: list[PriceValue[ValueUnit, BaseUnit]],
+        to_unit: Tuple[ValueUnit, BaseUnit],
+    ) -> list[PriceValue[ValueUnit, BaseUnit]]:
 
         if price_values is None or len(price_values) == 0:
             raise ValueError("price_values is None or empty")
