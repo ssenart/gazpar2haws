@@ -49,7 +49,7 @@ options:
     - start_date: "2024-01-01"
       value: 0.06888
     - start_date: "2024-02-01"
-      value: 0.05972  
+      value: 0.05972
     - start_date: "2024-03-01"
       value: 0.05506
     - start_date: "2024-04-01"
@@ -90,33 +90,33 @@ schema:
       reset: bool? # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
   vat:
     - id: str # Identifier of the VAT rate.
-      start_date: date
-      end_date: date?
+      start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the VAT rate. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the VAT rate. Format is "YYYY-MM-DD".
       value: float # Value of the VAT rate.
   consumption_prices:
-    - start_date: date
-      end_date: date?
+    - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
       value: float # Value of the price.
       value_unit: str? # Unit of the price: €, ¢.
       base_unit: str? # Base unit of the price: Wh, kWh, MWh, m³, l
       vat_id: str? # Identifier of the VAT rate.
   subscription_prices:
-    - start_date: date
-      end_date: date?
+    - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
       value: float # Value of the price.
       value_unit: str? # Unit of the price: €, ¢.
       base_unit: str? # Base unit of the price: day, month, year
       vat_id: str? # Identifier of the VAT rate.
   transport_prices:
-    - start_date: date
-      end_date: date?
+    - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
       value: float # Value of the price.
       value_unit: str? # Unit of the price: €, ¢.
       base_unit: str? # Base unit of the price: day, month, year
       vat_id: str? # Identifier of the VAT rate.
   energy_taxes:
-    - start_date: date
-      end_date: date?
+    - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
       value: float # Value of the tax.
       value_unit: str? # Unit of the tax: €, ¢.
       base_unit: str? # Base unit of the tax: Wh, kWh, MWh, m³, l
