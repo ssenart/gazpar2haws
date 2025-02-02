@@ -298,30 +298,26 @@ class TestPricer:
         assert self._pricer.get_convertion_factor(cent_per_mwh, euro_per_kwh) == 0.00001
 
         assert (
-            self._pricer.get_convertion_factor(euro_per_year, euro_per_month, dt)
-            == 1 / 12
+            self._pricer.get_convertion_factor(euro_per_year, euro_per_month, dt) == 1 / 12
         )
         assert (
             self._pricer.get_convertion_factor(euro_per_month, euro_per_year, dt) == 12
         )
         assert (
-            self._pricer.get_convertion_factor(euro_per_year, euro_per_day, dt)
-            == 1 / 365
+            self._pricer.get_convertion_factor(euro_per_year, euro_per_day, dt) == 1 / 365
         )
         assert (
             self._pricer.get_convertion_factor(euro_per_day, euro_per_year, dt) == 365
         )
 
         assert (
-            self._pricer.get_convertion_factor(cent_per_year, cent_per_month, dt)
-            == 1 / 12
+            self._pricer.get_convertion_factor(cent_per_year, cent_per_month, dt) == 1 / 12
         )
         assert (
             self._pricer.get_convertion_factor(cent_per_month, cent_per_year, dt) == 12
         )
         assert (
-            self._pricer.get_convertion_factor(cent_per_year, cent_per_day, dt)
-            == 1 / 365
+            self._pricer.get_convertion_factor(cent_per_year, cent_per_day, dt) == 1 / 365
         )
         assert (
             self._pricer.get_convertion_factor(cent_per_day, cent_per_year, dt) == 365
@@ -331,8 +327,8 @@ class TestPricer:
     def test_convert(self):
 
         consumption_prices = (
-            self._pricer._pricing.consumption_prices
-        )  # pylint: disable=W0212
+            self._pricer.pricing_data().consumption_prices
+        )
 
         converted_prices = self._pricer.convert(
             consumption_prices, (PriceUnit.CENT, QuantityUnit.WH)
