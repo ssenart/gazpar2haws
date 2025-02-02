@@ -37,7 +37,7 @@ class TestPricer:
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "reduced"
+        assert consumption_price_array.vat_id == "standard"
         assert len(consumption_price_array.value_array) == 6
         assert consumption_price_array.value_array[start_date] == 0.05568
         assert consumption_price_array.value_array[end_date] == 0.05568
@@ -59,7 +59,7 @@ class TestPricer:
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "reduced"
+        assert consumption_price_array.vat_id == "standard"
         assert len(consumption_price_array.value_array) == 17
         assert consumption_price_array.value_array[start_date] == 0.05568
         assert consumption_price_array.value_array[end_date] == 0.05412
@@ -81,7 +81,7 @@ class TestPricer:
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "reduced"
+        assert consumption_price_array.vat_id == "standard"
         assert len(consumption_price_array.value_array) == 12
         assert consumption_price_array.value_array[start_date] == 0.07790
         assert consumption_price_array.value_array[end_date] == 0.07790
@@ -103,7 +103,7 @@ class TestPricer:
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "reduced"
+        assert consumption_price_array.vat_id == "standard"
         assert len(consumption_price_array.value_array) == 12
         assert consumption_price_array.value_array[start_date] == 0.04842
         assert consumption_price_array.value_array[end_date] == 0.07807
@@ -125,7 +125,7 @@ class TestPricer:
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "reduced"
+        assert consumption_price_array.vat_id == "standard"
         assert len(consumption_price_array.value_array) == 48
         assert consumption_price_array.value_array[start_date] == 0.05392
         assert consumption_price_array.value_array[end_date] == 0.05412
@@ -147,7 +147,7 @@ class TestPricer:
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "reduced"
+        assert consumption_price_array.vat_id == "standard"
         assert len(consumption_price_array.value_array) == 5
         assert consumption_price_array.value_array[start_date] == 0.07790
         assert consumption_price_array.value_array[end_date] == 0.07790
@@ -169,7 +169,7 @@ class TestPricer:
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "reduced"
+        assert consumption_price_array.vat_id == "standard"
         assert len(consumption_price_array.value_array) == 5
         assert consumption_price_array.value_array[start_date] == 0.07807
         assert consumption_price_array.value_array[end_date] == 0.07807
@@ -268,5 +268,5 @@ class TestPricer:
         assert cost_array.end_date == end_date
         assert cost_array.value_unit == "€"
         assert len(cost_array.value_array) == 6
-        assert math.isclose(cost_array.value_array[start_date], 0.95628776, rel_tol=1e-6)
-        assert math.isclose(cost_array.value_array[end_date], 0.95628776, rel_tol=1e-6)
+        assert math.isclose(cost_array.value_array[start_date], 0.86912910, rel_tol=1e-6)
+        assert math.isclose(cost_array.value_array[end_date], 0.86912910, rel_tol=1e-6)

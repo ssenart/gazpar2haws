@@ -8,6 +8,8 @@ from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
 
 from datetime import date
+from gazpar2haws.pricer import Pricer
+from gazpar2haws.model import PriceUnit, QuantityUnit, ConsumptionQuantityArray, TimeUnit
 
 
 # ----------------------------------
@@ -25,7 +27,7 @@ class TestGazpar:
         ha_host = self._config.homeassistant.host
         ha_port = self._config.homeassistant.port
         ha_endpoint = self._config.homeassistant.endpoint
-        ha_token = self._config.homeassistant.token
+        ha_token = self._config.homeassistant.token.get_secret_value()
 
         self._haws = HomeAssistantWS(  # pylint: disable=W0201
             ha_host, ha_port, ha_endpoint, ha_token
@@ -76,7 +78,7 @@ class TestGazpar:
 
     # ----------------------------------
     @pytest.mark.asyncio
-    async def test_push_date_array(self):
+    async def test_push_energy_date_array(self):
 
         gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws)
 
@@ -91,6 +93,40 @@ class TestGazpar:
         # Extract the energy from the daily history
         energy_array = gazpar.extract_property_from_daily_gazpar_history(daily_history, pygazpar.PropertyName.ENERGY.value, start_date, end_date)
 
-        await gazpar.publish_date_array("sensor.gazpar2haws_test", "kWh", energy_array, 1000000)
+        await gazpar.publish_date_array("sensor.gazpar2haws_test", "kWh", energy_array, 0)
 
         await self._haws.disconnect()
+
+    # ----------------------------------
+    @pytest.mark.asyncio
+    async def test_push_cost_date_array(self):
+
+        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws)
+
+        await self._haws.connect()
+
+        start_date = date(2019, 6, 1)
+        end_date = date(2019, 6, 30)
+
+        # Fetch the data from GrDF and publish it to Home Assistant
+        daily_history = gazpar.fetch_daily_gazpar_history(start_date, end_date)
+
+        # Extract the energy from the daily history
+        energy_array = gazpar.extract_property_from_daily_gazpar_history(daily_history, pygazpar.PropertyName.ENERGY.value, start_date, end_date)
+
+        # Compute the cost from the energy
+        quantities = ConsumptionQuantityArray(start_date=start_date, end_date=end_date, value_unit=QuantityUnit.KWH, base_unit=TimeUnit.DAY, value_array=energy_array)
+
+        # Compute the cost
+        if energy_array is not None:
+            pricer = Pricer(self._pricing_config)
+
+            cost_array = pricer.compute(quantities, PriceUnit.EURO)
+        else:
+            cost_array = None
+
+        await gazpar.publish_date_array("sensor.gazpar2haws_energy_test", "kWh", energy_array, 0)
+
+        await gazpar.publish_date_array("sensor.gazpar2haws_cost_test", cost_array.value_unit, cost_array.value_array, 0)
+
+        await self._haws.disconnect()    

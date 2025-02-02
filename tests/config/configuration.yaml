@@ -32,7 +32,7 @@ pricing:
       value: 0.07790
       value_unit: "€"
       base_unit: "kWh"
-      vat_id: reduced
+      vat_id: standard
     - start_date: "2023-07-01"
       value: 0.05392
     - start_date: "2023-08-01"
@@ -60,7 +60,7 @@ pricing:
       value: 19.83
       value_unit: "€"
       base_unit: "month"
-      vat_id: standard
+      vat_id: reduced
     - start_date: "2023-07-01"
       value: 20.36
   transport_prices:
