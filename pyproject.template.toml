@@ -1,6 +1,6 @@
 [project]
 name = "gazpar2haws"
-version = "${PACKAGE_VERSION}"
+version = "0.2.1"
 description = "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface"
 license = { file = "LICENSE" }
 readme = "README.md"
@@ -17,7 +17,9 @@ classifiers = [
 dependencies = [
     "pygazpar>=1.2.7",
     "websockets>=14.1",
-    "pyyaml>=6.0.2"
+    "pyyaml>=6.0.2",
+    "pydantic[email] (>=2.10.6,<3.0.0)",
+    "pydantic-extra-types (>=2.10.2,<3.0.0)"
 ]
 
 [tool.poetry]
@@ -31,3 +33,10 @@ pytest-asyncio = "^0.25.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = "C,W1203,R0902,R0913,R0914,R0917,R0801"
+
+[tool.black]
+line-length = 120
