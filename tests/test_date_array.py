@@ -21,7 +21,7 @@ def test_date_array():
 
     assert not date_array.is_aligned_with(date_array3)
 
-    date_array4 = DateArray(start_date=date(2021, 1, 1), end_date=date(2021, 1, 31))
+    date_array4 = DateArray(start_date=date(2021, 1, 1), end_date=date(2021, 1, 31), initial_value=1)
 
     date_array5 = date_array + date_array4
 

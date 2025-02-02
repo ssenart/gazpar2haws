@@ -4,20 +4,16 @@ import datetime as dt
 from typing import Optional, overload
 
 import numpy as np
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 
 class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     start_date: dt.date
     end_date: dt.date
     array: Optional[np.ndarray] = None
     initial_value: Optional[float] = None
-
-    class Config:
-
-        # allow pydantic external types.
-        arbitrary_types_allowed = True
 
     @model_validator(mode="after")
     def set_array(self):

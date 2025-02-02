@@ -164,7 +164,7 @@ class Gazpar:
         if self._pricing_config is None:
             Logger.info("No pricing configuration provided")
             return
-        
+
         # Compute the cost from the energy
         quantities = ConsumptionQuantityArray(
             start_date=last_date_and_value_by_sensor[energy_sensor_name][0],
