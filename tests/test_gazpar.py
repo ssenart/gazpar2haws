@@ -8,8 +8,12 @@ import pytest
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
-from gazpar2haws.model import (ConsumptionQuantityArray, PriceUnit,
-                               QuantityUnit, TimeUnit)
+from gazpar2haws.model import (
+    ConsumptionQuantityArray,
+    PriceUnit,
+    QuantityUnit,
+    TimeUnit,
+)
 from gazpar2haws.pricer import Pricer
 
 
@@ -33,7 +37,6 @@ class TestGazpar:
         ha_token = self._config.homeassistant.token.get_secret_value()
 
         self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)  # pylint: disable=W0201
-
         self._grdf_device_config = self._config.grdf.devices[0]  # pylint: disable=W0201
         self._pricing_config = self._config.pricing  # pylint: disable=W0201
 

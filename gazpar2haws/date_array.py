@@ -60,12 +60,18 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
     def __getitem__(self, date_slice: slice) -> np.ndarray: ...
 
     def __getitem__(self, key):
+        if self.array is None:
+            raise ValueError("Array is not initialized")
         if isinstance(key, int):
             return self.array[key]
         if isinstance(key, dt.date):
             return self.get(key)
         if isinstance(key, slice):
-            return self.array[(key.start - self.start_date).days : (key.stop - self.start_date).days + 1]
+            start_date: dt.date = key.start  # type: ignore
+            end_date: dt.date = key.stop  # type: ignore
+            start_index: int = (start_date - self.start_date).days
+            end_index: int = (end_date - self.start_date).days + 1
+            return self.array[start_index:end_index]
         raise TypeError("Key must be a date or a slice of dates")
 
     # ----------------------------------
@@ -86,7 +92,11 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
         elif isinstance(key, dt.date):
             self.array[(key - self.start_date).days] = value
         elif isinstance(key, slice):
-            self.array[(key.start - self.start_date).days : (key.stop - self.start_date).days + 1] = value
+            start_date: dt.date = key.start  # type: ignore
+            end_date: dt.date = key.stop  # type: ignore
+            start_index: int = (start_date - self.start_date).days
+            end_index: int = (end_date - self.start_date).days + 1
+            self.array[start_index:end_index] = value
         else:
             raise TypeError("Key must be a date or a slice of dates")
 

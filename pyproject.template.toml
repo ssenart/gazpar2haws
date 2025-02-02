@@ -48,3 +48,14 @@ line-length = 120
 max-line-length = 120
 extend-ignore = [ "E203", "W503", "E704", "E501" ]
 exclude = [".venv"]
+
+[tool.isort]
+profile = "black"
+skip = ".venv"
+
+[tool.mypy]
+exclude = [ ".venv" ]
+
+[tool.ruff]
+exclude = [ ".venv" ]
+line-length = 120

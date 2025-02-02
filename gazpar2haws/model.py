@@ -3,8 +3,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Generic, Optional, TypeVar
 
-from pydantic import (BaseModel, DirectoryPath, EmailStr, SecretStr,
-                      model_validator)
+from pydantic import BaseModel, DirectoryPath, EmailStr, SecretStr, model_validator
 from pydantic_extra_types.timezone_name import TimeZoneName
 
 from gazpar2haws.date_array import DateArray

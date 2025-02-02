@@ -4,8 +4,14 @@ import math
 from datetime import date
 
 from gazpar2haws.configuration import Configuration
-from gazpar2haws.model import (ConsumptionQuantityArray, DateArray, PriceUnit,
-                               QuantityUnit, TimeUnit, VatRateArray)
+from gazpar2haws.model import (
+    ConsumptionQuantityArray,
+    DateArray,
+    PriceUnit,
+    QuantityUnit,
+    TimeUnit,
+    VatRateArray,
+)
 from gazpar2haws.pricer import Pricer
 
 

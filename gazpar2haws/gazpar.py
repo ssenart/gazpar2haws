@@ -9,8 +9,14 @@ from pygazpar.datasource import MeterReadings  # type: ignore
 
 from gazpar2haws.date_array import DateArray
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
-from gazpar2haws.model import (ConsumptionQuantityArray, Device, PriceUnit,
-                               Pricing, QuantityUnit, TimeUnit)
+from gazpar2haws.model import (
+    ConsumptionQuantityArray,
+    Device,
+    PriceUnit,
+    Pricing,
+    QuantityUnit,
+    TimeUnit,
+)
 from gazpar2haws.pricer import Pricer
 
 Logger = logging.getLogger(__name__)
@@ -23,7 +29,7 @@ class Gazpar:
     def __init__(
         self,
         device_config: Device,
-        pricing_config: Pricing,
+        pricing_config: Optional[Pricing],
         homeassistant: HomeAssistantWS,
     ):
 
