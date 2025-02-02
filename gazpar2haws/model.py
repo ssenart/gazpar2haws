@@ -148,7 +148,7 @@ class Unit(BaseModel, Generic[ValueUnit, BaseUnit]):
 
 
 # ----------------------------------
-class Price(Unit[ValueUnit, BaseUnit]):
+class Price(Unit[ValueUnit, BaseUnit]):  # pylint: disable=too-few-public-methods
     vat_id: Optional[str] = None
 
 
@@ -163,22 +163,22 @@ class PriceValueArray(Price[ValueUnit, BaseUnit], ValueArray):
 
 
 # ----------------------------------
-class ConsumptionPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):
+class ConsumptionPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):  # pylint: disable=too-few-public-methods
     pass
 
 
 # ----------------------------------
-class SubscriptionPriceArray(PriceValueArray[PriceUnit, TimeUnit]):
+class SubscriptionPriceArray(PriceValueArray[PriceUnit, TimeUnit]):  # pylint: disable=too-few-public-methods
     pass
 
 
 # ----------------------------------
-class TransportPriceArray(PriceValueArray[PriceUnit, TimeUnit]):
+class TransportPriceArray(PriceValueArray[PriceUnit, TimeUnit]):  # pylint: disable=too-few-public-methods
     pass
 
 
 # ----------------------------------
-class EnergyTaxesPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):
+class EnergyTaxesPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):  # pylint: disable=too-few-public-methods
     pass
 
 

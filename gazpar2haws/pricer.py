@@ -139,8 +139,8 @@ class Pricer:
                 vat_rate_by_id[vat_rate.id] = list[VatRate]()
             vat_rate_by_id[vat_rate.id].append(vat_rate)
 
-        for vat_id, vat_rates in vat_rate_by_id.items():
-            cls._fill_value_array(res[vat_id], vat_rates)  # type: ignore
+        for vat_id, vat_rate_list in vat_rate_by_id.items():
+            cls._fill_value_array(res[vat_id], vat_rate_list)  # type: ignore
 
         return res
 
@@ -378,7 +378,7 @@ class Pricer:
         def days_in_year(year: int) -> int:
             return 366 if calendar.isleap(year) else 365
 
-        if from_time_unit == TimeUnit.MONTH or to_time_unit == TimeUnit.MONTH:
+        if TimeUnit.MONTH in (from_time_unit, to_time_unit):
             switcher = {
                 TimeUnit.DAY: 1.0 / days_in_month(dt.year, dt.month),
                 TimeUnit.WEEK: 7.0 / days_in_month(dt.year, dt.month),

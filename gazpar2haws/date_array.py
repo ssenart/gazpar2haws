@@ -7,7 +7,7 @@ import numpy as np
 from pydantic import BaseModel, model_validator
 
 
-class DateArray(BaseModel):
+class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
 
     start_date: dt.date
     end_date: dt.date
@@ -126,8 +126,7 @@ class DateArray(BaseModel):
             result = (current_date, self.array[self._index])
             self._index += 1
             return result
-        else:
-            raise StopIteration
+        raise StopIteration
 
     # ----------------------------------
     @overload

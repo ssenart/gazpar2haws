@@ -116,7 +116,7 @@ class Gazpar:
         )
 
         # Compute the start date as the minimum of the last dates
-        start_date = min([v[0] for v in last_date_and_value_by_sensor.values()])
+        start_date = min(v[0] for v in last_date_and_value_by_sensor.values())
 
         # The end date is the as of date
         end_date = self._as_of_date
