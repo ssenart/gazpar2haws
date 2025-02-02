@@ -8,12 +8,8 @@ import pytest
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
-from gazpar2haws.model import (
-    ConsumptionQuantityArray,
-    PriceUnit,
-    QuantityUnit,
-    TimeUnit,
-)
+from gazpar2haws.model import (ConsumptionQuantityArray, PriceUnit,
+                               QuantityUnit, TimeUnit)
 from gazpar2haws.pricer import Pricer
 
 

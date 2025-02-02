@@ -2,25 +2,12 @@ import calendar
 from datetime import date, timedelta
 from typing import Optional, Tuple, overload
 
-from gazpar2haws.model import (
-    BaseUnit,
-    ConsumptionPriceArray,
-    ConsumptionQuantityArray,
-    CostArray,
-    EnergyTaxesPriceArray,
-    PriceUnit,
-    PriceValue,
-    Pricing,
-    QuantityUnit,
-    SubscriptionPriceArray,
-    TimeUnit,
-    TransportPriceArray,
-    Value,
-    ValueArray,
-    ValueUnit,
-    VatRate,
-    VatRateArray,
-)
+from gazpar2haws.model import (BaseUnit, ConsumptionPriceArray,
+                               ConsumptionQuantityArray, CostArray,
+                               EnergyTaxesPriceArray, PriceUnit, PriceValue,
+                               Pricing, QuantityUnit, SubscriptionPriceArray,
+                               TimeUnit, TransportPriceArray, Value,
+                               ValueArray, ValueUnit, VatRate, VatRateArray)
 
 
 class Pricer:
