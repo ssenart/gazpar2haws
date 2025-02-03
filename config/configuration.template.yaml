@@ -7,7 +7,7 @@ logging:
 grdf:
   scan_interval: ${GRDF_SCAN_INTERVAL} # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-  - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+  - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.{{name}}.
     data_source: "json" # Data source to use: "json" | "excel" | "test". Default is "json".
     as_of_date: "2021-04-20" # Date of the data to retrieve. Format is "YYYY-MM-DD". Used only if data_source is "test".
     username: "!secret grdf.username"
@@ -23,3 +23,62 @@ homeassistant:
   port: "!secret homeassistant.port"
   endpoint: "${HOMEASSISTANT_ENDPOINT}"
   token: "!secret homeassistant.token"
+
+pricing:
+  vat:
+    - id: reduced
+      start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 0.0550
+    - id: normal
+      start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 0.20
+  consumption_prices:
+    - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 0.07790
+      value_unit: "€"
+      base_unit: "kWh"
+      vat_id: normal
+    - start_date: "2023-07-01"
+      value: 0.05392
+    - start_date: "2023-08-01"
+      value: 0.05568
+    - start_date: "2023-09-01"
+      value: 0.05412
+    - start_date: "2023-10-01"
+      value: 0.06333
+    - start_date: "2023-11-01"
+      value: 0.06716
+    - start_date: "2023-12-01"
+      value: 0.07235
+    - start_date: "2024-01-01"
+      value: 0.06888
+    - start_date: "2024-02-01"
+      value: 0.05972  
+    - start_date: "2024-03-01"
+      value: 0.05506
+    - start_date: "2024-04-01"
+      value: 0.04842
+    - start_date: "2025-01-01"
+      value: 0.07807
+  subscription_prices:
+    - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 19.83
+      value_unit: "€"
+      base_unit: "month"
+      vat_id: reduced
+    - start_date: "2023-07-01"
+      value: 20.36
+  transport_prices:
+    - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 34.38
+      value_unit: "€"
+      base_unit: "year"
+      vat_id: reduced
+  energy_taxes:
+    - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 0.00837
+      value_unit: "€"
+      base_unit: "kWh"
+      vat_id: normal
+    - start_date: "2024-01-01"
+      value: 0.01637

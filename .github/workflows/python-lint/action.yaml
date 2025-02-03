@@ -56,43 +56,37 @@ runs:
         restore-keys: ${{ runner.os }}-pip
 
     #----------------------------------------------
-    #  Install linters
-    - name: Install linters
-      shell: bash
-      run: poetry run pip install pylint flake8 black isort mypy ruff
-
-    #----------------------------------------------
     #  Run Pylint    
     - name: Pylint
       shell: bash
-      run: poetry run pylint . --ignore=.venv --disable=C,W1203,R0902,R0913,R0914,R0917,R0801
+      run: poetry run pylint .
 
     #----------------------------------------------
     #  Run Flake8
     - name: Flake8
       shell: bash
-      run: poetry run poetry run flake8 . --exclude=.venv --ignore=E501
+      run: poetry run flake8 .
 
     #----------------------------------------------
     #  Run Black
     - name: Black
       shell: bash
-      run: poetry run black . --exclude=.venv --check
+      run: poetry run black . --check
 
     #----------------------------------------------
     #  Run Isort
     - name: Isort
       shell: bash
-      run: poetry run isort . --skip .venv --check-only
+      run: poetry run isort . --check-only
 
     #----------------------------------------------
     #  Run Mypy
     - name: Mypy
       shell: bash
-      run: poetry run mypy . --install-types --non-interactive --exclude .venv
+      run: poetry run mypy . --install-types --non-interactive
 
     #----------------------------------------------
     #  Run Ruff
     - name: Ruff
       shell: bash
-      run: poetry run ruff check . --exclude .venv
+      run: poetry run ruff check .
