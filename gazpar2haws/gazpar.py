@@ -104,11 +104,11 @@ class Gazpar:
             min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1), self._as_of_date
         )
 
-        # The end date is the as of date
-        end_date = self._as_of_date
-
         # Fetch the data from GrDF and publish it to Home Assistant
-        daily_history = self.fetch_daily_gazpar_history(start_date, end_date)
+        daily_history = self.fetch_daily_gazpar_history(start_date, self._as_of_date)
+
+        # The end date is the last date of the daily history
+        end_date = datetime.strptime(daily_history[-1][pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y").date()
 
         # Extract the volume from the daily history
         volume_array = self.extract_property_from_daily_gazpar_history(
