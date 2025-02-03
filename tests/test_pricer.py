@@ -16,7 +16,7 @@ from gazpar2haws.pricer import Pricer
 
 
 # ----------------------------------
-class TestPricer:
+class TestPricer:  # pylint: disable=R0904
 
     # ----------------------------------
     def setup_method(self):
@@ -242,6 +242,62 @@ class TestPricer:
         assert vat_rate_array_by_id.get("standard").value_array[end_date] == 0.2
 
     # ----------------------------------
+    def test_get_time_unit_convertion_factor(self):
+
+        dt = date(2023, 8, 20)
+
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.MONTH, dt), 12, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.YEAR, dt), 1 / 12, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.DAY, dt), 365, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.YEAR, dt), 1 / 365, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.DAY, dt), 31, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.MONTH, dt), 1 / 31, rel_tol=1e-6
+        )
+
+    # ----------------------------------
+    def test_get_price_unit_convertion_factor(self):
+
+        assert math.isclose(
+            self._pricer.get_price_unit_convertion_factor(PriceUnit.EURO, PriceUnit.CENT), 100.0, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_price_unit_convertion_factor(PriceUnit.CENT, PriceUnit.EURO), 0.01, rel_tol=1e-6
+        )
+
+    # ----------------------------------
+    def test_get_quantity_unit_convertion_factor(self):
+
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.MWH), 0.001, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.KWH), 1000.0, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.KWH), 0.001, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.WH), 1000.0, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.MWH), 0.000001, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.WH), 1000000.0, rel_tol=1e-6
+        )
+
+    # ----------------------------------
     def test_get_convertion_factor(self):
 
         dt = date(2023, 8, 20)
@@ -258,24 +314,26 @@ class TestPricer:
         euro_per_day = (PriceUnit.EURO, TimeUnit.DAY)
         cent_per_day = (PriceUnit.CENT, TimeUnit.DAY)
 
-        assert self._pricer.get_convertion_factor(euro_per_kwh, euro_per_kwh) == 1.0
-        assert self._pricer.get_convertion_factor(euro_per_kwh, cent_per_kwh) == 100.0
-        assert self._pricer.get_convertion_factor(cent_per_kwh, euro_per_kwh) == 0.01
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_kwh, euro_per_kwh), 1.0, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_kwh, cent_per_kwh), 100.0, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(cent_per_kwh, euro_per_kwh), 0.01, rel_tol=1e-6)
 
-        assert self._pricer.get_convertion_factor(euro_per_kwh, euro_per_mwh) == 1000.0
-        assert self._pricer.get_convertion_factor(euro_per_mwh, euro_per_kwh) == 0.001
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_kwh, euro_per_mwh), 1000.0, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_mwh, euro_per_kwh), 0.001, rel_tol=1e-6)
 
-        assert self._pricer.get_convertion_factor(cent_per_mwh, euro_per_kwh) == 0.00001
+        assert math.isclose(self._pricer.get_convertion_factor(cent_per_mwh, euro_per_kwh), 0.00001, rel_tol=1e-6)
 
-        assert self._pricer.get_convertion_factor(euro_per_year, euro_per_month, dt) == 1 / 12
-        assert self._pricer.get_convertion_factor(euro_per_month, euro_per_year, dt) == 12
-        assert self._pricer.get_convertion_factor(euro_per_year, euro_per_day, dt) == 1 / 365
-        assert self._pricer.get_convertion_factor(euro_per_day, euro_per_year, dt) == 365
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_year, euro_per_month, dt), 1 / 12, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_month, euro_per_year, dt), 12, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_year, euro_per_day, dt), 1 / 365, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_day, euro_per_year, dt), 365, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_month, euro_per_day, dt), 1 / 31, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(euro_per_day, euro_per_month, dt), 31, rel_tol=1e-6)
 
-        assert self._pricer.get_convertion_factor(cent_per_year, cent_per_month, dt) == 1 / 12
-        assert self._pricer.get_convertion_factor(cent_per_month, cent_per_year, dt) == 12
-        assert self._pricer.get_convertion_factor(cent_per_year, cent_per_day, dt) == 1 / 365
-        assert self._pricer.get_convertion_factor(cent_per_day, cent_per_year, dt) == 365
+        assert math.isclose(self._pricer.get_convertion_factor(cent_per_year, cent_per_month, dt), 1 / 12, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(cent_per_month, cent_per_year, dt), 12, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(cent_per_year, cent_per_day, dt), 1 / 365, rel_tol=1e-6)
+        assert math.isclose(self._pricer.get_convertion_factor(cent_per_day, cent_per_year, dt), 365, rel_tol=1e-6)
 
     # ----------------------------------
     def test_convert(self):
@@ -293,19 +351,27 @@ class TestPricer:
             assert converted_price.value == 0.1 * consumption_price.value
 
     # ----------------------------------
+    def _create_quantities(
+        self, start_date: date, end_date: date, quantity: float, unit: QuantityUnit
+    ) -> ConsumptionQuantityArray:
+
+        quantities = ConsumptionQuantityArray(
+            start_date=start_date,
+            end_date=end_date,
+            value_array=DateArray(start_date=start_date, end_date=end_date, initial_value=quantity),
+            value_unit=unit,
+            base_unit=TimeUnit.DAY,
+        )
+
+        return quantities
+
+    # ----------------------------------
     def test_compute(self):
 
         start_date = date(2023, 8, 20)
         end_date = date(2023, 8, 25)
 
-        quantities = ConsumptionQuantityArray(
-            start_date=start_date,
-            end_date=end_date,
-            value_unit="kWh",
-            base_unit="day",
-        )
-
-        quantities.value_array = DateArray(start_date=start_date, end_date=end_date, initial_value=1.0)
+        quantities = self._create_quantities(start_date, end_date, 1.0, QuantityUnit.KWH)
 
         cost_array = self._pricer.compute(quantities, PriceUnit.EURO)
 
@@ -315,3 +381,170 @@ class TestPricer:
         assert len(cost_array.value_array) == 6
         assert math.isclose(cost_array.value_array[start_date], 0.86912910, rel_tol=1e-6)
         assert math.isclose(cost_array.value_array[end_date], 0.86912910, rel_tol=1e-6)
+
+    # ----------------------------------
+    def _compute_cost(self, pricer: Pricer, single_date: date, quantity: float, unit: QuantityUnit) -> float:
+
+        # Prepare the quantities
+        quantities = self._create_quantities(single_date, single_date, quantity, unit)
+
+        # Compute the cost
+        cost_array = pricer.compute(quantities, PriceUnit.EURO)
+
+        if cost_array.value_array is not None:
+            return cost_array.value_array[single_date]
+
+        return 0.0
+
+    # ----------------------------------
+    def test_example_1(self):
+
+        # Load configuration
+        config = Configuration.load("tests/config/example_1.yaml", "tests/config/secrets.yaml")
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # At the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 6, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+        # Before the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 4, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+        # After the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 8, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+    # ----------------------------------
+    def test_example_2(self):
+
+        # Load configuration
+        config = Configuration.load("tests/config/example_2.yaml", "tests/config/secrets.yaml")
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # At the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 6, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+        # Before the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 4, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+        # After the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 8, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+    # ----------------------------------
+    def test_example_3(self):
+
+        # Load configuration
+        config = Configuration.load("tests/config/example_3.yaml", "tests/config/secrets.yaml")
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # At the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 6, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+        # Before the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 4, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+        # After the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 8, 1), 1.0, QuantityUnit.KWH), 0.0779, rel_tol=1e-6)
+
+        # At the date.
+        assert math.isclose(self._compute_cost(pricer, date(2024, 1, 1), 1.0, QuantityUnit.KWH), 0.06888, rel_tol=1e-6)
+
+        # Before the date.
+        assert math.isclose(self._compute_cost(pricer, date(2024, 11, 1), 1.0, QuantityUnit.KWH), 0.06888, rel_tol=1e-6)
+
+        # After the date.
+        assert math.isclose(self._compute_cost(pricer, date(2024, 3, 1), 1.0, QuantityUnit.KWH), 0.06888, rel_tol=1e-6)
+
+    # ----------------------------------
+    def test_example_4(self):
+
+        # Load configuration
+        config = Configuration.load("tests/config/example_4.yaml", "tests/config/secrets.yaml")
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # At the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 6, 1), 10.0, QuantityUnit.KWH), 0.9348, rel_tol=1e-6)
+
+        # Before the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 4, 1), 10.0, QuantityUnit.KWH), 0.9348, rel_tol=1e-6)
+
+        # After the date.
+        assert math.isclose(self._compute_cost(pricer, date(2023, 8, 1), 10.0, QuantityUnit.KWH), 0.9348, rel_tol=1e-6)
+
+    # ----------------------------------
+    def test_example_5(self):
+
+        # Load configuration
+        config = Configuration.load("tests/config/example_5.yaml", "tests/config/secrets.yaml")
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # At the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 6, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6
+        )
+
+        # Before the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 4, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6
+        )
+
+        # After the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 8, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6
+        )
+
+    # ----------------------------------
+    def test_example_6(self):
+
+        # Load configuration
+        config = Configuration.load("tests/config/example_6.yaml", "tests/config/secrets.yaml")
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # At the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 6, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
+
+        # Before the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 4, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
+
+        # After the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 8, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
+
+    # ----------------------------------
+    def test_example_7(self):
+
+        # Load configuration
+        config = Configuration.load("tests/config/example_7.yaml", "tests/config/secrets.yaml")
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # At the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 6, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6
+        )
+
+        # Before the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 4, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6
+        )
+
+        # After the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 8, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6
+        )

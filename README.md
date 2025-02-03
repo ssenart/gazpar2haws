@@ -204,7 +204,10 @@ The given price applies at the given date, after and before.
 The default unit is € per kWh.
 
 **Formula:**
-$$ cost[€] = quantity[kWh] * price[€/kWh] $$
+```math
+cost[€] = quantity[kWh] * price[€/kWh]
+```
+
 
 ```yaml
 pricing:
@@ -220,7 +223,10 @@ Example 2: A fixed consumption price in another unit
 *base_unit* is the denominator unit (default: kWh).
 
 **Formula:**
-$$ cost[€] = \frac{quantity[kWh] * price[¢/MWh] * converter\_factor[¢->€]} {converter\_factor[MWh->kWh]} $$
+```math
+cost[€] = \frac{quantity[kWh] * price[¢/MWh] * converter\_factor[¢->€]} {converter\_factor[MWh->kWh]}
+```
+
 
 ```yaml
 pricing:
@@ -266,7 +272,9 @@ pricing:
 ```
 
 **Formula:**
-$$ cost[€] = quantity[kWh] * price[€/kWh] * (1 + vat[normal]) $$
+```math
+cost[€] = quantity[kWh] * price[€/kWh] * (1 + vat[normal])
+```
 
 Example 5: Subscription price
 ---
@@ -297,7 +305,10 @@ pricing:
 ```
 
 **Formula:**
-$$ cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + sub\_price * (1 + vat[reduced])$$
+```math
+cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + sub\_price * (1 + vat[reduced])
+```
+
 
 Example 6: Transport price
 ---
@@ -325,7 +336,9 @@ pricing:
       vat_id: reduced
 ```
 **Formula:**
-$$ cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price * (1 + vat[reduced])$$
+```math
+cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price * (1 + vat[reduced])
+```
 
 Example 7: Energy taxes
 ---
@@ -353,7 +366,9 @@ pricing:
       vat_id: normal
 ```
 **Formula:**
-$$ cost[€] = quantity[kWh] * (cons\_price[€/kWh] + ener\_taxes[€/kWh])* (1 + vat[normal]) $$
+```math
+cost[€] = quantity[kWh] * (cons\_price[€/kWh] + ener\_taxes[€/kWh])* (1 + vat[normal])
+```
 
 Example 8: All in one
 ---

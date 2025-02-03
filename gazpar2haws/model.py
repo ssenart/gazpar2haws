@@ -179,11 +179,11 @@ class EnergyTaxesPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):  # pylint
 
 # ----------------------------------
 class Pricing(BaseModel):
-    vat: list[VatRate]
+    vat: Optional[list[VatRate]] = None
     consumption_prices: list[PriceValue[PriceUnit, QuantityUnit]]
-    subscription_prices: list[PriceValue[PriceUnit, TimeUnit]]
-    transport_prices: list[PriceValue[PriceUnit, TimeUnit]]
-    energy_taxes: list[PriceValue[PriceUnit, QuantityUnit]]
+    subscription_prices: Optional[list[PriceValue[PriceUnit, TimeUnit]]] = None
+    transport_prices: Optional[list[PriceValue[PriceUnit, TimeUnit]]] = None
+    energy_taxes: Optional[list[PriceValue[PriceUnit, QuantityUnit]]] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -202,11 +202,14 @@ class Pricing(BaseModel):
             if "start_date" not in prices[0]:
                 raise ValueError(f"Missing start_date in first element of {price_list}")
             if "value_unit" not in prices[0]:
-                raise ValueError(f"Missing value_unit in first element of {price_list}")
+                prices[0]["value_unit"] = "€"
             if "base_unit" not in prices[0]:
-                raise ValueError(f"Missing base_unit in first element of {price_list}")
-            if "vat_id" not in prices[0]:
-                raise ValueError(f"Missing vat_id in first element of {price_list}")
+                if price_list in ["consumption_prices", "energy_taxes"]:
+                    prices[0]["base_unit"] = "kWh"
+                else:
+                    raise ValueError(
+                        "Missing base_unit in first element of ['transport_prices', 'subscription_prices']"
+                    )
 
             for i in range(len(prices) - 1):
                 if "end_date" not in prices[i]:
@@ -215,7 +218,7 @@ class Pricing(BaseModel):
                     prices[i + 1]["value_unit"] = prices[i]["value_unit"]
                 if "base_unit" not in prices[i + 1]:
                     prices[i + 1]["base_unit"] = prices[i]["base_unit"]
-                if "vat_id" not in prices[i + 1]:
+                if "vat_id" not in prices[i + 1] and "vat_id" in prices[i]:
                     prices[i + 1]["vat_id"] = prices[i]["vat_id"]
 
         return values

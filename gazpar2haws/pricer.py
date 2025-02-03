@@ -34,7 +34,9 @@ class Pricer:
         return self._pricing
 
     # ----------------------------------
-    def compute(self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit) -> CostArray:
+    def compute(  # pylint: disable=too-many-branches
+        self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit
+    ) -> CostArray:
 
         if quantities is None:
             raise ValueError("quantities is None")
@@ -62,14 +64,29 @@ class Pricer:
 
         # Convert all pricing data to the same unit as the quantities.
         consumption_prices = Pricer.convert(self._pricing.consumption_prices, (price_unit, quantities.value_unit))
-        subscription_prices = Pricer.convert(self._pricing.subscription_prices, (price_unit, quantities.base_unit))
-        transport_prices = Pricer.convert(self._pricing.transport_prices, (price_unit, quantities.base_unit))
-        energy_taxes = Pricer.convert(self._pricing.energy_taxes, (price_unit, quantities.value_unit))
+
+        if self._pricing.subscription_prices is not None and len(self._pricing.subscription_prices) > 0:
+            subscription_prices = Pricer.convert(self._pricing.subscription_prices, (price_unit, quantities.base_unit))
+        else:
+            subscription_prices = None
+
+        if self._pricing.transport_prices is not None and len(self._pricing.transport_prices) > 0:
+            transport_prices = Pricer.convert(self._pricing.transport_prices, (price_unit, quantities.base_unit))
+        else:
+            transport_prices = None
+
+        if self._pricing.energy_taxes is not None and len(self._pricing.energy_taxes) > 0:
+            energy_taxes = Pricer.convert(self._pricing.energy_taxes, (price_unit, quantities.value_unit))
+        else:
+            energy_taxes = None
 
         # Transform to the vectorized form.
-        vat_rate_array_by_id = self.get_vat_rate_array_by_id(
-            start_date=start_date, end_date=end_date, vat_rates=self._pricing.vat
-        )
+        if self._pricing.vat is not None and len(self._pricing.vat) > 0:
+            vat_rate_array_by_id = self.get_vat_rate_array_by_id(
+                start_date=start_date, end_date=end_date, vat_rates=self._pricing.vat
+            )
+        else:
+            vat_rate_array_by_id = dict[str, VatRateArray]()
 
         consumption_price_array = self.get_consumption_price_array(
             start_date=start_date,
@@ -78,26 +95,53 @@ class Pricer:
             vat_rate_array_by_id=vat_rate_array_by_id,
         )
 
-        subscription_price_array = self.get_subscription_price_array(
-            start_date=start_date,
-            end_date=end_date,
-            subscription_prices=subscription_prices,
-            vat_rate_array_by_id=vat_rate_array_by_id,
-        )
+        # Subscription price is optional.
+        if subscription_prices is not None and len(subscription_prices) > 0:
+            subscription_price_array = self.get_subscription_price_array(
+                start_date=start_date,
+                end_date=end_date,
+                subscription_prices=subscription_prices,
+                vat_rate_array_by_id=vat_rate_array_by_id,
+            )
+        else:
+            subscription_price_array = SubscriptionPriceArray(
+                start_date=start_date,
+                end_date=end_date,
+                value_unit=price_unit,
+                base_unit=quantities.base_unit,
+            )
 
-        transport_price_array = self.get_transport_price_array(
-            start_date=start_date,
-            end_date=end_date,
-            transport_prices=transport_prices,
-            vat_rate_array_by_id=vat_rate_array_by_id,
-        )
+        # Transport price is optional.
+        if transport_prices is not None and len(transport_prices) > 0:
+            transport_price_array = self.get_transport_price_array(
+                start_date=start_date,
+                end_date=end_date,
+                transport_prices=transport_prices,
+                vat_rate_array_by_id=vat_rate_array_by_id,
+            )
+        else:
+            transport_price_array = TransportPriceArray(
+                start_date=start_date,
+                end_date=end_date,
+                value_unit=price_unit,
+                base_unit=quantities.base_unit,
+            )
 
-        energy_taxes_price_array = self.get_energy_taxes_price_array(
-            start_date=start_date,
-            end_date=end_date,
-            energy_taxes_prices=energy_taxes,
-            vat_rate_array_by_id=vat_rate_array_by_id,
-        )
+        # Energy taxes are optional.
+        if energy_taxes is not None and len(energy_taxes) > 0:
+            energy_taxes_price_array = self.get_energy_taxes_price_array(
+                start_date=start_date,
+                end_date=end_date,
+                energy_taxes_prices=energy_taxes,
+                vat_rate_array_by_id=vat_rate_array_by_id,
+            )
+        else:
+            energy_taxes_price_array = EnergyTaxesPriceArray(
+                start_date=start_date,
+                end_date=end_date,
+                value_unit=price_unit,
+                base_unit=quantities.value_unit,
+            )
 
         res = CostArray(
             start_date=start_date,
@@ -106,6 +150,7 @@ class Pricer:
             base_unit=quantities.base_unit,
         )
 
+        # Compute pricing formula
         res.value_array = quantity_array * (consumption_price_array.value_array + energy_taxes_price_array.value_array) + subscription_price_array.value_array + transport_price_array.value_array  # type: ignore
 
         return res
@@ -292,7 +337,7 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def _fill_price_array(
+    def _fill_price_array(  # pylint: disable=too-many-branches
         cls,
         out_value_array: ValueArray,
         in_values: list[PriceValue],
@@ -325,24 +370,44 @@ class Pricer:
 
         if first_value.start_date > end_date:
             # Fully before first value period.
-            value_array[start_date:end_date] = first_value.value * (1 + vat_rate_array_by_id[first_value.vat_id].value_array[start_date:end_date])  # type: ignore
+            if vat_rate_array_by_id is not None and first_value.vat_id in vat_rate_array_by_id:
+                vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date:end_date]  # type: ignore
+            else:
+                vat_value = 0.0
+            value_array[start_date:end_date] = first_value.value * (1 + vat_value)  # type: ignore
         elif last_value.end_date is not None and last_value.end_date < start_date:
             # Fully after last value period.
-            value_array[start_date:end_date] = last_value.value * (1 + vat_rate_array_by_id[last_value.vat_id].value_array[start_date:end_date])  # type: ignore
+            if vat_rate_array_by_id is not None and last_value.vat_id in vat_rate_array_by_id:
+                vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[start_date:end_date]  # type: ignore
+            else:
+                vat_value = 0.0
+            value_array[start_date:end_date] = last_value.value * (1 + vat_value)  # type: ignore
         else:
             if start_date < first_value.start_date:
                 # Partially before first value period.
-                value_array[start_date : first_value.start_date] = first_value.value * (1 + vat_rate_array_by_id[first_value.vat_id].value_array[start_date : first_value.start_date])  # type: ignore
+                if vat_rate_array_by_id is not None and first_value.vat_id in vat_rate_array_by_id:
+                    vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date : first_value.start_date]  # type: ignore
+                else:
+                    vat_value = 0.0
+                value_array[start_date : first_value.start_date] = first_value.value * (1 + vat_value)  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
-                value_array[last_value.end_date : end_date] = last_value.value * (1 + vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date : end_date])  # type: ignore
+                if vat_rate_array_by_id is not None and last_value.vat_id in vat_rate_array_by_id:
+                    vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date : end_date]  # type: ignore
+                else:
+                    vat_value = 0.0
+                value_array[last_value.end_date : end_date] = last_value.value * (1 + vat_value)  # type: ignore
             # Inside value periods.
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
                 earliest_end = min(value.end_date if value.end_date is not None else end_date, end_date)
                 current_date = latest_start
                 while current_date <= earliest_end:
-                    value_array[current_date] = value.value * (1 + vat_rate_array_by_id[value.vat_id].value_array[current_date])  # type: ignore
+                    if vat_rate_array_by_id is not None and value.vat_id in vat_rate_array_by_id:
+                        vat_value = vat_rate_array_by_id[value.vat_id].value_array[current_date]  # type: ignore
+                    else:
+                        vat_value = 0.0
+                    value_array[current_date] = value.value * (1 + vat_value)  # type: ignore
                     current_date += timedelta(days=1)
 
     # ----------------------------------
@@ -360,24 +425,24 @@ class Pricer:
 
         if TimeUnit.MONTH in (from_time_unit, to_time_unit):
             switcher = {
-                TimeUnit.DAY: 1.0 / days_in_month(dt.year, dt.month),
-                TimeUnit.WEEK: 7.0 / days_in_month(dt.year, dt.month),
+                TimeUnit.DAY: days_in_month(dt.year, dt.month),
+                TimeUnit.WEEK: days_in_month(dt.year, dt.month) / 7.0,
                 TimeUnit.MONTH: 1.0,
-                TimeUnit.YEAR: 12.0,
+                TimeUnit.YEAR: 1.0 / 12.0,
             }
         else:
             switcher = {
                 TimeUnit.DAY: 1.0,
-                TimeUnit.WEEK: 7.0,
-                TimeUnit.MONTH: days_in_month(dt.year, dt.month),
-                TimeUnit.YEAR: days_in_year(dt.year),
+                TimeUnit.WEEK: 1 / 7.0,
+                TimeUnit.MONTH: 1 / days_in_month(dt.year, dt.month),
+                TimeUnit.YEAR: 1 / days_in_year(dt.year),
             }
 
         if from_time_unit not in switcher:
-            raise ValueError(f"from_time_unit {from_time_unit} not in switcher")
+            raise ValueError(f"Invalid 'from' time unit: {from_time_unit}")
 
         if to_time_unit not in switcher:
-            raise ValueError(f"to_time_unit {to_time_unit} not in switcher")
+            raise ValueError(f"Invalid 'to' time unit: {to_time_unit}")
 
         return switcher[to_time_unit] / switcher[from_time_unit]
 
@@ -394,10 +459,10 @@ class Pricer:
         }
 
         if from_price_unit not in switcher:
-            raise ValueError(f"from_price_unit {from_price_unit} not in switcher")
+            raise ValueError(f"Invalid 'from' price unit: {from_price_unit}")
 
         if to_price_unit not in switcher:
-            raise ValueError(f"to_price_unit {to_price_unit} not in switcher")
+            raise ValueError(f"Invalid 'to' price unit: {to_price_unit}")
 
         return switcher[to_price_unit] / switcher[from_price_unit]
 
@@ -412,15 +477,15 @@ class Pricer:
 
         switcher = {
             QuantityUnit.WH: 1.0,
-            QuantityUnit.KWH: 1000.0,
-            QuantityUnit.MWH: 1000000.0,
+            QuantityUnit.KWH: 0.001,
+            QuantityUnit.MWH: 0.000001,
         }
 
         if from_quantity_unit not in switcher:
-            raise ValueError(f"from_quantity_unit {from_quantity_unit} not in switcher")
+            raise ValueError(f"Invalid 'from' quantity unit: {from_quantity_unit}")
 
         if to_quantity_unit not in switcher:
-            raise ValueError(f"to_quantity_unit {to_quantity_unit} not in switcher")
+            raise ValueError(f"Invalid 'to' quantity unit: {to_quantity_unit}")
 
         return switcher[to_quantity_unit] / switcher[from_quantity_unit]
 
@@ -454,13 +519,13 @@ class Pricer:
         ):
             return cls.get_price_unit_convertion_factor(
                 from_unit[0], to_unit[0]
-            ) * cls.get_quantity_unit_convertion_factor(from_unit[1], to_unit[1])
+            ) / cls.get_quantity_unit_convertion_factor(from_unit[1], to_unit[1])
         if isinstance(from_unit, tuple) and isinstance(from_unit[0], PriceUnit) and isinstance(from_unit[1], TimeUnit):
             if dt is None:
                 raise ValueError(
                     f"dt must not be None when from_unit {from_unit} and to_unit {to_unit} are of type Tuple[PriceUnit, TimeUnit]"
                 )
-            return cls.get_price_unit_convertion_factor(from_unit[0], to_unit[0]) * cls.get_time_unit_convertion_factor(
+            return cls.get_price_unit_convertion_factor(from_unit[0], to_unit[0]) / cls.get_time_unit_convertion_factor(
                 from_unit[1], to_unit[1], dt
             )
 
