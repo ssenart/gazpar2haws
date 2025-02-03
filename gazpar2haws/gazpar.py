@@ -100,7 +100,9 @@ class Gazpar:
         last_date_and_value_by_sensor[cost_sensor_name] = await self.find_last_date_and_value(cost_sensor_name)
 
         # Compute the start date as the minimum of the last dates plus one day
-        start_date = min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1)
+        start_date = min(
+            min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1), self._as_of_date
+        )
 
         # The end date is the as of date
         end_date = self._as_of_date
@@ -150,17 +152,16 @@ class Gazpar:
             return
 
         # Compute the cost from the energy
-        quantities = ConsumptionQuantityArray(
-            start_date=last_date_and_value_by_sensor[energy_sensor_name][0],
-            end_date=end_date,
-            value_unit=QuantityUnit.KWH,
-            base_unit=TimeUnit.DAY,
-            value_array=energy_array,
-        )
-
-        # Compute the cost
         if energy_array is not None:
             pricer = Pricer(self._pricing_config)
+
+            quantities = ConsumptionQuantityArray(
+                start_date=last_date_and_value_by_sensor[energy_sensor_name][0],
+                end_date=end_date,
+                value_unit=QuantityUnit.KWH,
+                base_unit=TimeUnit.DAY,
+                value_array=energy_array,
+            )
 
             cost_array = pricer.compute(quantities, PriceUnit.EURO)
         else:
