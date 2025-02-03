@@ -108,7 +108,10 @@ class Gazpar:
         daily_history = self.fetch_daily_gazpar_history(start_date, self._as_of_date)
 
         # The end date is the last date of the daily history
-        end_date = datetime.strptime(daily_history[-1][pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y").date()
+        if daily_history is None or len(daily_history) == 0:
+            end_date = start_date
+        else:
+            end_date = datetime.strptime(daily_history[-1][pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y").date()
 
         # Extract the volume from the daily history
         volume_array = self.extract_property_from_daily_gazpar_history(
