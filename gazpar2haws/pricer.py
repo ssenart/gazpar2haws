@@ -335,7 +335,7 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def _fill_price_array(  # pylint: disable=too-many-arguments
+    def _fill_price_array(  # pylint: disable=too-many-branches
         cls,
         out_value_array: ValueArray,
         in_values: list[PriceValue],

@@ -363,8 +363,8 @@ class TestPricer:
 
         if cost_array.value_array is not None:
             return cost_array.value_array[single_date]
-        else:
-            return 0.0
+
+        return 0.0
 
     # ----------------------------------
     def test_example_1(self):
