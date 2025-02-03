@@ -381,7 +381,7 @@ pricing:
     - id: reduced
       start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       value: 0.0550
-    - id: standard
+    - id: normal
       start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       value: 0.20
   consumption_prices:
@@ -389,7 +389,7 @@ pricing:
       value: 0.07790
       value_unit: "€"
       base_unit: "kWh"
-      vat_id: standard
+      vat_id: normal
     - start_date: "2023-07-01"
       value: 0.05392
     - start_date: "2023-08-01"
@@ -431,7 +431,7 @@ pricing:
       value: 0.00837
       value_unit: "€"
       base_unit: "kWh"
-      vat_id: standard
+      vat_id: normal
     - start_date: "2024-01-01"
       value: 0.01637
 ```

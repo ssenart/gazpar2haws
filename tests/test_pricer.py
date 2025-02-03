@@ -34,7 +34,7 @@ class TestPricer:  # pylint: disable=R0904
 
         vat_rate_array_by_id = {
             "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
-            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -48,7 +48,7 @@ class TestPricer:  # pylint: disable=R0904
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "standard"
+        assert consumption_price_array.vat_id == "normal"
         assert len(consumption_price_array.value_array) == 6
         assert consumption_price_array.value_array[start_date] == 0.05568
         assert consumption_price_array.value_array[end_date] == 0.05568
@@ -61,7 +61,7 @@ class TestPricer:  # pylint: disable=R0904
 
         vat_rate_array_by_id = {
             "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
-            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -75,7 +75,7 @@ class TestPricer:  # pylint: disable=R0904
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "standard"
+        assert consumption_price_array.vat_id == "normal"
         assert len(consumption_price_array.value_array) == 17
         assert consumption_price_array.value_array[start_date] == 0.05568
         assert consumption_price_array.value_array[end_date] == 0.05412
@@ -88,7 +88,7 @@ class TestPricer:  # pylint: disable=R0904
 
         vat_rate_array_by_id = {
             "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
-            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -102,7 +102,7 @@ class TestPricer:  # pylint: disable=R0904
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "standard"
+        assert consumption_price_array.vat_id == "normal"
         assert len(consumption_price_array.value_array) == 12
         assert consumption_price_array.value_array[start_date] == 0.07790
         assert consumption_price_array.value_array[end_date] == 0.07790
@@ -115,7 +115,7 @@ class TestPricer:  # pylint: disable=R0904
 
         vat_rate_array_by_id = {
             "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
-            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -129,7 +129,7 @@ class TestPricer:  # pylint: disable=R0904
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "standard"
+        assert consumption_price_array.vat_id == "normal"
         assert len(consumption_price_array.value_array) == 12
         assert consumption_price_array.value_array[start_date] == 0.04842
         assert consumption_price_array.value_array[end_date] == 0.07807
@@ -142,7 +142,7 @@ class TestPricer:  # pylint: disable=R0904
 
         vat_rate_array_by_id = {
             "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
-            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -156,7 +156,7 @@ class TestPricer:  # pylint: disable=R0904
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "standard"
+        assert consumption_price_array.vat_id == "normal"
         assert len(consumption_price_array.value_array) == 48
         assert consumption_price_array.value_array[start_date] == 0.05392
         assert consumption_price_array.value_array[end_date] == 0.05412
@@ -169,7 +169,7 @@ class TestPricer:  # pylint: disable=R0904
 
         vat_rate_array_by_id = {
             "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
-            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -183,7 +183,7 @@ class TestPricer:  # pylint: disable=R0904
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "standard"
+        assert consumption_price_array.vat_id == "normal"
         assert len(consumption_price_array.value_array) == 5
         assert consumption_price_array.value_array[start_date] == 0.07790
         assert consumption_price_array.value_array[end_date] == 0.07790
@@ -196,7 +196,7 @@ class TestPricer:  # pylint: disable=R0904
 
         vat_rate_array_by_id = {
             "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
-            "standard": VatRateArray(id="standard", start_date=start_date, end_date=end_date),
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
         }
 
         consumption_price_array = Pricer.get_consumption_price_array(
@@ -210,7 +210,7 @@ class TestPricer:  # pylint: disable=R0904
         assert consumption_price_array.end_date == end_date
         assert consumption_price_array.value_unit == "€"
         assert consumption_price_array.base_unit == "kWh"
-        assert consumption_price_array.vat_id == "standard"
+        assert consumption_price_array.vat_id == "normal"
         assert len(consumption_price_array.value_array) == 5
         assert consumption_price_array.value_array[start_date] == 0.07807
         assert consumption_price_array.value_array[end_date] == 0.07807
@@ -229,17 +229,17 @@ class TestPricer:  # pylint: disable=R0904
 
         assert len(vat_rate_array_by_id) == 2
         assert vat_rate_array_by_id.get("reduced") is not None
-        assert vat_rate_array_by_id.get("standard") is not None
+        assert vat_rate_array_by_id.get("normal") is not None
         assert vat_rate_array_by_id.get("reduced").start_date == start_date
         assert vat_rate_array_by_id.get("reduced").end_date == end_date
         assert len(vat_rate_array_by_id.get("reduced").value_array) == 6
         assert vat_rate_array_by_id.get("reduced").value_array[start_date] == 0.055
         assert vat_rate_array_by_id.get("reduced").value_array[end_date] == 0.055
-        assert vat_rate_array_by_id.get("standard").start_date == start_date
-        assert vat_rate_array_by_id.get("standard").end_date == end_date
-        assert len(vat_rate_array_by_id.get("standard").value_array) == 6
-        assert vat_rate_array_by_id.get("standard").value_array[start_date] == 0.2
-        assert vat_rate_array_by_id.get("standard").value_array[end_date] == 0.2
+        assert vat_rate_array_by_id.get("normal").start_date == start_date
+        assert vat_rate_array_by_id.get("normal").end_date == end_date
+        assert len(vat_rate_array_by_id.get("normal").value_array) == 6
+        assert vat_rate_array_by_id.get("normal").value_array[start_date] == 0.2
+        assert vat_rate_array_by_id.get("normal").value_array[end_date] == 0.2
 
     # ----------------------------------
     def test_get_time_unit_convertion_factor(self):
@@ -247,54 +247,54 @@ class TestPricer:  # pylint: disable=R0904
         dt = date(2023, 8, 20)
 
         assert math.isclose(
-            self._pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.MONTH, dt), 12, rel_tol=1e-6
+            Pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.MONTH, dt), 12, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.YEAR, dt), 1 / 12, rel_tol=1e-6
+            Pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.YEAR, dt), 1 / 12, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.DAY, dt), 365, rel_tol=1e-6
+            Pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.DAY, dt), 365, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.YEAR, dt), 1 / 365, rel_tol=1e-6
+            Pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.YEAR, dt), 1 / 365, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.DAY, dt), 31, rel_tol=1e-6
+            Pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.DAY, dt), 31, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.MONTH, dt), 1 / 31, rel_tol=1e-6
+            Pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.MONTH, dt), 1 / 31, rel_tol=1e-6
         )
 
     # ----------------------------------
     def test_get_price_unit_convertion_factor(self):
 
         assert math.isclose(
-            self._pricer.get_price_unit_convertion_factor(PriceUnit.EURO, PriceUnit.CENT), 100.0, rel_tol=1e-6
+            Pricer.get_price_unit_convertion_factor(PriceUnit.EURO, PriceUnit.CENT), 100.0, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_price_unit_convertion_factor(PriceUnit.CENT, PriceUnit.EURO), 0.01, rel_tol=1e-6
+            Pricer.get_price_unit_convertion_factor(PriceUnit.CENT, PriceUnit.EURO), 0.01, rel_tol=1e-6
         )
 
     # ----------------------------------
     def test_get_quantity_unit_convertion_factor(self):
 
         assert math.isclose(
-            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.MWH), 0.001, rel_tol=1e-6
+            Pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.MWH), 0.001, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.KWH), 1000.0, rel_tol=1e-6
+            Pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.KWH), 1000.0, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.KWH), 0.001, rel_tol=1e-6
+            Pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.KWH), 0.001, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.WH), 1000.0, rel_tol=1e-6
+            Pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.WH), 1000.0, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.MWH), 0.000001, rel_tol=1e-6
+            Pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.MWH), 0.000001, rel_tol=1e-6
         )
         assert math.isclose(
-            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.WH), 1000000.0, rel_tol=1e-6
+            Pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.WH), 1000000.0, rel_tol=1e-6
         )
 
     # ----------------------------------
@@ -314,33 +314,33 @@ class TestPricer:  # pylint: disable=R0904
         euro_per_day = (PriceUnit.EURO, TimeUnit.DAY)
         cent_per_day = (PriceUnit.CENT, TimeUnit.DAY)
 
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_kwh, euro_per_kwh), 1.0, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_kwh, cent_per_kwh), 100.0, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(cent_per_kwh, euro_per_kwh), 0.01, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_kwh, euro_per_kwh), 1.0, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_kwh, cent_per_kwh), 100.0, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(cent_per_kwh, euro_per_kwh), 0.01, rel_tol=1e-6)
 
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_kwh, euro_per_mwh), 1000.0, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_mwh, euro_per_kwh), 0.001, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_kwh, euro_per_mwh), 1000.0, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_mwh, euro_per_kwh), 0.001, rel_tol=1e-6)
 
-        assert math.isclose(self._pricer.get_convertion_factor(cent_per_mwh, euro_per_kwh), 0.00001, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(cent_per_mwh, euro_per_kwh), 0.00001, rel_tol=1e-6)
 
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_year, euro_per_month, dt), 1 / 12, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_month, euro_per_year, dt), 12, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_year, euro_per_day, dt), 1 / 365, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_day, euro_per_year, dt), 365, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_month, euro_per_day, dt), 1 / 31, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(euro_per_day, euro_per_month, dt), 31, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_year, euro_per_month, dt), 1 / 12, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_month, euro_per_year, dt), 12, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_year, euro_per_day, dt), 1 / 365, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_day, euro_per_year, dt), 365, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_month, euro_per_day, dt), 1 / 31, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(euro_per_day, euro_per_month, dt), 31, rel_tol=1e-6)
 
-        assert math.isclose(self._pricer.get_convertion_factor(cent_per_year, cent_per_month, dt), 1 / 12, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(cent_per_month, cent_per_year, dt), 12, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(cent_per_year, cent_per_day, dt), 1 / 365, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_convertion_factor(cent_per_day, cent_per_year, dt), 365, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(cent_per_year, cent_per_month, dt), 1 / 12, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(cent_per_month, cent_per_year, dt), 12, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(cent_per_year, cent_per_day, dt), 1 / 365, rel_tol=1e-6)
+        assert math.isclose(Pricer.get_convertion_factor(cent_per_day, cent_per_year, dt), 365, rel_tol=1e-6)
 
     # ----------------------------------
     def test_convert(self):
 
         consumption_prices = self._pricer.pricing_data().consumption_prices
 
-        converted_prices = self._pricer.convert(consumption_prices, (PriceUnit.CENT, QuantityUnit.WH))
+        converted_prices = Pricer.convert(consumption_prices, (PriceUnit.CENT, QuantityUnit.WH))
 
         for i in range(len(consumption_prices) - 1):
             consumption_price = consumption_prices[i]
