@@ -246,21 +246,15 @@ class TestPricer:  # pylint: disable=R0904
 
         dt = date(2023, 8, 20)
 
-        assert math.isclose(
-            Pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.MONTH, dt), 12, rel_tol=1e-6
-        )
+        assert math.isclose(Pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.MONTH, dt), 12, rel_tol=1e-6)
         assert math.isclose(
             Pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.YEAR, dt), 1 / 12, rel_tol=1e-6
         )
-        assert math.isclose(
-            Pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.DAY, dt), 365, rel_tol=1e-6
-        )
+        assert math.isclose(Pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.DAY, dt), 365, rel_tol=1e-6)
         assert math.isclose(
             Pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.YEAR, dt), 1 / 365, rel_tol=1e-6
         )
-        assert math.isclose(
-            Pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.DAY, dt), 31, rel_tol=1e-6
-        )
+        assert math.isclose(Pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.DAY, dt), 31, rel_tol=1e-6)
         assert math.isclose(
             Pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.MONTH, dt), 1 / 31, rel_tol=1e-6
         )
@@ -271,9 +265,7 @@ class TestPricer:  # pylint: disable=R0904
         assert math.isclose(
             Pricer.get_price_unit_convertion_factor(PriceUnit.EURO, PriceUnit.CENT), 100.0, rel_tol=1e-6
         )
-        assert math.isclose(
-            Pricer.get_price_unit_convertion_factor(PriceUnit.CENT, PriceUnit.EURO), 0.01, rel_tol=1e-6
-        )
+        assert math.isclose(Pricer.get_price_unit_convertion_factor(PriceUnit.CENT, PriceUnit.EURO), 0.01, rel_tol=1e-6)
 
     # ----------------------------------
     def test_get_quantity_unit_convertion_factor(self):
