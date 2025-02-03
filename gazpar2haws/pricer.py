@@ -34,7 +34,7 @@ class Pricer:
         return self._pricing
 
     # ----------------------------------
-    def compute(self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit) -> CostArray:
+    def compute(self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit) -> CostArray:  # pylint: disable=too-many-branches
 
         if quantities is None:
             raise ValueError("quantities is None")
@@ -335,7 +335,7 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def _fill_price_array(
+    def _fill_price_array(  # pylint: disable=too-many-arguments
         cls,
         out_value_array: ValueArray,
         in_values: list[PriceValue],
