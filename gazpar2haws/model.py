@@ -207,7 +207,9 @@ class Pricing(BaseModel):
                 if price_list in ["consumption_prices", "energy_taxes"]:
                     prices[0]["base_unit"] = "kWh"
                 else:
-                    raise ValueError("Missing base_unit in first element of ['transport_prices', 'subscription_prices']")
+                    raise ValueError(
+                        "Missing base_unit in first element of ['transport_prices', 'subscription_prices']"
+                    )
 
             for i in range(len(prices) - 1):
                 if "end_date" not in prices[i]:

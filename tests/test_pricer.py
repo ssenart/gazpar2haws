@@ -16,7 +16,7 @@ from gazpar2haws.pricer import Pricer
 
 
 # ----------------------------------
-class TestPricer:
+class TestPricer:  # pylint: disable=R0904
 
     # ----------------------------------
     def setup_method(self):
@@ -246,28 +246,56 @@ class TestPricer:
 
         dt = date(2023, 8, 20)
 
-        assert math.isclose(self._pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.MONTH, dt), 12, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.YEAR, dt), 1 / 12, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.DAY, dt), 365, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.YEAR, dt), 1 / 365, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.DAY, dt), 31, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.MONTH, dt), 1 / 31, rel_tol=1e-6)
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.MONTH, dt), 12, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.YEAR, dt), 1 / 12, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.YEAR, TimeUnit.DAY, dt), 365, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.YEAR, dt), 1 / 365, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.MONTH, TimeUnit.DAY, dt), 31, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_time_unit_convertion_factor(TimeUnit.DAY, TimeUnit.MONTH, dt), 1 / 31, rel_tol=1e-6
+        )
 
     # ----------------------------------
     def test_get_price_unit_convertion_factor(self):
 
-        assert math.isclose(self._pricer.get_price_unit_convertion_factor(PriceUnit.EURO, PriceUnit.CENT), 100.0, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_price_unit_convertion_factor(PriceUnit.CENT, PriceUnit.EURO), 0.01, rel_tol=1e-6)
+        assert math.isclose(
+            self._pricer.get_price_unit_convertion_factor(PriceUnit.EURO, PriceUnit.CENT), 100.0, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_price_unit_convertion_factor(PriceUnit.CENT, PriceUnit.EURO), 0.01, rel_tol=1e-6
+        )
 
     # ----------------------------------
     def test_get_quantity_unit_convertion_factor(self):
 
-        assert math.isclose(self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.MWH), 0.001, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.KWH), 1000.0, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.KWH), 0.001, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.WH), 1000.0, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.MWH), 0.000001, rel_tol=1e-6)
-        assert math.isclose(self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.WH), 1000000.0, rel_tol=1e-6)
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.MWH), 0.001, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.KWH), 1000.0, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.KWH), 0.001, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.KWH, QuantityUnit.WH), 1000.0, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.WH, QuantityUnit.MWH), 0.000001, rel_tol=1e-6
+        )
+        assert math.isclose(
+            self._pricer.get_quantity_unit_convertion_factor(QuantityUnit.MWH, QuantityUnit.WH), 1000000.0, rel_tol=1e-6
+        )
 
     # ----------------------------------
     def test_get_convertion_factor(self):
@@ -323,7 +351,9 @@ class TestPricer:
             assert converted_price.value == 0.1 * consumption_price.value
 
     # ----------------------------------
-    def _create_quantities(self, start_date: date, end_date: date, quantity: float, unit: QuantityUnit) -> ConsumptionQuantityArray:
+    def _create_quantities(
+        self, start_date: date, end_date: date, quantity: float, unit: QuantityUnit
+    ) -> ConsumptionQuantityArray:
 
         quantities = ConsumptionQuantityArray(
             start_date=start_date,
@@ -457,13 +487,19 @@ class TestPricer:
         pricer = Pricer(config.pricing)
 
         # At the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 6, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 6, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6
+        )
 
         # Before the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 4, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 4, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6
+        )
 
         # After the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 8, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 8, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6
+        )
 
     # ----------------------------------
     def test_example_6(self):
@@ -475,13 +511,19 @@ class TestPricer:
         pricer = Pricer(config.pricing)
 
         # At the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 6, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 6, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
 
         # Before the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 4, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 4, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
 
         # After the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 8, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 8, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
 
     # ----------------------------------
     def test_example_7(self):
@@ -493,10 +535,16 @@ class TestPricer:
         pricer = Pricer(config.pricing)
 
         # At the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 6, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 6, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6
+        )
 
         # Before the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 4, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 4, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6
+        )
 
         # After the date.
-        assert math.isclose(self._compute_cost(pricer, date(2023, 8, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 8, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6
+        )
