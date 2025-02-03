@@ -184,7 +184,7 @@ class Gazpar:
 
         if start_date >= end_date:
             Logger.info("No data to fetch")
-            return MeterReadings()
+            return []
 
         # Instantiate the right data source.
         data_source = self._create_data_source()
