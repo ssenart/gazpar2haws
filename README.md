@@ -204,7 +204,10 @@ The given price applies at the given date, after and before.
 The default unit is € per kWh.
 
 **Formula:**
-$$ cost[€] = quantity[kWh] * price[€/kWh] $$
+
+```math
+cost[€] = quantity[kWh] * price[€/kWh]
+```
 
 ```yaml
 pricing:
