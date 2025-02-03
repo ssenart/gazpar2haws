@@ -182,6 +182,10 @@ class Gazpar:
     # Fetch daily Gazpar history.
     def fetch_daily_gazpar_history(self, start_date: date, end_date: date) -> MeterReadings:
 
+        if start_date >= end_date:
+            Logger.info("No data to fetch")
+            return MeterReadings()
+
         # Instantiate the right data source.
         data_source = self._create_data_source()
 
