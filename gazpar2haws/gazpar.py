@@ -99,8 +99,8 @@ class Gazpar:
         last_date_and_value_by_sensor[energy_sensor_name] = await self.find_last_date_and_value(energy_sensor_name)
         last_date_and_value_by_sensor[cost_sensor_name] = await self.find_last_date_and_value(cost_sensor_name)
 
-        # Compute the start date as the minimum of the last dates
-        start_date = min(v[0] for v in last_date_and_value_by_sensor.values())
+        # Compute the start date as the minimum of the last dates plus one day
+        start_date = min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1)
 
         # The end date is the as of date
         end_date = self._as_of_date
