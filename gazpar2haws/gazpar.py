@@ -78,7 +78,7 @@ class Gazpar:
 
     # ----------------------------------
     # Publish Gaspar data to Home Assistant WS
-    async def publish(self):
+    async def publish(self):  # pylint: disable=too-many-branches
 
         # Volume, energy and cost sensor names.
         volume_sensor_name = f"sensor.{self._name}_volume"
