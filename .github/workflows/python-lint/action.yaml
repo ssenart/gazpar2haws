@@ -56,12 +56,6 @@ runs:
         restore-keys: ${{ runner.os }}-pip
 
     #----------------------------------------------
-    #  Install linters
-    - name: Install linters
-      shell: bash
-      run: poetry run pip install pylint flake8 black isort mypy ruff
-
-    #----------------------------------------------
     #  Run Pylint    
     - name: Pylint
       shell: bash
