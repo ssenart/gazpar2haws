@@ -48,3 +48,16 @@ def test_date_array():
 
     for i in range(31):
         assert date_array10[i] == 5
+
+
+def test_slice():
+
+    date_array = DateArray(start_date=date(2021, 1, 1), end_date=date(2021, 1, 31), initial_value=1)
+
+    date_array_slice = date_array[date(2021, 1, 1):date(2021, 1, 11)]
+
+    assert len(date_array_slice) == 10
+
+    date_array_slice2 = date_array[date(2021, 1, 1):date(2021, 1, 2)]
+
+    assert len(date_array_slice2) == 1

@@ -104,6 +104,16 @@ class Gazpar:
             min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1), self._as_of_date
         )
 
+        # Get all start dates
+        energy_start_date = last_date_and_value_by_sensor[energy_sensor_name][0] + timedelta(days=1)
+        volume_start_date = last_date_and_value_by_sensor[volume_sensor_name][0] + timedelta(days=1)
+        cost_start_date = last_date_and_value_by_sensor[cost_sensor_name][0] + timedelta(days=1)
+
+        Logger.debug(f"Min start date for all sensors: {start_date}")
+        Logger.debug(f"Energy start date: {energy_start_date}")
+        Logger.debug(f"Volume start date: {volume_start_date}")
+        Logger.debug(f"Cost start date: {cost_start_date}")
+
         # Fetch the data from GrDF and publish it to Home Assistant
         daily_history = self.fetch_daily_gazpar_history(start_date, self._as_of_date)
 
@@ -113,11 +123,9 @@ class Gazpar:
         else:
             end_date = datetime.strptime(daily_history[-1][pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y").date()
 
-        Logger.debug(f"Start date: {start_date}, end date: {end_date}")
+        Logger.debug(f"End date: {end_date}")
 
         # Extract the volume from the daily history
-        volume_start_date = last_date_and_value_by_sensor[volume_sensor_name][0] + timedelta(days=1)
-        Logger.debug(f"Volume start date: {volume_start_date}")
         volume_array = self.extract_property_from_daily_gazpar_history(
             daily_history,
             pygazpar.PropertyName.VOLUME.value,
@@ -126,12 +134,10 @@ class Gazpar:
         )
 
         # Extract the energy from the daily history
-        energy_start_date = last_date_and_value_by_sensor[energy_sensor_name][0] + timedelta(days=1)
-        Logger.debug(f"Energy start date: {energy_start_date}")
         energy_array = self.extract_property_from_daily_gazpar_history(
             daily_history,
             pygazpar.PropertyName.ENERGY.value,
-            energy_start_date,
+            min(energy_start_date, cost_start_date),
             end_date,
         )
 
@@ -146,11 +152,11 @@ class Gazpar:
         else:
             Logger.info("No volume data to publish")
 
-        if energy_array is not None:
+        if energy_array is not None and energy_start_date <= end_date:
             await self.publish_date_array(
                 energy_sensor_name,
                 "kWh",
-                energy_array,
+                energy_array[energy_start_date:end_date + timedelta(days=1)],
                 last_date_and_value_by_sensor[energy_sensor_name][1],
             )
         else:
@@ -165,11 +171,11 @@ class Gazpar:
             pricer = Pricer(self._pricing_config)
 
             quantities = ConsumptionQuantityArray(
-                start_date=energy_start_date,
+                start_date=cost_start_date,
                 end_date=end_date,
                 value_unit=QuantityUnit.KWH,
                 base_unit=TimeUnit.DAY,
-                value_array=energy_array,
+                value_array=energy_array[cost_start_date:end_date + timedelta(days=1)],
             )
 
             cost_array = pricer.compute(quantities, PriceUnit.EURO)
@@ -209,7 +215,15 @@ class Gazpar:
                 endDate=end_date,
                 frequencies=[pygazpar.Frequency.DAILY],
             )
-            res = history[pygazpar.Frequency.DAILY.value]
+
+            # Filter the daily readings by keeping only dates between start_date and end_date
+            res = []
+            for reading in history[pygazpar.Frequency.DAILY.value]:
+                reading_date = datetime.strptime(reading[pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y").date()
+                if start_date <= reading_date <= end_date:
+                    res.append(reading)
+
+            Logger.debug(f"Fetched {len(res)} daily readings from start date {start_date} to end date {end_date}")
         except Exception:  # pylint: disable=broad-except
             Logger.warning(f"Error while fetching data from GrDF: {traceback.format_exc()}")
             res = MeterReadings()

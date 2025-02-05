@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from datetime import timedelta
 from typing import Optional, overload
 
 import numpy as np
@@ -70,8 +71,10 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             start_date: dt.date = key.start  # type: ignore
             end_date: dt.date = key.stop  # type: ignore
             start_index: int = (start_date - self.start_date).days
-            end_index: int = (end_date - self.start_date).days + 1
-            return self.array[start_index:end_index]
+            end_index: int = (end_date - self.start_date).days
+            if start_index < 0 or end_index > len(self.array):
+                raise ValueError(f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]")
+            return DateArray(start_date=start_date, end_date=end_date + timedelta(-1), array=self.array[start_index:end_index])
         raise TypeError("Key must be a date or a slice of dates")
 
     # ----------------------------------
@@ -95,7 +98,9 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             start_date: dt.date = key.start  # type: ignore
             end_date: dt.date = key.stop  # type: ignore
             start_index: int = (start_date - self.start_date).days
-            end_index: int = (end_date - self.start_date).days + 1
+            end_index: int = (end_date - self.start_date).days
+            if start_index < 0 or end_index > len(self.array):
+                raise ValueError(f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]")
             self.array[start_index:end_index] = value
         else:
             raise TypeError("Key must be a date or a slice of dates")
