@@ -58,7 +58,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
     def __getitem__(self, date: dt.date) -> float: ...
 
     @overload
-    def __getitem__(self, date_slice: slice) -> np.ndarray: ...
+    def __getitem__(self, date_slice: slice) -> DateArray: ...
 
     def __getitem__(self, key):
         if self.array is None:
@@ -91,7 +91,10 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
     @overload
     def __setitem__(self, date_slice: slice, value: float): ...
 
-    def __setitem__(self, key, value: float):
+    @overload
+    def __setitem__(self, date_slice: slice, value: DateArray): ...
+
+    def __setitem__(self, key, value):
         if self.array is None:
             raise ValueError("Array is not initialized")
         if isinstance(key, int):
@@ -107,7 +110,14 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
                 raise ValueError(
                     f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]"
                 )
-            self.array[start_index:end_index] = value
+            self.start_date = start_date
+            self.end_date = end_date + timedelta(-1)
+            if isinstance(value, float):
+                self.array[start_index:end_index] = value
+            elif isinstance(value, DateArray):
+                self.array[start_index:end_index] = value.array
+            else:
+                raise TypeError("Value must be a float or a DateArray")
         else:
             raise TypeError("Key must be a date or a slice of dates")
 

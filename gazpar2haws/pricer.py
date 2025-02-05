@@ -315,17 +315,17 @@ class Pricer:
 
         if first_value.start_date > end_date:
             # Fully before first value period.
-            value_array[start_date:end_date] = first_value.value  # type: ignore
+            value_array[start_date : end_date + timedelta(1)] = first_value.value  # type: ignore
         elif last_value.end_date is not None and last_value.end_date < start_date:
             # Fully after last value period.
-            value_array[start_date:end_date] = last_value.value  # type: ignore
+            value_array[start_date : end_date + timedelta(1)] = last_value.value  # type: ignore
         else:
             if start_date < first_value.start_date:
                 # Partially before first value period.
-                value_array[start_date : first_value.start_date] = first_value.value  # type: ignore
+                value_array[start_date : first_value.start_date + timedelta(1)] = first_value.value  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
-                value_array[last_value.end_date : end_date] = last_value.value  # type: ignore
+                value_array[last_value.end_date : end_date + timedelta(1)] = last_value.value  # type: ignore
             # Inside value periods.
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
@@ -371,32 +371,32 @@ class Pricer:
         if first_value.start_date > end_date:
             # Fully before first value period.
             if vat_rate_array_by_id is not None and first_value.vat_id in vat_rate_array_by_id:
-                vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date:end_date]  # type: ignore
+                vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date : end_date + timedelta(1)]  # type: ignore
             else:
                 vat_value = 0.0
-            value_array[start_date:end_date] = first_value.value * (1 + vat_value)  # type: ignore
+            value_array[start_date : end_date + timedelta(1)] = (vat_value + 1) * first_value.value  # type: ignore
         elif last_value.end_date is not None and last_value.end_date < start_date:
             # Fully after last value period.
             if vat_rate_array_by_id is not None and last_value.vat_id in vat_rate_array_by_id:
-                vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[start_date:end_date]  # type: ignore
+                vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[start_date : end_date + timedelta(1)]  # type: ignore
             else:
                 vat_value = 0.0
-            value_array[start_date:end_date] = last_value.value * (1 + vat_value)  # type: ignore
+            value_array[start_date : end_date + timedelta(1)] = (vat_value + 1) * last_value.value  # type: ignore
         else:
             if start_date < first_value.start_date:
                 # Partially before first value period.
                 if vat_rate_array_by_id is not None and first_value.vat_id in vat_rate_array_by_id:
-                    vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date : first_value.start_date]  # type: ignore
+                    vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date : first_value.start_date + timedelta(1)]  # type: ignore
                 else:
                     vat_value = 0.0
-                value_array[start_date : first_value.start_date] = first_value.value * (1 + vat_value)  # type: ignore
+                value_array[start_date : first_value.start_date + timedelta(1)] = (vat_value + 1) * first_value.value  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
                 if vat_rate_array_by_id is not None and last_value.vat_id in vat_rate_array_by_id:
-                    vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date : end_date]  # type: ignore
+                    vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date : end_date + timedelta(1)]  # type: ignore
                 else:
                     vat_value = 0.0
-                value_array[last_value.end_date : end_date] = last_value.value * (1 + vat_value)  # type: ignore
+                value_array[last_value.end_date : end_date + timedelta(1)] = (vat_value + 1) * last_value.value  # type: ignore
             # Inside value periods.
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
@@ -407,7 +407,7 @@ class Pricer:
                         vat_value = vat_rate_array_by_id[value.vat_id].value_array[current_date]  # type: ignore
                     else:
                         vat_value = 0.0
-                    value_array[current_date] = value.value * (1 + vat_value)  # type: ignore
+                    value_array[current_date] = (vat_value + 1) * value.value  # type: ignore
                     current_date += timedelta(days=1)
 
     # ----------------------------------
