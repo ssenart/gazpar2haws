@@ -113,19 +113,25 @@ class Gazpar:
         else:
             end_date = datetime.strptime(daily_history[-1][pygazpar.PropertyName.TIME_PERIOD.value], "%d/%m/%Y").date()
 
+        Logger.debug(f"Start date: {start_date}, end date: {end_date}")
+
         # Extract the volume from the daily history
+        volume_start_date = last_date_and_value_by_sensor[volume_sensor_name][0] + timedelta(days=1)
+        Logger.debug(f"Volume start date: {volume_start_date}")
         volume_array = self.extract_property_from_daily_gazpar_history(
             daily_history,
             pygazpar.PropertyName.VOLUME.value,
-            last_date_and_value_by_sensor[volume_sensor_name][0],
+            volume_start_date,
             end_date,
         )
 
         # Extract the energy from the daily history
+        energy_start_date = last_date_and_value_by_sensor[energy_sensor_name][0] + timedelta(days=1)
+        Logger.debug(f"Energy start date: {energy_start_date}")
         energy_array = self.extract_property_from_daily_gazpar_history(
             daily_history,
             pygazpar.PropertyName.ENERGY.value,
-            last_date_and_value_by_sensor[energy_sensor_name][0],
+            energy_start_date,
             end_date,
         )
 
@@ -159,7 +165,7 @@ class Gazpar:
             pricer = Pricer(self._pricing_config)
 
             quantities = ConsumptionQuantityArray(
-                start_date=last_date_and_value_by_sensor[energy_sensor_name][0],
+                start_date=energy_start_date,
                 end_date=end_date,
                 value_unit=QuantityUnit.KWH,
                 base_unit=TimeUnit.DAY,
@@ -172,11 +178,12 @@ class Gazpar:
 
         # Publish the cost to Home Assistant
         if cost_array is not None:
+            cost_initial_value = last_date_and_value_by_sensor[cost_sensor_name][1]
             await self.publish_date_array(
                 cost_sensor_name,
                 cost_array.value_unit,
                 cost_array.value_array,
-                last_date_and_value_by_sensor[cost_sensor_name][1],
+                cost_initial_value,
             )
         else:
             Logger.info("No cost data to publish")
