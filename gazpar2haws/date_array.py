@@ -73,8 +73,12 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             start_index: int = (start_date - self.start_date).days
             end_index: int = (end_date - self.start_date).days
             if start_index < 0 or end_index > len(self.array):
-                raise ValueError(f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]")
-            return DateArray(start_date=start_date, end_date=end_date + timedelta(-1), array=self.array[start_index:end_index])
+                raise ValueError(
+                    f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]"
+                )
+            return DateArray(
+                start_date=start_date, end_date=end_date + timedelta(-1), array=self.array[start_index:end_index]
+            )
         raise TypeError("Key must be a date or a slice of dates")
 
     # ----------------------------------
@@ -100,7 +104,9 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             start_index: int = (start_date - self.start_date).days
             end_index: int = (end_date - self.start_date).days
             if start_index < 0 or end_index > len(self.array):
-                raise ValueError(f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]")
+                raise ValueError(
+                    f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]"
+                )
             self.array[start_index:end_index] = value
         else:
             raise TypeError("Key must be a date or a slice of dates")

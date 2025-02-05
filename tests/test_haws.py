@@ -108,6 +108,8 @@ class TestHomeAssistantWS:
 
         await self._haws.connect()
 
-        await self._haws.clear_statistics(["sensor.gazpar2haws_energy", "sensor.gazpar2haws_volume", "sensor.gazpar2haws_cost"])
+        await self._haws.clear_statistics(
+            ["sensor.gazpar2haws_energy", "sensor.gazpar2haws_volume", "sensor.gazpar2haws_cost"]
+        )
 
         await self._haws.disconnect()

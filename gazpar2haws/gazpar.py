@@ -78,7 +78,7 @@ class Gazpar:
 
     # ----------------------------------
     # Publish Gaspar data to Home Assistant WS
-    async def publish(self):  # pylint: disable=too-many-branches
+    async def publish(self):  # pylint: disable=too-many-branches, too-many-statements
 
         # Volume, energy and cost sensor names.
         volume_sensor_name = f"sensor.{self._name}_volume"
@@ -156,7 +156,7 @@ class Gazpar:
             await self.publish_date_array(
                 energy_sensor_name,
                 "kWh",
-                energy_array[energy_start_date:end_date + timedelta(days=1)],
+                energy_array[energy_start_date : end_date + timedelta(days=1)],
                 last_date_and_value_by_sensor[energy_sensor_name][1],
             )
         else:
@@ -175,7 +175,7 @@ class Gazpar:
                 end_date=end_date,
                 value_unit=QuantityUnit.KWH,
                 base_unit=TimeUnit.DAY,
-                value_array=energy_array[cost_start_date:end_date + timedelta(days=1)],
+                value_array=energy_array[cost_start_date : end_date + timedelta(days=1)],
             )
 
             cost_array = pricer.compute(quantities, PriceUnit.EURO)
