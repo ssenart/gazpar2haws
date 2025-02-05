@@ -17,7 +17,10 @@ COPY LICENSE ./
 
 COPY gazpar2haws/ /app/gazpar2haws
 
+RUN cat pyproject.toml | grep "version = " | awk '{print $3}' | tr -d '"' > /app/VERSION
+
 RUN poetry install --without dev && rm -rf $POETRY_CACHE_DIR
+RUN cat /app/VERSION
 
 # The runtime image, used to just run the code provided its virtual environment
 FROM python:3.12-slim-bookworm AS runtime
@@ -42,6 +45,9 @@ ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --from=builder /app/VERSION /app/VERSION
+
+RUN cat /app/VERSION
 
 COPY docker/entrypoint.sh /app
 RUN  chmod +x /app/entrypoint.sh
