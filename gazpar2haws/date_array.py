@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+    name: Optional[str] = None
     start_date: dt.date
     end_date: dt.date
     array: Optional[np.ndarray] = None
@@ -39,7 +40,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
         if self.array is None:
             raise ValueError("Array is not initialized")
 
-        result = DateArray(start_date=self.start_date, end_date=self.end_date)
+        result = DateArray(name=f"cumsum_{self.name}", start_date=self.start_date, end_date=self.end_date)
         result.array = np.cumsum(self.array)
         return result
 
@@ -77,7 +78,10 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
                     f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]"
                 )
             return DateArray(
-                start_date=start_date, end_date=end_date + timedelta(-1), array=self.array[start_index:end_index]
+                name=self.name,
+                start_date=start_date,
+                end_date=end_date + timedelta(-1),
+                array=self.array[start_index:end_index],
             )
         raise TypeError("Key must be a date or a slice of dates")
 
@@ -110,8 +114,6 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
                 raise ValueError(
                     f"Date slice [{start_date}:{end_date}] is out of range [{self.start_date}:{self.end_date}]"
                 )
-            self.start_date = start_date
-            self.end_date = end_date + timedelta(-1)
             if isinstance(value, float):
                 self.array[start_index:end_index] = value
             elif isinstance(value, DateArray):
@@ -156,15 +158,15 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             raise ValueError("Array is not initialized")
 
         if isinstance(other, (int, float)):
-            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
             result.array = self.array + other
             return result
         if isinstance(other, DateArray):
             if other.array is None:
                 raise ValueError("Array is not initialized")
             if not self.is_aligned_with(other):
-                raise ValueError("Date arrays are not aligned")
-            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+                raise ValueError(f"Date arrays {self} and {other} are not aligned")
+            result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
             result.array = self.array + other.array  # pylint: disable=protected-access
             return result
 
@@ -183,15 +185,15 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             raise ValueError("Array is not initialized")
 
         if isinstance(other, (int, float)):
-            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
             result.array = self.array - other
             return result
         if isinstance(other, DateArray):
             if other.array is None:
                 raise ValueError("Array is not initialized")
             if not self.is_aligned_with(other):
-                raise ValueError("Date arrays are not aligned")
-            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+                raise ValueError(f"Date arrays {self} and {other} are not aligned")
+            result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
             result.array = self.array - other.array  # pylint: disable=protected-access
             return result
 
@@ -210,15 +212,15 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             raise ValueError("Array is not initialized")
 
         if isinstance(other, (int, float)):
-            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
             result.array = self.array * other
             return result
         if isinstance(other, DateArray):
             if other.array is None:
                 raise ValueError("Array is not initialized")
             if not self.is_aligned_with(other):
-                raise ValueError("Date arrays are not aligned")
-            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+                raise ValueError(f"Date arrays {self} and {other} are not aligned")
+            result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
             result.array = self.array * other.array  # pylint: disable=protected-access
             return result
 
@@ -237,21 +239,21 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             raise ValueError("Array is not initialized")
 
         if isinstance(other, (int, float)):
-            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+            result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
             result.array = self.array / other
             return result
         if isinstance(other, DateArray):
             if other.array is None:
                 raise ValueError("Array is not initialized")
             if not self.is_aligned_with(other):
-                raise ValueError("Date arrays are not aligned")
-            result = DateArray(start_date=self.start_date, end_date=self.end_date)
+                raise ValueError(f"Date arrays {self} and {other} are not aligned")
+            result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
             result.array = self.array / other.array  # pylint: disable=protected-access
             return result
 
         raise TypeError("Other must be a date array or a number")
 
     # ----------------------------------
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
 
-        return f"DateArray(start_date={self.start_date}, end_date={self.end_date}, array={self.array})"
+        return f"DateArray(name={self.name}, start_date={self.start_date}, end_date={self.end_date}, array={self.array}, slots={(self.end_date - self.start_date).days + 1}, length={len(self)})"

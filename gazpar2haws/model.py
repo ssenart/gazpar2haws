@@ -104,13 +104,14 @@ class Value(Period):
 
 # ----------------------------------
 class ValueArray(Period):
+    name: Optional[str] = None
     value_array: Optional[DateArray] = None
 
     @model_validator(mode="after")
     def set_value_array(self):
         if self.value_array is None:
             self.value_array = DateArray(
-                start_date=self.start_date, end_date=self.end_date
+                name=self.name, start_date=self.start_date, end_date=self.end_date
             )  # pylint: disable=attribute-defined-outside-init
         return self
 

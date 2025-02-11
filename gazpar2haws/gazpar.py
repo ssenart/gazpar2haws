@@ -260,7 +260,7 @@ class Gazpar:
             # Fill the quantity array.
             if reading[property_name] is not None:
                 if res is None:
-                    res = DateArray(start_date=start_date, end_date=end_date)
+                    res = DateArray(name=property_name, start_date=start_date, end_date=end_date)
                 res[reading_date] = reading[property_name]
 
         return res

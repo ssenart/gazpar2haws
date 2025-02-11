@@ -105,6 +105,7 @@ class Pricer:
             )
         else:
             subscription_price_array = SubscriptionPriceArray(
+                name="subscription_prices",
                 start_date=start_date,
                 end_date=end_date,
                 value_unit=price_unit,
@@ -121,6 +122,7 @@ class Pricer:
             )
         else:
             transport_price_array = TransportPriceArray(
+                name="transport_prices",
                 start_date=start_date,
                 end_date=end_date,
                 value_unit=price_unit,
@@ -137,6 +139,7 @@ class Pricer:
             )
         else:
             energy_taxes_price_array = EnergyTaxesPriceArray(
+                name="energy_taxes",
                 start_date=start_date,
                 end_date=end_date,
                 value_unit=price_unit,
@@ -144,6 +147,7 @@ class Pricer:
             )
 
         res = CostArray(
+            name="costs",
             start_date=start_date,
             end_date=end_date,
             value_unit=price_unit,
@@ -167,7 +171,7 @@ class Pricer:
         res = dict[str, VatRateArray]()
         vat_rate_by_id = dict[str, list[VatRate]]()
         for vat_rate in vat_rates:
-            res[vat_rate.id] = VatRateArray(id=vat_rate.id, start_date=start_date, end_date=end_date)
+            res[vat_rate.id] = VatRateArray(name="vats", id=vat_rate.id, start_date=start_date, end_date=end_date)
             if vat_rate.id not in vat_rate_by_id:
                 vat_rate_by_id[vat_rate.id] = list[VatRate]()
             vat_rate_by_id[vat_rate.id].append(vat_rate)
@@ -193,6 +197,7 @@ class Pricer:
         first_consumption_price = consumption_prices[0]
 
         res = ConsumptionPriceArray(
+            name="consumption_prices",
             start_date=start_date,
             end_date=end_date,
             value_unit=first_consumption_price.value_unit,
@@ -220,6 +225,7 @@ class Pricer:
         first_subscription_price = subscription_prices[0]
 
         res = SubscriptionPriceArray(
+            name="subscription_prices",
             start_date=start_date,
             end_date=end_date,
             value_unit=first_subscription_price.value_unit,
@@ -247,6 +253,7 @@ class Pricer:
         first_transport_price = transport_prices[0]
 
         res = TransportPriceArray(
+            name="transport_prices",
             start_date=start_date,
             end_date=end_date,
             value_unit=first_transport_price.value_unit,
@@ -274,6 +281,7 @@ class Pricer:
         first_energy_taxes_price = energy_taxes_prices[0]
 
         res = EnergyTaxesPriceArray(
+            name="energy_taxes",
             start_date=start_date,
             end_date=end_date,
             value_unit=first_energy_taxes_price.value_unit,
