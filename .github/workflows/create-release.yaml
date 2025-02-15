@@ -105,8 +105,8 @@ jobs:
       - name: Bump version to ${{ needs.prepare.outputs.package-version }}
         run: |
           poetry version ${{ needs.prepare.outputs.package-version }}
-          envsubst < addons/gazpar2haws/config.yaml.template > addons/gazpar2haws/config.yaml
-          envsubst < addons/gazpar2haws/build.yaml.template > addons/gazpar2haws/build.yaml
+          contents="$(jq '.version = "${{ needs.prepare.outputs.package-version }}"' ./addons/gazpar2haws/config.yaml)" && echo -E "${contents}" > ./addons/gazpar2haws/config.yaml
+          contents="$(jq '.args.GAZPAR2HAWS_VERSION = "${{ needs.prepare.outputs.package-version }}"' ./addons/gazpar2haws/build.yaml)" && echo -E "${contents}" > ./addons/gazpar2haws/build.yaml
 
       #----------------------------------------------
       # Commit the changes
