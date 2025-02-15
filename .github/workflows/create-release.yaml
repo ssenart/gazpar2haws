@@ -18,7 +18,7 @@ permissions:
   contents: write # Allow to commit and push.
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.12"
+  DEFAULT_PYTHON_VERSION: "3.13"
 
 jobs:
   #----------------------------------------------
@@ -91,7 +91,6 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 2.0.0
           virtualenvs-create: true
           virtualenvs-in-project: true
           virtualenvs-path: .venv
