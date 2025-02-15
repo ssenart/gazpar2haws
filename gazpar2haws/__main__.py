@@ -1,8 +1,8 @@
 import argparse
 import asyncio
 import logging
-import traceback
 import sys
+import traceback
 
 from gazpar2haws import __version__
 from gazpar2haws.bridge import Bridge
