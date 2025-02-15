@@ -954,26 +954,21 @@ files = [
 
 [[package]]
 name = "pygazpar"
-version = "1.2.7"
-description = "Retrieve gas consumption from GrDF web site (French Gas Company)"
+version = "1.3.0b4"
+description = "Python library to download gas consumption from a GrDF (French Gas Company) account"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.9"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "pygazpar-1.2.7-py310-none-any.whl", hash = "sha256:c197de3c67612e311f15e5cb759a1fe63b48859339832023e20da37a713a7436"},
-    {file = "pygazpar-1.2.7-py311-none-any.whl", hash = "sha256:8edb654af3c0427b723a4eeb8f62331213d0b8519cff40eae57435db2219ceb2"},
-    {file = "pygazpar-1.2.7-py312-none-any.whl", hash = "sha256:a598b9341218508eb360414dc161b61dc0693b949467effb18a18093230ebc3e"},
-    {file = "pygazpar-1.2.7-py37-none-any.whl", hash = "sha256:0753496b66888650b8ff7573a1b861ae51a43cd74683527ddde3bf4bc533841a"},
-    {file = "pygazpar-1.2.7-py38-none-any.whl", hash = "sha256:8a4797637840bfe0f198bcf93425152efb0da54d780cd528b4251b626c2abdb5"},
-    {file = "pygazpar-1.2.7-py39-none-any.whl", hash = "sha256:e66f59016e7d7f96dc23cb67ef0427fe1a88bec29a9456ede25a870609906077"},
-    {file = "pygazpar-1.2.7.tar.gz", hash = "sha256:8e17822dd9bffb248954682d6f0110c8e9359b38f307ed467e2dfa926f6c8404"},
+    {file = "pygazpar-1.3.0b4-py3-none-any.whl", hash = "sha256:990fb698b461c014301a2b123cdf3cc235d258b152cf3e9b6b39c6c049b9d8d3"},
+    {file = "pygazpar-1.3.0b4.tar.gz", hash = "sha256:c17334492e7a01ef49b0d267aa0f83ed0cd87d46326a7e6f9ac6322fa36be990"},
 ]
 
 [package.dependencies]
-openpyxl = ">=2.6.3"
-pandas = "*"
-requests = ">=2.26.0"
+openpyxl = ">=3.1.5,<4.0.0"
+pandas = ">=2.1.4,<3.0.0"
+requests = ">=2.32.3,<3.0.0"
 
 [[package]]
 name = "pylint"
@@ -1393,4 +1388,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "ce30d76443d3f672756333440d8813f1a95c583b968cc52a227e54c63aaeb5f6"
+content-hash = "bb4847720d28e995f552f1783c797cbfa9e22118239dd849e794ddff9a89d674"

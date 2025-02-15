@@ -209,10 +209,10 @@ class Gazpar:
         client = pygazpar.Client(data_source)
 
         try:
-            history = client.loadDateRange(
-                pceIdentifier=self._pce_identifier,
-                startDate=start_date,
-                endDate=end_date,
+            history = client.load_date_range(
+                pce_identifier=self._pce_identifier,
+                start_date=start_date,
+                end_date=end_date,
                 frequencies=[pygazpar.Frequency.DAILY],
             )
 

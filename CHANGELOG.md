@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#31](https://github.com/ssenart/gazpar2haws/issues/31): Cost integration.
 
+### Changed
+
+[#60](https://github.com/ssenart/gazpar2haws/issues/60): Upgrade PyGazpar library version to 1.3.0.
+
 ## [0.2.1] - 2025-01-24
 
 ### Fixed
