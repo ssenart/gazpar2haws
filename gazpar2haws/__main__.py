@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import logging
 import traceback
+import sys
 
 from gazpar2haws import __version__
 from gazpar2haws.bridge import Bridge
@@ -40,6 +41,7 @@ async def main():
         config = Configuration.load(args.config, args.secrets)
 
         print(f"Gazpar2HAWS version: {__version__}")
+        print(f"Running on Python version: {sys.version}")
 
         # Set up logging
         logging_file = config.logging.file
@@ -73,6 +75,7 @@ async def main():
             logging.getLogger().addHandler(console_handler)
 
         Logger.info(f"Starting Gazpar2HAWS version {__version__}")
+        Logger.info(f"Running on Python version: {sys.version}")
 
         # Log configuration
         Logger.info(f"Configuration:\n{config.dumps()}")
