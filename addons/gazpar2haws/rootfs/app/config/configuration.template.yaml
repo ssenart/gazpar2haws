@@ -11,3 +11,5 @@ homeassistant:
   port: "${HOMEASSISTANT_PORT}"
   endpoint: "${HOMEASSISTANT_ENDPOINT}"
   token: "${HOMEASSISTANT_TOKEN}"
+
+${PRICING_CONFIG}

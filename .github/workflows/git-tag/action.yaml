@@ -12,7 +12,7 @@ runs:
 
     - name: Delete the existing local tag
       shell: bash
-      run: git tag -d ${{ inputs.tag-name }}
+      run: git tag -d ${{ inputs.tag-name }} || true
       continue-on-error: true
     
     - name: Delete the existing remote tag

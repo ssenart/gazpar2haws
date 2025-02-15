@@ -18,7 +18,7 @@ permissions:
   contents: read # Readonly permissions
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.12"
+  DEFAULT_PYTHON_VERSION: "3.13"
 
 jobs:
   #----------------------------------------------

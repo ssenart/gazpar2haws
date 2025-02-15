@@ -1,6 +1,6 @@
 name: "Gazpar2HAWS"
 description: "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface."
-version: "0.2.1"
+version: "0.3.0"
 slug: "gazpar2haws"
 init: false
 arch:
@@ -14,20 +14,94 @@ hassio_api: true
 options:
   scan_interval: 480 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor..
+    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.{{name}}.
       username: "" # Email address used to connect to the GrDF website.
       password: "" # Password used to connect to the GrDF website.
       pce_identifier: "" # PCE identifier of the meter. It should be a positive integer.
       timezone: "Europe/Paris" # Timezone of the data. It should be the same as the Home Assistant timezone.
       last_days: 365 # Number of days of data to retrieve
       reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
+  vat:
+    - id: reduced
+      start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 0.0550
+    - id: normal
+      start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 0.20
+  consumption_prices:
+    - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 0.07790
+      value_unit: "€"
+      base_unit: "kWh"
+      vat_id: normal
+    - start_date: "2023-07-01"
+      value: 0.05392
+    - start_date: "2023-08-01"
+      value: 0.05568
+    - start_date: "2023-09-01"
+      value: 0.05412
+  subscription_prices:
+    - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 19.83
+      value_unit: "€"
+      base_unit: "month"
+      vat_id: reduced
+    - start_date: "2023-07-01"
+      value: 20.36
+  transport_prices:
+    - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 34.38
+      value_unit: "€"
+      base_unit: "year"
+      vat_id: reduced
+  energy_taxes:
+    - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      value: 0.00837
+      value_unit: "€"
+      base_unit: "kWh"
+      vat_id: normal
+    - start_date: "2024-01-01"
+      value: 0.01637
 schema:
   scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-    - name: str # Name of the device in home assistant. It will be used as the entity_id: sensor..
+    - name: str # Name of the device in home assistant. It will be used as the entity_id: sensor.{{name}}.
       username: email # Email address used to connect to the GrDF website.
       password: password # Password used to connect to the GrDF website.
       pce_identifier: match(^0|[1-9][0-9]*$) # PCE identifier of the meter. It should be a positive integer.
       timezone: str? # Timezone of the data. It should be the same as the Home Assistant timezone.
       last_days: int? # Number of days of data to retrieve.
       reset: bool? # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
+  vat:
+    - id: str # Identifier of the VAT rate.
+      start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the VAT rate. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the VAT rate. Format is "YYYY-MM-DD".
+      value: float # Value of the VAT rate.
+  consumption_prices:
+    - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
+      value: float # Value of the price.
+      value_unit: str? # Unit of the price: €, ¢.
+      base_unit: str? # Base unit of the price: Wh, kWh, MWh, m³, l
+      vat_id: str? # Identifier of the VAT rate.
+  subscription_prices:
+    - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
+      value: float # Value of the price.
+      value_unit: str? # Unit of the price: €, ¢.
+      base_unit: str? # Base unit of the price: day, month, year
+      vat_id: str? # Identifier of the VAT rate.
+  transport_prices:
+    - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
+      value: float # Value of the price.
+      value_unit: str? # Unit of the price: €, ¢.
+      base_unit: str? # Base unit of the price: day, month, year
+      vat_id: str? # Identifier of the VAT rate.
+  energy_taxes:
+    - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
+      end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
+      value: float # Value of the tax.
+      value_unit: str? # Unit of the tax: €, ¢.
+      base_unit: str? # Base unit of the tax: Wh, kWh, MWh, m³, l
+      vat_id: str? # Identifier of the VAT rate.

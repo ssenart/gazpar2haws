@@ -1,0 +1,2 @@
+# Auto detect script files and perform LF normalization.
+*.sh text eol=lf
