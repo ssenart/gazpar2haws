@@ -453,6 +453,56 @@ In a Docker environment, the configurations files are instantiated by replacing 
 
 You can setup them directly in a docker-compose.yaml file (environment section) or from a Docker command line (-e option).
 
+## FAQ
+
+- *Is it an official GrDF application ?*
+
+  No, absolutely not. It was made by reverse engineering GrDG website without any guarantee of long-term operation. Indeed, any modification made to their website risks breaking it.
+
+- *I'm confused. What are the differences between [PyGazpar](https://github.com/ssenart/PyGazpar), [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar), [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card), [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt), [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) ?*
+
+    - [PyGazpar](https://github.com/ssenart/PyGazpar) is the low-level Python library used to query GrDF data. It was written for use by other Python programs.
+    - [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) is the first program using PyGazpar. This is a Home Assistant integration which makes it possible to provide an energy sensor. Coupled with the Recorder integration, it is capable of building a history (called statistics in HA) and displaying it using the Energy Dashboard. It is also compatible with the [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card).
+    - [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card) is a HA card which nicely displays historical data in the form of tables or bar graphs. It is also compatible with [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt).
+    - [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt) offers exactly the same functionality as [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) but runs outside of HA as a standalone application, in a Docker container or in an HA add-on.
+    - [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) replaces the use of home-assistant-gazpar/Gazpar2MQTT with the HA Recorder integration to create a data history (for Energy dashboard integration). The disadvantage of the latter solution is the non-alignment of the actual reading date and its publication date. Reading values ​​are made available for 2 to 5 days (and sometimes longer). [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) timestamps the reading value exactly to the observation dates without any offset. In addition, [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) is able to reconstruct the complete history of your data up to 3 years in the past, which is very practical in the event of data loss. Finally, it provides ways to calculate and publish energy costs.
+
+- *My PCE ID has a leading zero (e.g. "0123456789") and the application fails with an error indicating that the PCE number is unknown. I can see in the log file that it uses "123456789" without the leading zero. What happened ?*
+
+  The cause is in your configuration file (grdf.devices[].pce_identifier) ​​where you configured your PCE identifier and you did not quote it. Your PCE number is then interpreted as a number instead of a string.
+
+## Troubleshooting
+
+Sometimes, for any reason, the application does not work as expected. No entities is created in HA, some error messages are displayed, nothing happens...
+
+In this situation, the most valuable tool for troubleshooting what is happening is the log file.
+
+Take a look at it, try to find a clue that might help solve the problem. Sorry, the log file can sometimes appear cryptic.
+
+If your configuration is correct, you may have spotted a bug.
+
+In this case, capture a Github issue [here](https://github.com/ssenart/gazpar2haws/issues) with the following information:
+1. What kind of setup do you use ? Standalone application, Docker container or HA addon.
+2. Is this a first installation or a version upgrade ? If upgrading version, what was the previous version and did it work well ?
+3. Describe as precisely as possible what is happening.
+4. Provide the complete log file (from start to finish) and make sure to erase all your secrets from it.
+
+The first log lines should be similar to:
+```log
+2025-02-17 02:01:17,626 INFO [__main__] Starting Gazpar2HAWS version 0.3.0
+2025-02-17 02:01:17,627 INFO [__main__] Running on Python version: 3.12.9 (main, Feb  7 2025, 01:03:02) [GCC 12.2.0]
+```
+
+The normal last lines of the log should be:
+```log
+2025-02-17 10:02:42,162 INFO [gazpar2haws.gazpar] No volume data to publish
+2025-02-17 10:02:42,162 INFO [gazpar2haws.gazpar] No energy data to publish
+2025-02-17 10:02:42,162 INFO [gazpar2haws.gazpar] No cost data to publish
+2025-02-17 10:02:42,162 INFO [gazpar2haws.bridge] Device 'gazpar2haws' data published to Home Assistant WS.
+2025-02-17 10:02:42,162 INFO [gazpar2haws.bridge] Gazpar data published to Home Assistant WS.
+2025-02-17 10:02:42,166 INFO [gazpar2haws.bridge] Waiting 480 minutes before next scan...
+```
+
 ## Publish a new image on Docker Hub
 
 1. List all local images
