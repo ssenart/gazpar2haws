@@ -457,7 +457,7 @@ You can setup them directly in a docker-compose.yaml file (environment section) 
 
 - *Is it an official GrDF application ?*
 
-  No, absolutely not. It was made by reverse engineering GrDG website without any guarantee of long-term operation. Indeed, any modification made to their website risks breaking it.
+  No, absolutely not. It was made by reverse engineering GrDF website without any guarantee of long-term operation. Indeed, any modification made to their website risks breaking it.
 
 - *I'm confused. What are the differences between [PyGazpar](https://github.com/ssenart/PyGazpar), [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar), [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card), [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt), [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) ?*
 
