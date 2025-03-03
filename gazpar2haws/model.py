@@ -54,7 +54,7 @@ class Device(BaseModel):
     name: str
     data_source: str = "json"
     tmp_dir: DirectoryPath = DirectoryPath("/tmp")
-    as_of_date: date = None
+    as_of_date: Optional[date] = None
     username: Optional[EmailStr] = None
     password: Optional[SecretStr] = None
     pce_identifier: Optional[SecretStr] = None
