@@ -108,9 +108,7 @@ class Gazpar:
         last_date_and_value_by_sensor[cost_sensor_name] = await self.find_last_date_and_value(cost_sensor_name)
 
         # Compute the start date as the minimum of the last dates plus one day
-        start_date = min(
-            min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1), as_of_date
-        )
+        start_date = min(min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1), as_of_date)
 
         # Get all start dates
         energy_start_date = last_date_and_value_by_sensor[energy_sensor_name][0] + timedelta(days=1)
@@ -345,7 +343,9 @@ class Gazpar:
                 as_of_datetime = datetime.combine(as_of_date, datetime.min.time())
                 as_of_datetime = pytz.timezone(self._timezone).localize(as_of_datetime)
 
-                last_statistic = await self._homeassistant.get_last_statistic(entity_id, as_of_datetime, self._last_days)
+                last_statistic = await self._homeassistant.get_last_statistic(
+                    entity_id, as_of_datetime, self._last_days
+                )
             except HomeAssistantWSException:
                 Logger.warning(
                     f"Error while fetching last statistics of the entity '{entity_id}' from Home Assistant: {traceback.format_exc()}"
