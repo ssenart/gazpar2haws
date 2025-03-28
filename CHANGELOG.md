@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-03-28
+
+### Fixed
+
+[#70](https://github.com/ssenart/gazpar2haws/issues/70): Remove as_of_date configuration property in default configuration template file.
+
 ## [0.3.1] - 2025-03-03
 
 ### Fixed
