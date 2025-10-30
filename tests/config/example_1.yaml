@@ -22,4 +22,4 @@ homeassistant:
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.

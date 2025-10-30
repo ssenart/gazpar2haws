@@ -5,6 +5,7 @@ from datetime import date
 
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.model import (
+    CompositePriceValue,
     ConsumptionQuantityArray,
     DateArray,
     PriceUnit,
@@ -332,15 +333,15 @@ class TestPricer:  # pylint: disable=R0904
 
         consumption_prices = self._pricer.pricing_data().consumption_prices
 
-        converted_prices = Pricer.convert(consumption_prices, (PriceUnit.CENT, QuantityUnit.WH))
+        converted_prices = Pricer.convert(consumption_prices, (PriceUnit.CENT, QuantityUnit.WH, TimeUnit.DAY))
 
         for i in range(len(consumption_prices) - 1):
             consumption_price = consumption_prices[i]
             converted_price = converted_prices[i]
 
-            assert converted_price.value_unit == PriceUnit.CENT
-            assert converted_price.base_unit == QuantityUnit.WH
-            assert converted_price.value == 0.1 * consumption_price.value
+            assert converted_price.price_unit == PriceUnit.CENT
+            assert converted_price.quantity_unit == QuantityUnit.WH
+            assert converted_price.quantity_value == 0.1 * consumption_price.quantity_value
 
     # ----------------------------------
     def _create_quantities(
@@ -518,6 +519,30 @@ class TestPricer:  # pylint: disable=R0904
         )
 
     # ----------------------------------
+    def test_example_6bis(self):
+
+        # Load configuration
+        config = Configuration.load("tests/config/example_6bis.yaml", "tests/config/secrets.yaml")
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # At the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 6, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
+
+        # Before the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 4, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
+
+        # After the date.
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 8, 1), 372.0, QuantityUnit.KWH), 34.87393, rel_tol=1e-6
+        )
+
+    # ----------------------------------
     def test_example_7(self):
 
         # Load configuration
@@ -540,3 +565,159 @@ class TestPricer:  # pylint: disable=R0904
         assert math.isclose(
             self._compute_cost(pricer, date(2023, 8, 1), 1476.0, QuantityUnit.KWH), 152.8014, rel_tol=1e-6
         )
+
+    # ----------------------------------
+    def test_get_composite_price_array(self):
+        """Test the new get_composite_price_array method with both quantity and time components."""
+
+        start_date = date(2023, 6, 1)
+        end_date = date(2023, 6, 5)
+
+        # Create VAT rate arrays
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
+        }
+
+        # Fill VAT arrays with test values
+        Pricer._fill_value_array(vat_rate_array_by_id["reduced"], self._pricer.pricing_data().vat[:1])  # type: ignore
+        Pricer._fill_value_array(vat_rate_array_by_id["normal"], self._pricer.pricing_data().vat[1:2])  # type: ignore
+
+        # Create composite prices with both quantity and time components
+        composite_prices = [
+            CompositePriceValue(
+                start_date=date(2023, 6, 1),
+                end_date=date(2023, 6, 3),
+                price_unit=PriceUnit.EURO,
+                quantity_value=0.08,  # €/kWh
+                quantity_unit=QuantityUnit.KWH,
+                time_value=20.0,  # €/month
+                time_unit=TimeUnit.MONTH,
+                vat_id="normal",
+            ),
+            CompositePriceValue(
+                start_date=date(2023, 6, 3),
+                end_date=date(2023, 6, 10),
+                price_unit=PriceUnit.EURO,
+                quantity_value=0.07,  # €/kWh (changed)
+                quantity_unit=QuantityUnit.KWH,
+                time_value=25.0,  # €/month (changed)
+                time_unit=TimeUnit.MONTH,
+                vat_id="normal",
+            ),
+        ]
+
+        # Get the composite price array
+        composite_price_array = Pricer.get_composite_price_array(
+            start_date=start_date,
+            end_date=end_date,
+            composite_prices=composite_prices,
+            vat_rate_array_by_id=vat_rate_array_by_id,
+        )
+
+        # Verify structure
+        assert composite_price_array is not None
+        assert composite_price_array.start_date == start_date
+        assert composite_price_array.end_date == end_date
+        assert composite_price_array.price_unit == PriceUnit.EURO
+        assert composite_price_array.quantity_unit == QuantityUnit.KWH
+        assert composite_price_array.time_unit == TimeUnit.MONTH
+        assert composite_price_array.vat_id == "normal"
+
+        # Verify quantity array
+        assert composite_price_array.quantity_value_array is not None
+        assert len(composite_price_array.quantity_value_array) == 5  # type: ignore
+        # First period (June 1-2): 0.08 * (1 + 0.20) = 0.096
+        assert composite_price_array.quantity_value_array[date(2023, 6, 1)] == 0.096  # type: ignore
+        assert composite_price_array.quantity_value_array[date(2023, 6, 2)] == 0.096  # type: ignore
+        # Second period (June 3-5): 0.07 * (1 + 0.20) = 0.084
+        assert composite_price_array.quantity_value_array[date(2023, 6, 3)] == 0.084  # type: ignore
+        assert composite_price_array.quantity_value_array[date(2023, 6, 5)] == 0.084  # type: ignore
+
+        # Verify time array
+        assert composite_price_array.time_value_array is not None
+        assert len(composite_price_array.time_value_array) == 5  # type: ignore
+        # First period (June 1-2): 20.0 * (1 + 0.20) = 24.0
+        assert composite_price_array.time_value_array[date(2023, 6, 1)] == 24.0  # type: ignore
+        assert composite_price_array.time_value_array[date(2023, 6, 2)] == 24.0  # type: ignore
+        # Second period (June 3-5): 25.0 * (1 + 0.20) = 30.0
+        assert composite_price_array.time_value_array[date(2023, 6, 3)] == 30.0  # type: ignore
+        assert composite_price_array.time_value_array[date(2023, 6, 5)] == 30.0  # type: ignore
+
+    # ----------------------------------
+    def test_get_composite_price_array_quantity_only(self):
+        """Test get_composite_price_array with only quantity component (no time component)."""
+
+        start_date = date(2023, 7, 1)
+        end_date = date(2023, 7, 3)
+
+        vat_rate_array_by_id = {
+            "normal": VatRateArray(id="normal", start_date=start_date, end_date=end_date),
+        }
+        Pricer._fill_value_array(vat_rate_array_by_id["normal"], self._pricer.pricing_data().vat[1:2])  # type: ignore
+
+        # Composite price with only quantity component
+        composite_prices = [
+            CompositePriceValue(
+                start_date=date(2023, 7, 1),
+                price_unit=PriceUnit.EURO,
+                quantity_value=0.05,  # €/kWh
+                quantity_unit=QuantityUnit.KWH,
+                time_value=None,  # No time component
+                time_unit=TimeUnit.MONTH,
+                vat_id="normal",
+            ),
+        ]
+
+        composite_price_array = Pricer.get_composite_price_array(
+            start_date=start_date,
+            end_date=end_date,
+            composite_prices=composite_prices,
+            vat_rate_array_by_id=vat_rate_array_by_id,
+        )
+
+        # Quantity array should be filled
+        assert composite_price_array.quantity_value_array is not None
+        assert composite_price_array.quantity_value_array[date(2023, 7, 1)] == 0.05 * 1.20  # type: ignore
+
+        # Time array should exist but be empty (all zeros/None)
+        assert composite_price_array.time_value_array is not None
+
+    # ----------------------------------
+    def test_get_composite_price_array_time_only(self):
+        """Test get_composite_price_array with only time component (no quantity component)."""
+
+        start_date = date(2023, 7, 1)
+        end_date = date(2023, 7, 3)
+
+        vat_rate_array_by_id = {
+            "reduced": VatRateArray(id="reduced", start_date=start_date, end_date=end_date),
+        }
+        Pricer._fill_value_array(vat_rate_array_by_id["reduced"], self._pricer.pricing_data().vat[:1])  # type: ignore
+
+        # Composite price with only time component
+        composite_prices = [
+            CompositePriceValue(
+                start_date=date(2023, 7, 1),
+                price_unit=PriceUnit.EURO,
+                quantity_value=None,  # No quantity component
+                quantity_unit=QuantityUnit.KWH,
+                time_value=15.0,  # €/month
+                time_unit=TimeUnit.MONTH,
+                vat_id="reduced",
+            ),
+        ]
+
+        composite_price_array = Pricer.get_composite_price_array(
+            start_date=start_date,
+            end_date=end_date,
+            composite_prices=composite_prices,
+            vat_rate_array_by_id=vat_rate_array_by_id,
+        )
+
+        # Time array should be filled
+        assert composite_price_array.time_value_array is not None
+        assert composite_price_array.time_value_array[date(2023, 7, 1)] == 15.0 * 1.055  # type: ignore
+
+        # Quantity array should exist but be empty
+        assert composite_price_array.quantity_value_array is not None
