@@ -213,3 +213,11 @@ Tests are organized by module and use pytest:
 - Multiple pricing examples in `tests/config/example_*.yaml`
 
 When modifying the Pricer, update the Excel test file and corresponding YAML examples to ensure pricing formulas remain correct.
+
+## Documentation
+
+Keep updated README.md and CLAUDE.md regarding to any changes in the code.
+
+## Release management
+
+Always suggest to update the CHANGELOG.md with any changes in the code.
