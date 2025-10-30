@@ -221,3 +221,223 @@ Keep updated README.md and CLAUDE.md regarding to any changes in the code.
 ## Release management
 
 Always suggest to update the CHANGELOG.md with any changes in the code.
+
+## Configuration Files and Documentation Maintenance
+
+When making changes to the pricing model, configuration format, or published entities, multiple files across the repository need to be updated to maintain consistency. This section documents all locations that require maintenance.
+
+### Configuration Files
+
+Configuration files exist in multiple locations for different deployment scenarios:
+
+#### 1. Main Configuration (Standalone/Docker)
+
+**Location**: `config/`
+
+Files to update:
+- **`config/configuration.yaml`** - Example configuration with real pricing data
+- **`config/configuration.template.yaml`** - Template with placeholders for Docker deployments
+- **`config/secrets.template.yaml`** - Template for sensitive values (rarely needs updates)
+
+**When to update**: Any pricing model changes, new configuration options, or default value changes.
+
+**Example changes needed**:
+- Property name changes (e.g., `value` → `quantity_value`)
+- New configuration sections
+- Updated examples reflecting current pricing structure
+
+#### 2. Add-on Configuration (Home Assistant Add-on)
+
+**Location**: `addons/gazpar2haws/`
+
+Files to update:
+- **`addons/gazpar2haws/config.yaml`** - Add-on configuration and schema
+  - Version number (line 3)
+  - Options section with example pricing (lines 31-64)
+  - Schema section defining allowed properties (lines 80-115)
+- **`addons/gazpar2haws/DOCS.md`** - Comprehensive pricing examples and documentation
+  - All pricing examples (Examples 1-8+)
+  - Transport price description
+  - "What's New" section for new versions
+- **`addons/gazpar2haws/README.md`** - Brief description (rarely needs updates)
+- **`addons/gazpar2haws/rootfs/app/config/configuration.template.yaml`** - Uses env vars, usually no changes needed
+
+**When to update**: Version releases, pricing model changes, new features affecting configuration.
+
+**Critical**: The add-on config.yaml contains BOTH example configuration AND JSON schema definitions. Both must be updated together.
+
+#### 3. Test Configuration
+
+**Location**: `tests/config/`
+
+Files to update:
+- **`tests/config/example_1.yaml`** through **`tests/config/example_6bis.yaml`** - Test configurations for different pricing scenarios
+- **`tests/XLPricer.xlsx`** - Excel spreadsheet with expected pricing calculations
+
+**When to update**: Any changes to pricing formulas, new price types, or unit conversions.
+
+### Documentation Files
+
+#### 1. User Documentation
+
+**`README.md`** - Main project documentation
+- Installation instructions
+- Configuration examples
+- Entity descriptions (7 entities in v0.4.0)
+- Pricing section with all price types
+- Migration guides
+- FAQ section structure
+- Links to other documentation files
+
+**`FAQ.md`** - Frequently Asked Questions
+- Common configuration issues
+- Migration questions
+- Troubleshooting steps
+- References to specific GitHub issues
+
+**`CHANGELOG.md`** - Version history
+- Added/Changed/Fixed/Removed sections
+- Breaking changes clearly marked
+- Issue references with [#XX] format
+- Migration notes for breaking changes
+
+#### 2. Developer Documentation
+
+**`CLAUDE.md`** (this file) - Developer guidance
+- Architecture overview
+- Data flow descriptions
+- Pricing system details
+- Configuration format specifications
+- Testing guidelines
+- Maintenance procedures
+
+**`TODO.md`** - Planned improvements
+- Test coverage gaps
+- Priority-based task organization
+- Specific test cases needed
+- Implementation schedule
+
+#### 3. Add-on Documentation
+
+**`addons/gazpar2haws/DOCS.md`** - Add-on user guide
+- Detailed pricing examples (8+ examples)
+- Configuration parameter descriptions
+- Formulas showing cost calculations
+- "What's New" sections for version updates
+
+### Version Update Checklist
+
+When releasing a new version, ensure ALL of the following are updated:
+
+1. **Version Numbers**:
+   - `pyproject.toml` - Python package version
+   - `addons/gazpar2haws/config.yaml` - Add-on version (line 3)
+   - `CHANGELOG.md` - Add new version entry at top
+
+2. **Configuration Examples** (if pricing format changed):
+   - `config/configuration.yaml` - Update example pricing
+   - `config/configuration.template.yaml` - Update template
+   - `addons/gazpar2haws/config.yaml` - Options section (lines 31-64)
+   - All `tests/config/example_*.yaml` files
+
+3. **Schema Definitions** (if pricing format changed):
+   - `addons/gazpar2haws/config.yaml` - Schema section (lines 80-115)
+
+4. **Documentation Examples** (if pricing format changed):
+   - `README.md` - Pricing section examples
+   - `addons/gazpar2haws/DOCS.md` - All 8+ examples
+   - `FAQ.md` - Add migration questions if breaking changes
+
+5. **Architecture Documentation** (if entities or data flow changed):
+   - `README.md` - Entity list, architecture section
+   - `CLAUDE.md` - Published entities, data flow, architecture
+   - `addons/gazpar2haws/DOCS.md` - "What's New" section
+
+6. **Test Data** (if pricing formulas changed):
+   - `tests/XLPricer.xlsx` - Update expected calculations
+   - `tests/config/example_*.yaml` - Add new test scenarios
+
+### Property Naming Conventions
+
+When adding new configuration properties:
+
+- Use **snake_case** for all YAML properties
+- Use descriptive names that indicate the property's purpose
+- Group related properties with common prefixes:
+  - `quantity_*` for energy/volume-based values
+  - `time_*` for duration-based values
+  - `price_*` for monetary units
+  - `*_unit` for unit specifications
+  - `*_id` for references to other sections
+
+### Breaking Changes Protocol
+
+When introducing breaking changes to configuration:
+
+1. **CHANGELOG.md**: Mark section with "BREAKING" and provide migration table
+2. **README.md**: Add migration guide with before/after examples
+3. **FAQ.md**: Add Q&A about the migration
+4. **DOCS.md**: Add "What's New" section explaining changes
+5. **Model validation**: Consider adding deprecation warnings before full removal
+6. **Version bump**: Use semantic versioning (breaking change = major version bump)
+
+### Cross-Reference Validation
+
+After making changes, verify consistency across:
+
+- Entity names match in README.md, CLAUDE.md, DOCS.md, and gazpar.py
+- Property names match in all configuration examples and schema definitions
+- Formulas match between DOCS.md examples and Pricer implementation
+- Version numbers match across all files
+- Migration guides reference the correct property mappings
+
+### Common Maintenance Scenarios
+
+**Scenario 1: Adding a new price type**
+1. Update `model.py` - Add Pydantic model
+2. Update `pricer.py` - Add calculation logic
+3. Update `gazpar.py` - Add entity and publishing logic
+4. Update all config files (config/, addons/, tests/)
+5. Update schema in `addons/gazpar2haws/config.yaml`
+6. Add example in `addons/gazpar2haws/DOCS.md`
+7. Update entity lists in README.md, CLAUDE.md
+8. Add test case in `tests/XLPricer.xlsx`
+
+**Scenario 2: Renaming configuration properties**
+1. Update `model.py` - Change property names
+2. Update all config files with new property names
+3. Update schema definitions in add-on config.yaml
+4. Update all documentation examples
+5. Add migration guide to README.md
+6. Add deprecation warnings if possible
+7. Update CHANGELOG.md with breaking change notice
+8. Add FAQ entry about migration
+
+**Scenario 3: Changing published entities**
+1. Update `gazpar.py` - Sensor name definitions and publishing logic
+2. Update entity lists in README.md, CLAUDE.md, DOCS.md
+3. Update "What's New" section in DOCS.md
+4. Update CHANGELOG.md
+5. Consider impact on existing Home Assistant installations
+
+### File Location Quick Reference
+
+```
+Configuration Files:
+├── config/configuration.yaml              # Main example config
+├── config/configuration.template.yaml     # Docker template
+├── config/secrets.template.yaml           # Secrets template
+├── addons/gazpar2haws/config.yaml        # Add-on config + schema
+└── tests/config/example_*.yaml           # Test configurations
+
+Documentation Files:
+├── README.md                              # Main user docs
+├── CLAUDE.md                              # Developer guide
+├── FAQ.md                                 # User questions
+├── CHANGELOG.md                           # Version history
+├── TODO.md                                # Planned improvements
+└── addons/gazpar2haws/DOCS.md            # Add-on user guide
+
+Test Data:
+└── tests/XLPricer.xlsx                   # Expected pricing calculations
+```
