@@ -408,7 +408,7 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def _fill_composite_component_array(
+    def _fill_composite_component_array(  # pylint: disable=too-many-branches, too-many-statements
         cls,
         out_composite_array: CompositePriceArray,
         in_composite_values: list[CompositePriceValue],
@@ -719,27 +719,27 @@ class Pricer:
                     )
                 )
             return res
-        else:
-            # Original PriceValue conversion logic (2-tuple)
-            res = list[PriceValue[ValueUnit, BaseUnit]]()
-            for price_value in price_values:
-                if price_value.value_unit is None:
-                    raise ValueError("price_value.value_unit is None")
-                if price_value.base_unit is None:
-                    raise ValueError("price_value.base_unit is None")
 
-                res.append(
-                    PriceValue(
-                        start_date=price_value.start_date,
-                        end_date=price_value.end_date,
-                        value=price_value.value
-                        * cls.get_convertion_factor(
-                            (price_value.value_unit, price_value.base_unit), to_unit, price_value.start_date  # type: ignore
-                        ),
-                        value_unit=to_unit[0],
-                        base_unit=to_unit[1],
-                        vat_id=price_value.vat_id,
-                    )
+        # Original PriceValue conversion logic (2-tuple)
+        res = list[PriceValue[ValueUnit, BaseUnit]]()
+        for price_value in price_values:
+            if price_value.value_unit is None:
+                raise ValueError("price_value.value_unit is None")
+            if price_value.base_unit is None:
+                raise ValueError("price_value.base_unit is None")
+
+            res.append(
+                PriceValue(
+                    start_date=price_value.start_date,
+                    end_date=price_value.end_date,
+                    value=price_value.value
+                    * cls.get_convertion_factor(
+                        (price_value.value_unit, price_value.base_unit), to_unit, price_value.start_date  # type: ignore
+                    ),
+                    value_unit=to_unit[0],
+                    base_unit=to_unit[1],
+                    vat_id=price_value.vat_id,
                 )
+            )
 
-            return res
+        return res

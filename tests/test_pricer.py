@@ -1,3 +1,5 @@
+# pylint: disable=protected-access
+
 """Test pricer module."""
 
 import math
