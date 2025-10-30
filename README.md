@@ -177,6 +177,11 @@ The history is uploaded on the entities with names:
 
 - sensor.${name}\_volume: Volume history in m³.
 - sensor.${name}\_energy: Energy history in kWh.
+- sensor.${name}\_consumption_cost: Cost from consumption (if pricing configured).
+- sensor.${name}\_subscription_cost: Cost from subscription (if pricing configured).
+- sensor.${name}\_transport_cost: Cost from transport (if pricing configured).
+- sensor.${name}\_energy_taxes_cost: Cost from energy taxes (if pricing configured).
+- sensor.${name}\_total_cost: Total cost (if pricing configured).
 
 `${name}` is 'gazpar2haws' defined in the above configuration file. It can be replaced by any other name.
 
@@ -188,10 +193,10 @@ The cost computation is based in gas prices defined in the configuration files.
 
 The section 'Pricing' is broken into 5 sub-sections:
 - vat: Value added tax definition.
-- consumption_prices: All the gas price history in €/kWh.
-- subscription_prices: The subscription prices in €/month (or year).
-- transport_prices: The fixed prices in €/month (or year) to transport the gas.
-- energy_taxes: Various taxes on energy in €/kWh.
+- consumption_prices: Gas consumption prices, typically in €/kWh (quantity-based).
+- subscription_prices: Fixed subscription prices, typically in €/month or €/year (time-based).
+- transport_prices: Transport prices, either fixed (€/month or €/year) or based on consumption (€/kWh).
+- energy_taxes: Energy taxes, typically in €/kWh (quantity-based).
 
 Below, many examples illustrates how to use pricing configuration for use cases from the simplest to the most complex.
 
@@ -849,7 +854,7 @@ In this case, capture a Github issue [here](https://github.com/ssenart/gazpar2ha
 
 The first log lines should be similar to:
 ```log
-2025-02-17 02:01:17,626 INFO [__main__] Starting Gazpar2HAWS version 0.3.0
+2025-02-17 02:01:17,626 INFO [__main__] Starting Gazpar2HAWS version 0.4.0
 2025-02-17 02:01:17,627 INFO [__main__] Running on Python version: 3.12.9 (main, Feb  7 2025, 01:03:02) [GCC 12.2.0]
 ```
 

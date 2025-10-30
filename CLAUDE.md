@@ -108,6 +108,8 @@ The application follows a layered architecture with three main components:
 The Pricer ([pricer.py](gazpar2haws/pricer.py)) implements a sophisticated cost calculation system:
 
 - **CompositePriceValue**: Represents prices with both quantity and time components (e.g., €/kWh + €/month)
+- **CompositePriceArray**: Vectorized form holding both quantity_value_array and time_value_array
+- **CostBreakdown**: Result structure with separate consumption, subscription, transport, energy_taxes, and total cost arrays
 - **VAT support**: Multiple VAT rates (reduced, normal) applied to different price components
 - **Time-varying prices**: Prices change over time, with automatic interpolation
 - **Unit conversion**: Automatic conversion between price units (€, ¢), quantity units (Wh, kWh, MWh), and time units (day, week, month, year)
@@ -119,7 +121,9 @@ The model ([model.py](gazpar2haws/model.py)) uses Pydantic for configuration val
 
 - **DateArray**: Sparse array indexed by date for efficient time-series operations
 - **ValueArray**: Base class for all time-series data with unit conversion
-- **Pricing components**: VatRate, ConsumptionPriceArray, SubscriptionPriceArray, TransportPriceArray, EnergyTaxesPriceArray
+- **CompositePriceValue**: Input model with optional quantity_value/quantity_unit and time_value/time_unit fields
+- **CompositePriceArray**: Output model with quantity_value_array and time_value_array DateArrays
+- **CostBreakdown**: Output model with consumption, subscription, transport, energy_taxes, and total CostArrays
 - **Configuration**: Device, Grdf, HomeAssistant, Logging, Pricing
 
 ### Configuration System
@@ -153,6 +157,29 @@ PyGazpar supports multiple data sources:
 ### PCE Identifier Gotcha
 
 PCE identifiers must be quoted in YAML to preserve leading zeros. Unquoted values like `0123456789` are interpreted as numbers and lose the leading zero.
+
+### Pricing Configuration Format (v0.4.0)
+
+The pricing configuration uses the composite price model:
+
+**YAML Properties:**
+- `quantity_value`: Numeric value for quantity-based pricing (e.g., 0.07790 for €/kWh)
+- `quantity_unit`: Energy unit (Wh, kWh, MWh) - default: kWh
+- `time_value`: Numeric value for time-based pricing (e.g., 19.83 for €/month)
+- `time_unit`: Time unit (day, week, month, year) - default: month
+- `price_unit`: Monetary unit (€, ¢) - default: €
+- `vat_id`: Reference to VAT rate ID
+
+**Price Type Guidelines:**
+- **consumption_prices**: Use `quantity_value` + `quantity_unit` (kWh)
+- **subscription_prices**: Use `time_value` + `time_unit` (month/year)
+- **transport_prices**: Use either `time_value` (fixed fee) OR `quantity_value` (per kWh)
+- **energy_taxes**: Use `quantity_value` + `quantity_unit` (kWh)
+
+**Deprecated (v0.3.x):**
+- `value` → replaced by `quantity_value` or `time_value`
+- `value_unit` → replaced by `price_unit`
+- `base_unit` → replaced by `quantity_unit` or `time_unit`
 
 ## Testing
 
