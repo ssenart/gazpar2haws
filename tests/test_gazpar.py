@@ -135,7 +135,8 @@ class TestGazpar:
         if energy_array is not None:
             pricer = Pricer(self._pricing_config)
 
-            cost_array = pricer.compute(quantities, PriceUnit.EURO)
+            cost_breakdown = pricer.compute(quantities, PriceUnit.EURO)
+            cost_array = cost_breakdown.total
         else:
             cost_array = None
 

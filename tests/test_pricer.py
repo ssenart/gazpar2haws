@@ -311,20 +311,39 @@ class TestPricer:  # pylint: disable=R0904
 
     # ----------------------------------
     def test_compute(self):
+        """Test compute returns detailed breakdown with all cost components."""
 
         start_date = date(2023, 8, 20)
         end_date = date(2023, 8, 25)
 
         quantities = self._create_quantities(start_date, end_date, 1.0, QuantityUnit.KWH)
 
-        cost_array = self._pricer.compute(quantities, PriceUnit.EURO)
+        cost_breakdown = self._pricer.compute(quantities, PriceUnit.EURO)
 
-        assert cost_array.start_date == start_date
-        assert cost_array.end_date == end_date
-        assert cost_array.value_unit == "€"
-        assert len(cost_array.value_array) == 6
-        assert math.isclose(cost_array.value_array[start_date], 0.86912910, rel_tol=1e-6)
-        assert math.isclose(cost_array.value_array[end_date], 0.86912910, rel_tol=1e-6)
+        # Verify breakdown structure
+        assert cost_breakdown.consumption is not None
+        assert cost_breakdown.subscription is not None
+        assert cost_breakdown.transport is not None
+        assert cost_breakdown.energy_taxes is not None
+        assert cost_breakdown.total is not None
+
+        # Verify total cost array
+        assert cost_breakdown.total.start_date == start_date
+        assert cost_breakdown.total.end_date == end_date
+        assert cost_breakdown.total.value_unit == "€"
+        assert len(cost_breakdown.total.value_array) == 6
+        assert math.isclose(cost_breakdown.total.value_array[start_date], 0.86912910, rel_tol=1e-6)
+        assert math.isclose(cost_breakdown.total.value_array[end_date], 0.86912910, rel_tol=1e-6)
+
+        # Verify that total equals sum of components
+        for dt in [start_date, end_date]:
+            total_from_components = (
+                cost_breakdown.consumption.value_array[dt]
+                + cost_breakdown.subscription.value_array[dt]
+                + cost_breakdown.transport.value_array[dt]
+                + cost_breakdown.energy_taxes.value_array[dt]
+            )
+            assert math.isclose(cost_breakdown.total.value_array[dt], total_from_components, rel_tol=1e-9)
 
     # ----------------------------------
     def _compute_cost(self, pricer: Pricer, single_date: date, quantity: float, unit: QuantityUnit) -> float:
@@ -332,11 +351,11 @@ class TestPricer:  # pylint: disable=R0904
         # Prepare the quantities
         quantities = self._create_quantities(single_date, single_date, quantity, unit)
 
-        # Compute the cost
-        cost_array = pricer.compute(quantities, PriceUnit.EURO)
+        # Compute the cost (returns breakdown with detailed components)
+        cost_breakdown = pricer.compute(quantities, PriceUnit.EURO)
 
-        if cost_array.value_array is not None:
-            return cost_array.value_array[single_date]
+        if cost_breakdown.total.value_array is not None:
+            return cost_breakdown.total.value_array[single_date]
 
         return 0.0
 

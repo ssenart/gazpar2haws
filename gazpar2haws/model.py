@@ -277,3 +277,14 @@ class ConsumptionQuantityArray(Unit[QuantityUnit, TimeUnit], ValueArray):
 # ----------------------------------
 class CostArray(Unit[PriceUnit, TimeUnit], ValueArray):
     pass
+
+
+# ----------------------------------
+class CostBreakdown(BaseModel):
+    """Detailed breakdown of costs with individual components and total."""
+
+    consumption: CostArray
+    subscription: CostArray
+    transport: CostArray
+    energy_taxes: CostArray
+    total: CostArray

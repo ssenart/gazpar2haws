@@ -9,6 +9,7 @@ from gazpar2haws.model import (
     CompositePriceValue,
     ConsumptionQuantityArray,
     CostArray,
+    CostBreakdown,
     PriceUnit,
     PriceValue,
     Pricing,
@@ -35,7 +36,7 @@ class Pricer:
     # ----------------------------------
     def compute(  # pylint: disable=too-many-branches
         self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit
-    ) -> CostArray:
+    ) -> CostBreakdown:
 
         if quantities is None:
             raise ValueError("quantities is None")
@@ -143,33 +144,78 @@ class Pricer:
                 time_unit=quantities.base_unit,
             )
 
-        res = CostArray(
-            name="costs",
+        # Create individual cost arrays for each component
+        consumption_cost = CostArray(
+            name="consumption_cost",
             start_date=start_date,
             end_date=end_date,
             value_unit=price_unit,
             base_unit=quantities.base_unit,
         )
-
-        # Compute pricing formula using composite arrays
-        # All 4 composites have both quantity and time components
-        # Sum all quantity components (€/kWh) and multiply by quantity
-        # Sum all time components (€/month) and add directly
-        res.value_array = (
-            quantity_array
-            * (
-                consumption_composite.quantity_value_array  # type: ignore
-                + subscription_composite.quantity_value_array  # type: ignore
-                + transport_composite.quantity_value_array  # type: ignore
-                + energy_taxes_composite.quantity_value_array  # type: ignore
-            )
+        consumption_cost.value_array = (
+            quantity_array * consumption_composite.quantity_value_array  # type: ignore
             + consumption_composite.time_value_array  # type: ignore
+        )
+
+        subscription_cost = CostArray(
+            name="subscription_cost",
+            start_date=start_date,
+            end_date=end_date,
+            value_unit=price_unit,
+            base_unit=quantities.base_unit,
+        )
+        subscription_cost.value_array = (
+            quantity_array * subscription_composite.quantity_value_array  # type: ignore
             + subscription_composite.time_value_array  # type: ignore
+        )
+
+        transport_cost = CostArray(
+            name="transport_cost",
+            start_date=start_date,
+            end_date=end_date,
+            value_unit=price_unit,
+            base_unit=quantities.base_unit,
+        )
+        transport_cost.value_array = (
+            quantity_array * transport_composite.quantity_value_array  # type: ignore
             + transport_composite.time_value_array  # type: ignore
+        )
+
+        energy_taxes_cost = CostArray(
+            name="energy_taxes_cost",
+            start_date=start_date,
+            end_date=end_date,
+            value_unit=price_unit,
+            base_unit=quantities.base_unit,
+        )
+        energy_taxes_cost.value_array = (
+            quantity_array * energy_taxes_composite.quantity_value_array  # type: ignore
             + energy_taxes_composite.time_value_array  # type: ignore
         )
 
-        return res
+        # Calculate total cost
+        total_cost = CostArray(
+            name="total_cost",
+            start_date=start_date,
+            end_date=end_date,
+            value_unit=price_unit,
+            base_unit=quantities.base_unit,
+        )
+        total_cost.value_array = (
+            consumption_cost.value_array  # type: ignore
+            + subscription_cost.value_array  # type: ignore
+            + transport_cost.value_array  # type: ignore
+            + energy_taxes_cost.value_array  # type: ignore
+        )
+
+        # Return detailed breakdown
+        return CostBreakdown(
+            consumption=consumption_cost,
+            subscription=subscription_cost,
+            transport=transport_cost,
+            energy_taxes=energy_taxes_cost,
+            total=total_cost,
+        )
 
     # ----------------------------------
     @classmethod

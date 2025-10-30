@@ -184,7 +184,8 @@ class Gazpar:
                 value_array=energy_array[cost_start_date : end_date + timedelta(days=1)],
             )
 
-            cost_array = pricer.compute(quantities, PriceUnit.EURO)
+            cost_breakdown = pricer.compute(quantities, PriceUnit.EURO)
+            cost_array = cost_breakdown.total
         else:
             cost_array = None
 
