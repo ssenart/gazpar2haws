@@ -141,9 +141,7 @@ class Gazpar:
         # Get all start dates
         energy_start_date = last_date_and_value_by_sensor[energy_sensor_name][0] + timedelta(days=1)
         volume_start_date = last_date_and_value_by_sensor[volume_sensor_name][0] + timedelta(days=1)
-        consumption_cost_start_date = last_date_and_value_by_sensor[consumption_cost_sensor_name][0] + timedelta(
-            days=1
-        )
+        consumption_cost_start_date = last_date_and_value_by_sensor[consumption_cost_sensor_name][0] + timedelta(days=1)
         subscription_cost_start_date = last_date_and_value_by_sensor[subscription_cost_sensor_name][0] + timedelta(
             days=1
         )
