@@ -28,7 +28,7 @@ pytest
 pytest tests/test_pricer.py
 
 # Run a specific test
-pytest tests/test_pricer.py::TestPricer::test_get_consumption_price_array_inside
+pytest tests/test_pricer.py::TestPricer::test_get_composite_price_array
 ```
 
 ### Linting and Formatting

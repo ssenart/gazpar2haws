@@ -7,17 +7,13 @@ from gazpar2haws.model import (
     BaseUnit,
     CompositePriceArray,
     CompositePriceValue,
-    ConsumptionPriceArray,
     ConsumptionQuantityArray,
     CostArray,
-    EnergyTaxesPriceArray,
     PriceUnit,
     PriceValue,
     Pricing,
     QuantityUnit,
-    SubscriptionPriceArray,
     TimeUnit,
-    TransportPriceArray,
     Value,
     ValueArray,
     ValueUnit,
@@ -65,81 +61,6 @@ class Pricer:
 
         quantity_array = quantities.value_array
 
-        # Convert all pricing data to the same unit as the quantities.
-        # CompositePriceValue lists are converted with (price_unit, quantity_unit, time_unit)
-        consumption_prices_converted = Pricer.convert(
-            self._pricing.consumption_prices, (price_unit, quantities.value_unit, quantities.base_unit)
-        )
-        # Extract quantity component for calculation
-        consumption_prices = [
-            PriceValue(
-                start_date=cp.start_date,
-                end_date=cp.end_date,
-                value=cp.quantity_value,
-                value_unit=cp.price_unit,
-                base_unit=cp.quantity_unit,
-                vat_id=cp.vat_id,
-            )
-            for cp in consumption_prices_converted
-        ]
-
-        if self._pricing.subscription_prices is not None and len(self._pricing.subscription_prices) > 0:
-            subscription_prices_converted = Pricer.convert(
-                self._pricing.subscription_prices, (price_unit, quantities.value_unit, quantities.base_unit)
-            )
-            # Extract time component for calculation
-            subscription_prices = [
-                PriceValue(
-                    start_date=sp.start_date,
-                    end_date=sp.end_date,
-                    value=sp.time_value,
-                    value_unit=sp.price_unit,
-                    base_unit=sp.time_unit,
-                    vat_id=sp.vat_id,
-                )
-                for sp in subscription_prices_converted
-            ]
-        else:
-            subscription_prices = None
-
-        if self._pricing.transport_prices is not None and len(self._pricing.transport_prices) > 0:
-            transport_prices_converted = Pricer.convert(
-                self._pricing.transport_prices, (price_unit, quantities.value_unit, quantities.base_unit)
-            )
-            # Extract time component for calculation
-            transport_prices = [
-                PriceValue(
-                    start_date=tp.start_date,
-                    end_date=tp.end_date,
-                    value=tp.time_value,
-                    value_unit=tp.price_unit,
-                    base_unit=tp.time_unit,
-                    vat_id=tp.vat_id,
-                )
-                for tp in transport_prices_converted
-            ]
-        else:
-            transport_prices = None
-
-        if self._pricing.energy_taxes is not None and len(self._pricing.energy_taxes) > 0:
-            energy_taxes_converted = Pricer.convert(
-                self._pricing.energy_taxes, (price_unit, quantities.value_unit, quantities.base_unit)
-            )
-            # Extract quantity component for calculation
-            energy_taxes = [
-                PriceValue(
-                    start_date=et.start_date,
-                    end_date=et.end_date,
-                    value=et.quantity_value,
-                    value_unit=et.price_unit,
-                    base_unit=et.quantity_unit,
-                    vat_id=et.vat_id,
-                )
-                for et in energy_taxes_converted
-            ]
-        else:
-            energy_taxes = None
-
         # Transform to the vectorized form.
         if self._pricing.vat is not None and len(self._pricing.vat) > 0:
             vat_rate_array_by_id = self.get_vat_rate_array_by_id(
@@ -148,62 +69,78 @@ class Pricer:
         else:
             vat_rate_array_by_id = dict[str, VatRateArray]()
 
-        consumption_price_array = self.get_consumption_price_array(
+        # Use get_composite_price_array for all price types (conversion happens inside)
+        consumption_composite = self.get_composite_price_array(
             start_date=start_date,
             end_date=end_date,
-            consumption_prices=consumption_prices,
+            composite_prices=self._pricing.consumption_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
+            target_price_unit=price_unit,
+            target_quantity_unit=quantities.value_unit,
+            target_time_unit=quantities.base_unit,
         )
 
         # Subscription price is optional.
-        if subscription_prices is not None and len(subscription_prices) > 0:
-            subscription_price_array = self.get_subscription_price_array(
+        if self._pricing.subscription_prices is not None and len(self._pricing.subscription_prices) > 0:
+            subscription_composite = self.get_composite_price_array(
                 start_date=start_date,
                 end_date=end_date,
-                subscription_prices=subscription_prices,
+                composite_prices=self._pricing.subscription_prices,
                 vat_rate_array_by_id=vat_rate_array_by_id,
+                target_price_unit=price_unit,
+                target_quantity_unit=quantities.value_unit,
+                target_time_unit=quantities.base_unit,
             )
         else:
-            subscription_price_array = SubscriptionPriceArray(
+            subscription_composite = CompositePriceArray(
                 name="subscription_prices",
                 start_date=start_date,
                 end_date=end_date,
-                value_unit=price_unit,
-                base_unit=quantities.base_unit,
+                price_unit=price_unit,
+                quantity_unit=quantities.value_unit,
+                time_unit=quantities.base_unit,
             )
 
         # Transport price is optional.
-        if transport_prices is not None and len(transport_prices) > 0:
-            transport_price_array = self.get_transport_price_array(
+        if self._pricing.transport_prices is not None and len(self._pricing.transport_prices) > 0:
+            transport_composite = self.get_composite_price_array(
                 start_date=start_date,
                 end_date=end_date,
-                transport_prices=transport_prices,
+                composite_prices=self._pricing.transport_prices,
                 vat_rate_array_by_id=vat_rate_array_by_id,
+                target_price_unit=price_unit,
+                target_quantity_unit=quantities.value_unit,
+                target_time_unit=quantities.base_unit,
             )
         else:
-            transport_price_array = TransportPriceArray(
+            transport_composite = CompositePriceArray(
                 name="transport_prices",
                 start_date=start_date,
                 end_date=end_date,
-                value_unit=price_unit,
-                base_unit=quantities.base_unit,
+                price_unit=price_unit,
+                quantity_unit=quantities.value_unit,
+                time_unit=quantities.base_unit,
             )
 
         # Energy taxes are optional.
-        if energy_taxes is not None and len(energy_taxes) > 0:
-            energy_taxes_price_array = self.get_energy_taxes_price_array(
+        if self._pricing.energy_taxes is not None and len(self._pricing.energy_taxes) > 0:
+            energy_taxes_composite = self.get_composite_price_array(
                 start_date=start_date,
                 end_date=end_date,
-                energy_taxes_prices=energy_taxes,
+                composite_prices=self._pricing.energy_taxes,
                 vat_rate_array_by_id=vat_rate_array_by_id,
+                target_price_unit=price_unit,
+                target_quantity_unit=quantities.value_unit,
+                target_time_unit=quantities.base_unit,
             )
         else:
-            energy_taxes_price_array = EnergyTaxesPriceArray(
+            energy_taxes_composite = CompositePriceArray(
                 name="energy_taxes",
                 start_date=start_date,
                 end_date=end_date,
-                value_unit=price_unit,
-                base_unit=quantities.value_unit,
+                price_unit=price_unit,
+                quantity_unit=quantities.value_unit,
+                time_unit=quantities.base_unit,
             )
 
         res = CostArray(
@@ -214,8 +151,23 @@ class Pricer:
             base_unit=quantities.base_unit,
         )
 
-        # Compute pricing formula
-        res.value_array = quantity_array * (consumption_price_array.value_array + energy_taxes_price_array.value_array) + subscription_price_array.value_array + transport_price_array.value_array  # type: ignore
+        # Compute pricing formula using composite arrays
+        # All 4 composites have both quantity and time components
+        # Sum all quantity components (€/kWh) and multiply by quantity
+        # Sum all time components (€/month) and add directly
+        res.value_array = (
+            quantity_array
+            * (
+                consumption_composite.quantity_value_array  # type: ignore
+                + subscription_composite.quantity_value_array  # type: ignore
+                + transport_composite.quantity_value_array  # type: ignore
+                + energy_taxes_composite.quantity_value_array  # type: ignore
+            )
+            + consumption_composite.time_value_array  # type: ignore
+            + subscription_composite.time_value_array  # type: ignore
+            + transport_composite.time_value_array  # type: ignore
+            + energy_taxes_composite.time_value_array  # type: ignore
+        )
 
         return res
 
@@ -243,202 +195,43 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def get_consumption_price_array(
-        cls,
-        start_date: date,
-        end_date: date,
-        consumption_prices: list,
-        vat_rate_array_by_id: dict[str, VatRateArray],
-    ) -> ConsumptionPriceArray:
-
-        if consumption_prices is None or len(consumption_prices) == 0:
-            raise ValueError("consumption_prices is None or empty")
-
-        # Convert CompositePriceValue to PriceValue if needed
-        if isinstance(consumption_prices[0], CompositePriceValue):
-            consumption_prices = [
-                PriceValue(
-                    start_date=cp.start_date,
-                    end_date=cp.end_date,
-                    value=cp.quantity_value,
-                    value_unit=cp.price_unit,
-                    base_unit=cp.quantity_unit,
-                    vat_id=cp.vat_id,
-                )
-                for cp in consumption_prices
-            ]
-
-        first_consumption_price = consumption_prices[0]
-
-        res = ConsumptionPriceArray(
-            name="consumption_prices",
-            start_date=start_date,
-            end_date=end_date,
-            value_unit=first_consumption_price.value_unit,
-            base_unit=first_consumption_price.base_unit,
-            vat_id=first_consumption_price.vat_id,
-        )
-
-        cls._fill_price_array(res, consumption_prices, vat_rate_array_by_id)  # type: ignore
-
-        return res
-
-    # ----------------------------------
-    @classmethod
-    def get_subscription_price_array(
-        cls,
-        start_date: date,
-        end_date: date,
-        subscription_prices: list,
-        vat_rate_array_by_id: dict[str, VatRateArray],
-    ) -> SubscriptionPriceArray:
-
-        if subscription_prices is None or len(subscription_prices) == 0:
-            raise ValueError("subscription_prices is None or empty")
-
-        # Convert CompositePriceValue to PriceValue if needed
-        if isinstance(subscription_prices[0], CompositePriceValue):
-            subscription_prices = [
-                PriceValue(
-                    start_date=sp.start_date,
-                    end_date=sp.end_date,
-                    value=sp.time_value,
-                    value_unit=sp.price_unit,
-                    base_unit=sp.time_unit,
-                    vat_id=sp.vat_id,
-                )
-                for sp in subscription_prices
-            ]
-
-        first_subscription_price = subscription_prices[0]
-
-        res = SubscriptionPriceArray(
-            name="subscription_prices",
-            start_date=start_date,
-            end_date=end_date,
-            value_unit=first_subscription_price.value_unit,
-            base_unit=first_subscription_price.base_unit,
-            vat_id=first_subscription_price.vat_id,
-        )
-
-        cls._fill_price_array(res, subscription_prices, vat_rate_array_by_id)  # type: ignore
-
-        return res
-
-    # ----------------------------------
-    @classmethod
-    def get_transport_price_array(
-        cls,
-        start_date: date,
-        end_date: date,
-        transport_prices: list,
-        vat_rate_array_by_id: dict[str, VatRateArray],
-    ) -> TransportPriceArray:
-
-        if transport_prices is None or len(transport_prices) == 0:
-            raise ValueError("transport_prices is None or empty")
-
-        # Convert CompositePriceValue to PriceValue if needed
-        if isinstance(transport_prices[0], CompositePriceValue):
-            transport_prices = [
-                PriceValue(
-                    start_date=tp.start_date,
-                    end_date=tp.end_date,
-                    value=tp.time_value,
-                    value_unit=tp.price_unit,
-                    base_unit=tp.time_unit,
-                    vat_id=tp.vat_id,
-                )
-                for tp in transport_prices
-            ]
-
-        first_transport_price = transport_prices[0]
-
-        res = TransportPriceArray(
-            name="transport_prices",
-            start_date=start_date,
-            end_date=end_date,
-            value_unit=first_transport_price.value_unit,
-            base_unit=first_transport_price.base_unit,
-            vat_id=first_transport_price.vat_id,
-        )
-
-        cls._fill_price_array(res, transport_prices, vat_rate_array_by_id)  # type: ignore
-
-        return res
-
-    # ----------------------------------
-    @classmethod
-    def get_energy_taxes_price_array(
-        cls,
-        start_date: date,
-        end_date: date,
-        energy_taxes_prices: list,
-        vat_rate_array_by_id: dict[str, VatRateArray],
-    ) -> EnergyTaxesPriceArray:
-
-        if energy_taxes_prices is None or len(energy_taxes_prices) == 0:
-            raise ValueError("energy_taxes_prices is None or empty")
-
-        # Convert CompositePriceValue to PriceValue if needed
-        if isinstance(energy_taxes_prices[0], CompositePriceValue):
-            energy_taxes_prices = [
-                PriceValue(
-                    start_date=et.start_date,
-                    end_date=et.end_date,
-                    value=et.quantity_value,
-                    value_unit=et.price_unit,
-                    base_unit=et.quantity_unit,
-                    vat_id=et.vat_id,
-                )
-                for et in energy_taxes_prices
-            ]
-
-        first_energy_taxes_price = energy_taxes_prices[0]
-
-        res = EnergyTaxesPriceArray(
-            name="energy_taxes",
-            start_date=start_date,
-            end_date=end_date,
-            value_unit=first_energy_taxes_price.value_unit,
-            base_unit=first_energy_taxes_price.base_unit,
-            vat_id=first_energy_taxes_price.vat_id,
-        )
-
-        cls._fill_price_array(res, energy_taxes_prices, vat_rate_array_by_id)  # type: ignore
-
-        return res
-
-    # ----------------------------------
-    @classmethod
     def get_composite_price_array(
         cls,
         start_date: date,
         end_date: date,
         composite_prices: list[CompositePriceValue],
         vat_rate_array_by_id: dict[str, VatRateArray],
+        target_price_unit: PriceUnit,
+        target_quantity_unit: QuantityUnit,
+        target_time_unit: TimeUnit,
     ) -> CompositePriceArray:
 
         if composite_prices is None or len(composite_prices) == 0:
             raise ValueError("composite_prices is None or empty")
 
-        first_composite_price = composite_prices[0]
+        # Convert all composite prices to target units
+        composite_prices_converted = cls.convert(
+            composite_prices, (target_price_unit, target_quantity_unit, target_time_unit)
+        )
+
+        # Get vat_id from first element (after conversion it should all be the same)
+        first_composite_price = composite_prices_converted[0]
 
         res = CompositePriceArray(
             name="composite_prices",
             start_date=start_date,
             end_date=end_date,
-            price_unit=first_composite_price.price_unit,
-            quantity_unit=first_composite_price.quantity_unit,
-            time_unit=first_composite_price.time_unit,
+            price_unit=target_price_unit,
+            quantity_unit=target_quantity_unit,
+            time_unit=target_time_unit,
             vat_id=first_composite_price.vat_id,
         )
 
         # Fill the quantity component array (if present in the composite prices)
-        cls._fill_composite_quantity_array(res, composite_prices, vat_rate_array_by_id)
+        cls._fill_composite_quantity_array(res, composite_prices_converted, vat_rate_array_by_id)
 
         # Fill the time component array (if present in the composite prices)
-        cls._fill_composite_time_array(res, composite_prices, vat_rate_array_by_id)
+        cls._fill_composite_time_array(res, composite_prices_converted, vat_rate_array_by_id)
 
         return res
 
