@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-10-30
+
+### Added
+
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Enhanced cost breakdown - separate entities for consumption, subscription, transport, energy taxes, and total costs.
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Support for quantity-based transport pricing (€/kWh) in addition to time-based pricing (€/year).
+- New Home Assistant entities: `sensor.${name}_consumption_cost`, `sensor.${name}_subscription_cost`, `sensor.${name}_transport_cost`, `sensor.${name}_energy_taxes_cost`, `sensor.${name}_total_cost`.
+
+### Changed
+
+- **BREAKING**: Pricing configuration format updated to composite price model.
+  - `value` → replaced by `quantity_value` or `time_value`
+  - `value_unit` → replaced by `price_unit`
+  - `base_unit` → replaced by `quantity_unit` or `time_unit`
+- Unified pricing API: replaced four separate methods with single `get_composite_price_array()` method.
+- `Pricer.compute()` now returns `CostBreakdown` object with detailed breakdown instead of single `CostArray`.
+
+### Fixed
+
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Fixed bug where transport prices with quantity component were incorrectly processed as time component.
+
+### Migration
+
+Users upgrading from v0.3.x must update their pricing configuration in `configuration.yaml`:
+- See README.md "Migration from v0.3.x to v0.4.0" section for detailed examples.
+- All examples in README.md have been updated to the new format.
+- Configuration validation will report deprecated properties if found.
+
 ## [0.3.3] - 2025-07-22
 
 ### Changed

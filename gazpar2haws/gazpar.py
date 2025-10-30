@@ -91,12 +91,26 @@ class Gazpar:
         # Volume, energy and cost sensor names.
         volume_sensor_name = f"sensor.{self._name}_volume"
         energy_sensor_name = f"sensor.{self._name}_energy"
-        cost_sensor_name = f"sensor.{self._name}_cost"
+        consumption_cost_sensor_name = f"sensor.{self._name}_consumption_cost"
+        subscription_cost_sensor_name = f"sensor.{self._name}_subscription_cost"
+        transport_cost_sensor_name = f"sensor.{self._name}_transport_cost"
+        energy_taxes_cost_sensor_name = f"sensor.{self._name}_energy_taxes_cost"
+        total_cost_sensor_name = f"sensor.{self._name}_total_cost"
 
         # Eventually reset the sensor in Home Assistant
         if self._reset:
             try:
-                await self._homeassistant.clear_statistics([volume_sensor_name, energy_sensor_name])
+                await self._homeassistant.clear_statistics(
+                    [
+                        volume_sensor_name,
+                        energy_sensor_name,
+                        consumption_cost_sensor_name,
+                        subscription_cost_sensor_name,
+                        transport_cost_sensor_name,
+                        energy_taxes_cost_sensor_name,
+                        total_cost_sensor_name,
+                    ]
+                )
             except Exception:
                 Logger.warning(f"Error while resetting the sensor in Home Assistant: {traceback.format_exc()}")
                 raise
@@ -105,7 +119,21 @@ class Gazpar:
 
         last_date_and_value_by_sensor[volume_sensor_name] = await self.find_last_date_and_value(volume_sensor_name)
         last_date_and_value_by_sensor[energy_sensor_name] = await self.find_last_date_and_value(energy_sensor_name)
-        last_date_and_value_by_sensor[cost_sensor_name] = await self.find_last_date_and_value(cost_sensor_name)
+        last_date_and_value_by_sensor[consumption_cost_sensor_name] = await self.find_last_date_and_value(
+            consumption_cost_sensor_name
+        )
+        last_date_and_value_by_sensor[subscription_cost_sensor_name] = await self.find_last_date_and_value(
+            subscription_cost_sensor_name
+        )
+        last_date_and_value_by_sensor[transport_cost_sensor_name] = await self.find_last_date_and_value(
+            transport_cost_sensor_name
+        )
+        last_date_and_value_by_sensor[energy_taxes_cost_sensor_name] = await self.find_last_date_and_value(
+            energy_taxes_cost_sensor_name
+        )
+        last_date_and_value_by_sensor[total_cost_sensor_name] = await self.find_last_date_and_value(
+            total_cost_sensor_name
+        )
 
         # Compute the start date as the minimum of the last dates plus one day
         start_date = min(min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1), as_of_date)
@@ -113,12 +141,36 @@ class Gazpar:
         # Get all start dates
         energy_start_date = last_date_and_value_by_sensor[energy_sensor_name][0] + timedelta(days=1)
         volume_start_date = last_date_and_value_by_sensor[volume_sensor_name][0] + timedelta(days=1)
-        cost_start_date = last_date_and_value_by_sensor[cost_sensor_name][0] + timedelta(days=1)
+        consumption_cost_start_date = last_date_and_value_by_sensor[consumption_cost_sensor_name][0] + timedelta(
+            days=1
+        )
+        subscription_cost_start_date = last_date_and_value_by_sensor[subscription_cost_sensor_name][0] + timedelta(
+            days=1
+        )
+        transport_cost_start_date = last_date_and_value_by_sensor[transport_cost_sensor_name][0] + timedelta(days=1)
+        energy_taxes_cost_start_date = last_date_and_value_by_sensor[energy_taxes_cost_sensor_name][0] + timedelta(
+            days=1
+        )
+        total_cost_start_date = last_date_and_value_by_sensor[total_cost_sensor_name][0] + timedelta(days=1)
+
+        # Get the minimum cost start date
+        cost_start_date = min(
+            consumption_cost_start_date,
+            subscription_cost_start_date,
+            transport_cost_start_date,
+            energy_taxes_cost_start_date,
+            total_cost_start_date,
+        )
 
         Logger.debug(f"Min start date for all sensors: {start_date}")
         Logger.debug(f"Energy start date: {energy_start_date}")
         Logger.debug(f"Volume start date: {volume_start_date}")
-        Logger.debug(f"Cost start date: {cost_start_date}")
+        Logger.debug(f"Consumption cost start date: {consumption_cost_start_date}")
+        Logger.debug(f"Subscription cost start date: {subscription_cost_start_date}")
+        Logger.debug(f"Transport cost start date: {transport_cost_start_date}")
+        Logger.debug(f"Energy taxes cost start date: {energy_taxes_cost_start_date}")
+        Logger.debug(f"Total cost start date: {total_cost_start_date}")
+        Logger.debug(f"Min cost start date: {cost_start_date}")
 
         # Fetch the data from GrDF and publish it to Home Assistant
         daily_history = self.fetch_daily_gazpar_history(start_date, as_of_date)
@@ -185,18 +237,49 @@ class Gazpar:
             )
 
             cost_breakdown = pricer.compute(quantities, PriceUnit.EURO)
-            cost_array = cost_breakdown.total
         else:
-            cost_array = None
+            cost_breakdown = None
 
-        # Publish the cost to Home Assistant
-        if cost_array is not None:
-            cost_initial_value = last_date_and_value_by_sensor[cost_sensor_name][1]
+        # Publish the cost breakdown to Home Assistant
+        if cost_breakdown is not None:
+            # Publish consumption cost
             await self.publish_date_array(
-                cost_sensor_name,
-                cost_array.value_unit,
-                cost_array.value_array,
-                cost_initial_value,
+                consumption_cost_sensor_name,
+                cost_breakdown.consumption.value_unit,
+                cost_breakdown.consumption.value_array,
+                last_date_and_value_by_sensor[consumption_cost_sensor_name][1],
+            )
+
+            # Publish subscription cost
+            await self.publish_date_array(
+                subscription_cost_sensor_name,
+                cost_breakdown.subscription.value_unit,
+                cost_breakdown.subscription.value_array,
+                last_date_and_value_by_sensor[subscription_cost_sensor_name][1],
+            )
+
+            # Publish transport cost
+            await self.publish_date_array(
+                transport_cost_sensor_name,
+                cost_breakdown.transport.value_unit,
+                cost_breakdown.transport.value_array,
+                last_date_and_value_by_sensor[transport_cost_sensor_name][1],
+            )
+
+            # Publish energy taxes cost
+            await self.publish_date_array(
+                energy_taxes_cost_sensor_name,
+                cost_breakdown.energy_taxes.value_unit,
+                cost_breakdown.energy_taxes.value_array,
+                last_date_and_value_by_sensor[energy_taxes_cost_sensor_name][1],
+            )
+
+            # Publish total cost
+            await self.publish_date_array(
+                total_cost_sensor_name,
+                cost_breakdown.total.value_unit,
+                cost_breakdown.total.value_array,
+                last_date_and_value_by_sensor[total_cost_sensor_name][1],
             )
         else:
             Logger.info("No cost data to publish")

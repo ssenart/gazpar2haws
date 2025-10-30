@@ -84,7 +84,14 @@ The application follows a layered architecture with three main components:
    - Extracts volume (m³) and energy (kWh) from meter readings
    - Computes costs using the Pricer when pricing configuration is provided
    - Manages incremental updates by querying HA for last statistics
-   - Publishes data as cumulative statistics to Home Assistant
+   - Publishes data as cumulative statistics to Home Assistant:
+     - `sensor.${name}_volume` - Volume in m³
+     - `sensor.${name}_energy` - Energy in kWh
+     - `sensor.${name}_consumption_cost` - Consumption cost breakdown
+     - `sensor.${name}_subscription_cost` - Subscription cost breakdown
+     - `sensor.${name}_transport_cost` - Transport cost breakdown
+     - `sensor.${name}_energy_taxes_cost` - Energy taxes cost breakdown
+     - `sensor.${name}_total_cost` - Total cost (sum of all cost components)
 
 3. **HomeAssistantWS** ([haws.py](gazpar2haws/haws.py)) - WebSocket client for Home Assistant
    - Implements Home Assistant WebSocket API protocol
@@ -96,11 +103,13 @@ The application follows a layered architecture with three main components:
 
 1. Bridge initiates periodic scan
 2. For each device, Gazpar:
-   - Queries HA for last known statistics (date and cumulative value)
+   - Queries HA for last known statistics (date and cumulative value) for all 7 entities
    - Fetches missing data from GrDF via PyGazpar
    - Extracts volume and energy readings
-   - If pricing config exists, computes costs using Pricer
-   - Publishes cumulative statistics to HA (not incremental values)
+   - If pricing config exists, computes cost breakdown using Pricer (5 components)
+   - Publishes cumulative statistics to HA (not incremental values):
+     - Volume and energy entities (always published)
+     - Cost breakdown entities (if pricing configured): consumption, subscription, transport, energy_taxes, total
 3. Bridge disconnects from HA and waits for next scan interval
 
 ### Pricing System
@@ -139,9 +148,24 @@ Configuration uses YAML with secret interpolation:
 ### Statistics Publishing
 
 Home Assistant statistics are published as **cumulative sums**, not deltas:
-- Query last known cumulative value from HA
+- Query last known cumulative value from HA for each entity
 - Add new incremental readings to create new cumulative values
 - Publish cumulative statistics with exact timestamp of reading date
+
+**Published Entities:**
+
+Always published:
+- `sensor.${name}_volume` (m³)
+- `sensor.${name}_energy` (kWh)
+
+Published when pricing configuration is provided:
+- `sensor.${name}_consumption_cost` (€) - Variable cost from gas consumption
+- `sensor.${name}_subscription_cost` (€) - Fixed subscription fees
+- `sensor.${name}_transport_cost` (€) - Transport fees (fixed or variable)
+- `sensor.${name}_energy_taxes_cost` (€) - Energy taxes
+- `sensor.${name}_total_cost` (€) - Sum of all cost components
+
+Where `${name}` is the device name from configuration (default: `gazpar2haws`)
 
 ### Timezone Handling
 
