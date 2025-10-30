@@ -10,6 +10,38 @@ It is a complement to the other available projects:
 - [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt): [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) alternative but using MQTT events (it reduce coupling with HA).
 - [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card): HA dashboard card compatible with [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) and [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt).
 
+## Documentation
+
+### User Documentation
+
+- **[README.md](README.md)** (this file) - Complete installation, configuration, and usage guide
+- **[FAQ.md](FAQ.md)** - Frequently Asked Questions based on GitHub issues and user feedback
+  - Common configuration issues
+  - Troubleshooting steps
+  - Migration guides
+  - All known issues and solutions
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history with all changes, fixes, and new features
+
+### Developer Documentation
+
+- **[CLAUDE.md](CLAUDE.md)** - Developer guide for working with the codebase
+  - Architecture overview
+  - Development commands (setup, testing, linting)
+  - Key implementation details
+  - Testing guidelines
+- **[TODO.md](TODO.md)** - Planned improvements and test coverage tasks
+  - Test coverage analysis
+  - Missing tests by priority
+  - Implementation schedule
+  - Known issues requiring tests
+
+### Quick Links
+
+- 🐛 Found a bug? → Check [FAQ.md](FAQ.md) first, then open an [issue](https://github.com/ssenart/gazpar2haws/issues)
+- 📝 Want to contribute? → Read [CLAUDE.md](CLAUDE.md) and [TODO.md](TODO.md)
+- 🔄 Upgrading? → Check [CHANGELOG.md](CHANGELOG.md) for breaking changes
+- ❓ Have a question? → See [FAQ.md](FAQ.md) or ask in [discussions](https://github.com/ssenart/gazpar2haws/discussions)
+
 ## Installation
 
 Gazpar2HAWS can be installed in many ways.
@@ -820,33 +852,67 @@ You can setup them directly in a docker-compose.yaml file (environment section) 
 
 ## FAQ
 
-- *Is it an official GrDF application ?*
+For a comprehensive list of frequently asked questions, see **[FAQ.md](FAQ.md)** which includes:
 
-  No, absolutely not. It was made by reverse engineering GrDF website without any guarantee of long-term operation. Indeed, any modification made to their website risks breaking it.
+- 📖 **General questions** - What is Gazpar2HAWS, differences from other solutions
+- ⚙️ **Configuration issues** - PCE identifier, reset parameter, environment variables
+- 📊 **Data & statistics** - Missing data, date issues, historical retrieval
+- 💰 **Cost calculation** - Pricing configuration, v0.4.0 migration, new entities
+- 🏠 **Home Assistant integration** - Entity setup, Energy Dashboard, HassIO issues
+- 🐳 **Docker & Add-on** - Installation, logs, version issues
+- 🔧 **Troubleshooting** - Common errors, log messages, bug reporting
+- 🔄 **Migration & upgrades** - Version upgrade guides, breaking changes
 
-- *I'm confused. What are the differences between [PyGazpar](https://github.com/ssenart/PyGazpar), [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar), [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card), [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt), [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) ?*
+### Quick Answers
 
-    - [PyGazpar](https://github.com/ssenart/PyGazpar) is the low-level Python library used to query GrDF data. It was written for use by other Python programs.
-    - [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) is the first program using PyGazpar. This is a Home Assistant integration which makes it possible to provide an energy sensor. Coupled with the Recorder integration, it is capable of building a history (called statistics in HA) and displaying it using the Energy Dashboard. It is also compatible with the [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card).
-    - [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card) is a HA card which nicely displays historical data in the form of tables or bar graphs. It is also compatible with [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt).
-    - [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt) offers exactly the same functionality as [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) but runs outside of HA as a standalone application, in a Docker container or in an HA add-on.
-    - [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) replaces the use of home-assistant-gazpar/Gazpar2MQTT with the HA Recorder integration to create a data history (for Energy dashboard integration). The disadvantage of the latter solution is the non-alignment of the actual reading date and its publication date. Reading values ​​are made available for 2 to 5 days (and sometimes longer). [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) timestamps the reading value exactly to the observation dates without any offset. In addition, [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) is able to reconstruct the complete history of your data up to 3 years in the past, which is very practical in the event of data loss. Finally, it provides ways to calculate and publish energy costs.
+**Is it an official GrDF application?**
 
-- *My PCE ID has a leading zero (e.g. "0123456789") and the application fails with an error indicating that the PCE number is unknown. I can see in the log file that it uses "123456789" without the leading zero. What happened ?*
+No, absolutely not. It was made by reverse engineering GrDF website without any guarantee of long-term operation. Indeed, any modification made to their website risks breaking it.
 
-  The cause is in your configuration file (grdf.devices[].pce_identifier) ​​where you configured your PCE identifier and you did not quote it. Your PCE number is then interpreted as a number instead of a string.
+**What are the differences between PyGazpar, home-assistant-gazpar, Gazpar2MQTT, and Gazpar2HAWS?**
+
+- **[PyGazpar](https://github.com/ssenart/PyGazpar)** - Low-level Python library used to query GrDF data
+- **[home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar)** - Home Assistant integration providing energy sensor with Recorder/Energy Dashboard support
+- **[Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt)** - Standalone application that publishes data via MQTT (reduces coupling with HA)
+- **[Gazpar2HAWS](https://github.com/ssenart/gazpar2haws)** - Uses HA Recorder integration directly, timestamps readings to exact observation dates, reconstructs 3-year history, calculates detailed costs
+
+**My PCE ID has a leading zero (e.g. "0123456789") but it's being truncated. Why?**
+
+The PCE identifier must be quoted in your YAML configuration. Without quotes, it's interpreted as a number and loses the leading zero.
+
+```yaml
+# ✓ Correct
+pce_identifier: "0123456789"
+
+# ✗ Wrong - loses leading zero
+pce_identifier: 0123456789
+```
+
+See [FAQ.md](FAQ.md) for more questions and detailed answers.
 
 ## Troubleshooting
 
+For comprehensive troubleshooting guidance, see **[FAQ.md](FAQ.md#troubleshooting)** which includes:
+
+- Common log messages and their meanings
+- Step-by-step debugging procedures
+- Solutions to known issues from GitHub
+- Error handling guides
+
+### Quick Troubleshooting Steps
+
 Sometimes, for any reason, the application does not work as expected. No entities is created in HA, some error messages are displayed, nothing happens...
 
-In this situation, the most valuable tool for troubleshooting what is happening is the log file.
+**In this situation:**
 
-Take a look at it, try to find a clue that might help solve the problem. Sorry, the log file can sometimes appear cryptic.
+1. **Check the log file** - This is the most valuable troubleshooting tool
+2. **Enable debug logging** - Set `logging.level: debug` in your configuration
+3. **Verify configuration syntax** - Use a YAML validator
+4. **Check [FAQ.md](FAQ.md)** - Many common issues are already documented
 
 If your configuration is correct, you may have spotted a bug.
 
-In this case, capture a Github issue [here](https://github.com/ssenart/gazpar2haws/issues) with the following information:
+In this case, capture a GitHub issue [here](https://github.com/ssenart/gazpar2haws/issues) with the following information:
 1. What kind of setup do you use ? Standalone application, Docker container or HA addon.
 2. Is this a first installation or a version upgrade ? If upgrading version, what was the previous version and did it work well ?
 3. Describe as precisely as possible what is happening.
@@ -904,9 +970,28 @@ All the gazpar2haws images are available [here](https://hub.docker.com/repositor
 
 ## Contributing
 
-Pull requests are welcome. For any change proposal, please open an issue first to discuss what you would like to change.
+Pull requests are welcome! For any change proposal, please open an issue first to discuss what you would like to change.
 
-Please make sure to update tests as appropriate.
+### Before Contributing
+
+1. **Read [CLAUDE.md](CLAUDE.md)** - Developer guide with:
+   - Architecture overview
+   - Development commands (setup, testing, linting)
+   - Code structure and patterns
+   - Testing guidelines
+
+2. **Check [TODO.md](TODO.md)** - For planned improvements and test coverage gaps
+
+3. **Review [CHANGELOG.md](CHANGELOG.md)** - To understand recent changes and version history
+
+### Contribution Guidelines
+
+- Write tests for new features (see [TODO.md](TODO.md) for test coverage goals)
+- Follow existing code style and patterns
+- Update documentation (README.md, FAQ.md) as appropriate
+- Add entries to CHANGELOG.md for your changes
+- Ensure all tests pass: `poetry run pytest`
+- Run linters: `poetry run pylint gazpar2haws`
 
 ## License
 
