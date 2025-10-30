@@ -404,7 +404,7 @@ pricing:
 ```
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * (cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price[€/kWh] * (1 + vat[reduced]))
+cost[€] = quantity[kWh] * (cons\_price[€/kWh] * (1 + vat[normal]) + quantity[kWh] * trans\_price[€/kWh] * (1 + vat[reduced]))
 ```
 
 Example 7: Energy taxes

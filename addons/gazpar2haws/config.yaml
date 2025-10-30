@@ -1,6 +1,6 @@
 name: "Gazpar2HAWS"
 description: "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface."
-version: "0.4.0.dev11"
+version: "0.4.0"
 slug: "gazpar2haws"
 init: false
 arch:
@@ -30,38 +30,38 @@ options:
       value: 0.20
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.07790
+      price_unit: "€"
+      quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2023-07-01"
-      value: 0.05392
+      quantity_value: 0.05392
     - start_date: "2023-08-01"
-      value: 0.05568
+      quantity_value: 0.05568
     - start_date: "2023-09-01"
-      value: 0.05412
+      quantity_value: 0.05412
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 19.83
-      value_unit: "€"
-      base_unit: "month"
+      time_value: 19.83
+      price_unit: "€"
+      time_unit: "month"
       vat_id: reduced
     - start_date: "2023-07-01"
-      value: 20.36
+      time_value: 20.36
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 34.38
-      value_unit: "€"
-      base_unit: "year"
+      time_value: 34.38
+      price_unit: "€"
+      time_unit: "year"
       vat_id: reduced
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.00837
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.00837
+      price_unit: "€"
+      quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2024-01-01"
-      value: 0.01637
+      quantity_value: 0.01637
 schema:
   scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
@@ -80,28 +80,36 @@ schema:
   consumption_prices:
     - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
       end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
-      value: float # Value of the price.
-      value_unit: str? # Unit of the price: €, ¢.
-      base_unit: str? # Base unit of the price: Wh, kWh, MWh, m³, l
+      quantity_value: float? # Price per energy unit (e.g., €/kWh).
+      price_unit: str? # Monetary unit: €, ¢.
+      quantity_unit: str? # Energy unit: Wh, kWh, MWh, m³, l.
+      time_value: float? # Price per time unit (for composite prices).
+      time_unit: str? # Time unit: day, week, month, year (for composite prices).
       vat_id: str? # Identifier of the VAT rate.
   subscription_prices:
     - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
       end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
-      value: float # Value of the price.
-      value_unit: str? # Unit of the price: €, ¢.
-      base_unit: str? # Base unit of the price: day, month, year
+      time_value: float? # Price per time unit (e.g., €/month).
+      price_unit: str? # Monetary unit: €, ¢.
+      time_unit: str? # Time unit: day, week, month, year.
+      quantity_value: float? # Price per energy unit (for composite prices).
+      quantity_unit: str? # Energy unit: Wh, kWh, MWh (for composite prices).
       vat_id: str? # Identifier of the VAT rate.
   transport_prices:
     - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
       end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
-      value: float # Value of the price.
-      value_unit: str? # Unit of the price: €, ¢.
-      base_unit: str? # Base unit of the price: day, month, year
+      time_value: float? # Fixed price per time unit (e.g., €/year).
+      price_unit: str? # Monetary unit: €, ¢.
+      time_unit: str? # Time unit: day, week, month, year.
+      quantity_value: float? # Variable price per energy unit (e.g., €/kWh) - NEW in v0.4.0.
+      quantity_unit: str? # Energy unit: Wh, kWh, MWh - NEW in v0.4.0.
       vat_id: str? # Identifier of the VAT rate.
   energy_taxes:
     - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
       end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
-      value: float # Value of the tax.
-      value_unit: str? # Unit of the tax: €, ¢.
-      base_unit: str? # Base unit of the tax: Wh, kWh, MWh, m³, l
+      quantity_value: float? # Tax per energy unit (e.g., €/kWh).
+      price_unit: str? # Monetary unit: €, ¢.
+      quantity_unit: str? # Energy unit: Wh, kWh, MWh, m³, l.
+      time_value: float? # Tax per time unit (for composite taxes).
+      time_unit: str? # Time unit: day, week, month, year (for composite taxes).
       vat_id: str? # Identifier of the VAT rate.
