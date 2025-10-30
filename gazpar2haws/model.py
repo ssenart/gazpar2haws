@@ -1,9 +1,10 @@
 from datetime import date
 from enum import Enum
 from pathlib import Path
+import tempfile
 from typing import Generic, Optional, TypeVar
 
-from pydantic import BaseModel, DirectoryPath, EmailStr, SecretStr, model_validator
+from pydantic import BaseModel, EmailStr, SecretStr, model_validator
 from pydantic_extra_types.timezone_name import TimeZoneName
 
 from gazpar2haws.date_array import DateArray
@@ -53,7 +54,7 @@ class Logging(BaseModel):
 class Device(BaseModel):
     name: str
     data_source: str = "json"
-    tmp_dir: DirectoryPath = DirectoryPath("c:/Temp")
+    tmp_dir: Optional[str] = None  # If None, will use system temp directory
     as_of_date: Optional[date] = None
     username: Optional[EmailStr] = None
     password: Optional[SecretStr] = None
@@ -72,8 +73,15 @@ class Device(BaseModel):
             raise ValueError("Missing password")
         if self.data_source != "test" and self.pce_identifier is None:
             raise ValueError("Missing pce_identifier")
-        if self.data_source == "excel" and self.tmp_dir is None or not Path(self.tmp_dir).is_dir():
+
+        # Set tmp_dir to system temp directory if not specified
+        if self.tmp_dir is None:
+            self.tmp_dir = tempfile.gettempdir()
+
+        # Validate tmp_dir exists for excel data source
+        if self.data_source == "excel" and not Path(self.tmp_dir).is_dir():
             raise ValueError(f"Invalid tmp_dir {self.tmp_dir}")
+
         return self
 
 
