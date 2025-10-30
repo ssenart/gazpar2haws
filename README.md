@@ -213,14 +213,14 @@ cost[€] = quantity[kWh] * price[€/kWh]
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
 ```
 
 Example 2: A fixed consumption price in another unit
 ---
 
-*value_unit* is the price unit (default: €).
-*base_unit* is the denominator unit (default: kWh).
+*price_unit* is the monetary unit (default: €).
+*quantity_unit* is the energy unit (default: kWh).
 
 **Formula:**
 ```math
@@ -232,9 +232,9 @@ cost[€] = \frac{quantity[kWh] * price[¢/MWh] * converter\_factor[¢->€]} {c
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 7790.0 # Unit is now ¢/MWh.
-      value_unit: "¢"
-      base_unit: "MWh"
+      quantity_value: 7790.0 # Unit is now ¢/MWh.
+      price_unit: "¢"
+      quantity_unit: "MWh"
 ```
 
 Example 3: Multiple prices over time
@@ -244,9 +244,9 @@ Example 3: Multiple prices over time
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
     - start_date: "2024-01-01"
-      value: 0.06888 # Default unit is €/kWh.
+      quantity_value: 0.06888 # Default unit is €/kWh.
 ```
 
 Price is 0.07790 before 2024-01-01.
@@ -267,7 +267,7 @@ pricing:
       value: 0.20 # It is the tax rate in [0, 1.0] <==> [0% - 100%].
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
 ```
 
@@ -294,13 +294,13 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 19.83
-      value_unit: "€"
-      base_unit: "month"
+      time_value: 19.83
+      price_unit: "€"
+      time_unit: "month"
       vat_id: "reduced"
 ```
 
@@ -310,7 +310,7 @@ cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + sub\_pric
 ```
 
 
-Example 6: Transport price
+Example 6: Transport price (fixed fee)
 ---
 
 A fixed yearly transport may be charged as well.
@@ -326,18 +326,48 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 34.38
-      value_unit: "€"
-      base_unit: "year"
+      time_value: 34.38
+      price_unit: "€"
+      time_unit: "year"
       vat_id: reduced
 ```
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price * (1 + vat[reduced])
+cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price[€/year] * (1 + vat[reduced])
+```
+
+Example 6bis: Transport price (based on consumption)
+---
+
+Transport can also be charged per kWh consumed.
+
+```yaml
+pricing:
+  vat:
+    - id: normal
+      start_date: "2023-06-01"
+      value: 0.20
+    - id: reduced
+      start_date: "2023-06-01"
+      value: 0.0550
+  consumption_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 0.07790
+      vat_id: "normal"
+  transport_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 0.00194 # €/kWh
+      price_unit: "€"
+      quantity_unit: "kWh"
+      vat_id: reduced
+```
+**Formula:**
+```math
+cost[€] = quantity[kWh] * (cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price[€/kWh] * (1 + vat[reduced]))
 ```
 
 Example 7: Energy taxes
@@ -356,13 +386,13 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.00837
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.00837
+      price_unit: "€"
+      quantity_unit: "kWh"
       vat_id: normal
 ```
 **Formula:**
@@ -386,55 +416,385 @@ pricing:
       value: 0.20
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.07790
+      price_unit: "€"
+      quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2023-07-01"
-      value: 0.05392
+      quantity_value: 0.05392
     - start_date: "2023-08-01"
-      value: 0.05568
+      quantity_value: 0.05568
     - start_date: "2023-09-01"
-      value: 0.05412
+      quantity_value: 0.05412
     - start_date: "2023-10-01"
-      value: 0.06333
+      quantity_value: 0.06333
     - start_date: "2023-11-01"
-      value: 0.06716
+      quantity_value: 0.06716
     - start_date: "2023-12-01"
-      value: 0.07235
+      quantity_value: 0.07235
     - start_date: "2024-01-01"
-      value: 0.06888
+      quantity_value: 0.06888
     - start_date: "2024-02-01"
-      value: 0.05972
+      quantity_value: 0.05972
     - start_date: "2024-03-01"
-      value: 0.05506
+      quantity_value: 0.05506
     - start_date: "2024-04-01"
-      value: 0.04842
+      quantity_value: 0.04842
     - start_date: "2025-01-01"
-      value: 0.07807
+      quantity_value: 0.07807
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 19.83
-      value_unit: "€"
-      base_unit: "month"
+      time_value: 19.83
+      price_unit: "€"
+      time_unit: "month"
       vat_id: reduced
     - start_date: "2023-07-01"
-      value: 20.36
+      time_value: 20.36
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 34.38
-      value_unit: "€"
-      base_unit: "year"
+      time_value: 34.38
+      price_unit: "€"
+      time_unit: "year"
       vat_id: reduced
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
+      quantity_value: 0.00837
+      price_unit: "€"
+      quantity_unit: "kWh"
+      vat_id: normal
+    - start_date: "2024-01-01"
+      quantity_value: 0.01637
+```
+
+## What's New in v0.4.0
+
+### Enhanced Cost Breakdown
+
+Starting from version 0.4.0, Gazpar2HAWS provides detailed cost breakdowns in Home Assistant. In addition to the total cost, separate entities are published for each cost component:
+
+- `sensor.${name}_consumption_cost`: Cost from gas consumption (quantity × consumption_price)
+- `sensor.${name}_subscription_cost`: Cost from fixed subscription fees
+- `sensor.${name}_transport_cost`: Cost from transport fees
+- `sensor.${name}_energy_taxes_cost`: Cost from energy taxes
+- `sensor.${name}_total_cost`: Total cost (sum of all components)
+
+Where `${name}` is the device name configured in your `configuration.yaml` file (default: `gazpar2haws`).
+
+This breakdown allows you to analyze which components contribute the most to your total gas bill over time.
+
+### Composite Price Model
+
+The new pricing model supports **composite prices** where each price component can have:
+
+1. **Quantity component**: Variable cost based on consumption (e.g., €/kWh)
+2. **Time component**: Fixed cost based on time period (e.g., €/month)
+
+This provides more flexibility to accurately model your energy provider's billing structure. For example:
+
+- **Consumption prices**: Typically have only a quantity component (€/kWh)
+- **Subscription prices**: Typically have only a time component (€/month)
+- **Transport prices**: Can have either a quantity component (€/kWh) or a time component (€/year)
+- **Energy taxes**: Typically have only a quantity component (€/kWh)
+
+## Migration from v0.3.x to v0.4.0
+
+### Breaking Changes in Configuration File
+
+The pricing configuration format has changed to support the new composite price model. The old properties are **deprecated** and must be migrated to the new format.
+
+#### Deprecated Properties (v0.3.x)
+
+- `value` - **Deprecated**: Use `quantity_value` or `time_value` instead
+- `value_unit` - **Deprecated**: Use `price_unit` instead
+- `base_unit` - **Deprecated**: Use `quantity_unit` or `time_unit` instead
+
+#### New Properties (v0.4.0)
+
+- `price_unit` - The monetary unit (€ or ¢) - applies to both components
+- `quantity_value` - The numeric value for the quantity component
+- `quantity_unit` - The unit for quantity-based pricing (Wh, kWh, MWh)
+- `time_value` - The numeric value for the time component
+- `time_unit` - The unit for time-based pricing (day, week, month, year)
+
+### Migration Examples
+
+#### Example 1: Simple Consumption Price
+
+**Before (v0.3.x):**
+```yaml
+pricing:
+  consumption_prices:
+    - start_date: "2023-06-01"
+      value: 0.07790  # €/kWh
+```
+
+**After (v0.4.0):**
+```yaml
+pricing:
+  consumption_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 0.07790  # €/kWh
+```
+
+**Explanation**: The `value` property is replaced by `quantity_value` since consumption is based on quantity (kWh).
+
+---
+
+#### Example 2: Consumption Price with Units
+
+**Before (v0.3.x):**
+```yaml
+pricing:
+  consumption_prices:
+    - start_date: "2023-06-01"
+      value: 7790.0
+      value_unit: "¢"     # cents
+      base_unit: "MWh"    # megawatt-hour
+```
+
+**After (v0.4.0):**
+```yaml
+pricing:
+  consumption_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 7790.0
+      price_unit: "¢"      # cents
+      quantity_unit: "MWh" # megawatt-hour
+```
+
+**Explanation**:
+- `value` → `quantity_value`
+- `value_unit` → `price_unit`
+- `base_unit` → `quantity_unit`
+
+---
+
+#### Example 3: Subscription Price
+
+**Before (v0.3.x):**
+```yaml
+pricing:
+  subscription_prices:
+    - start_date: "2023-06-01"
+      value: 19.83
+      value_unit: "€"
+      base_unit: "month"
+      vat_id: "reduced"
+```
+
+**After (v0.4.0):**
+```yaml
+pricing:
+  subscription_prices:
+    - start_date: "2023-06-01"
+      time_value: 19.83
+      price_unit: "€"
+      time_unit: "month"
+      vat_id: "reduced"
+```
+
+**Explanation**:
+- `value` → `time_value` (since subscription is time-based)
+- `value_unit` → `price_unit`
+- `base_unit` → `time_unit`
+
+---
+
+#### Example 4: Transport Price (Fixed Fee)
+
+**Before (v0.3.x):**
+```yaml
+pricing:
+  transport_prices:
+    - start_date: "2023-06-01"
+      value: 34.38
+      value_unit: "€"
+      base_unit: "year"
+      vat_id: "reduced"
+```
+
+**After (v0.4.0):**
+```yaml
+pricing:
+  transport_prices:
+    - start_date: "2023-06-01"
+      time_value: 34.38
+      price_unit: "€"
+      time_unit: "year"
+      vat_id: "reduced"
+```
+
+**Explanation**: Transport as a fixed annual fee uses the time component.
+
+---
+
+#### Example 5: Transport Price (Based on Consumption)
+
+**New capability in v0.4.0 - not available in v0.3.x:**
+
+```yaml
+pricing:
+  transport_prices:
+    - start_date: "2024-01-01"
+      quantity_value: 0.00194
+      price_unit: "€"
+      quantity_unit: "kWh"
+      vat_id: "reduced"
+```
+
+**Explanation**: Transport can now be quantity-based (€/kWh) instead of only time-based.
+
+---
+
+#### Example 6: Energy Taxes
+
+**Before (v0.3.x):**
+```yaml
+pricing:
+  energy_taxes:
+    - start_date: "2023-06-01"
       value: 0.00837
       value_unit: "€"
       base_unit: "kWh"
-      vat_id: normal
-    - start_date: "2024-01-01"
-      value: 0.01637
+      vat_id: "normal"
 ```
+
+**After (v0.4.0):**
+```yaml
+pricing:
+  energy_taxes:
+    - start_date: "2023-06-01"
+      quantity_value: 0.00837
+      price_unit: "€"
+      quantity_unit: "kWh"
+      vat_id: "normal"
+```
+
+**Explanation**: Energy taxes are quantity-based, so use `quantity_value` and `quantity_unit`.
+
+---
+
+#### Example 7: Complete Migration
+
+**Before (v0.3.x):**
+```yaml
+pricing:
+  vat:
+    - id: reduced
+      start_date: "2023-06-01"
+      value: 0.0550
+    - id: normal
+      start_date: "2023-06-01"
+      value: 0.20
+  consumption_prices:
+    - start_date: "2023-06-01"
+      value: 0.07790
+      value_unit: "€"
+      base_unit: "kWh"
+      vat_id: "normal"
+  subscription_prices:
+    - start_date: "2023-06-01"
+      value: 19.83
+      value_unit: "€"
+      base_unit: "month"
+      vat_id: "reduced"
+  transport_prices:
+    - start_date: "2023-06-01"
+      value: 34.38
+      value_unit: "€"
+      base_unit: "year"
+      vat_id: "reduced"
+  energy_taxes:
+    - start_date: "2023-06-01"
+      value: 0.00837
+      value_unit: "€"
+      base_unit: "kWh"
+      vat_id: "normal"
+```
+
+**After (v0.4.0):**
+```yaml
+pricing:
+  vat:
+    - id: reduced
+      start_date: "2023-06-01"
+      value: 0.0550
+    - id: normal
+      start_date: "2023-06-01"
+      value: 0.20
+  consumption_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 0.07790
+      quantity_unit: "kWh"  # Optional - default is kWh
+      price_unit: "€"       # Optional - default is €
+      vat_id: "normal"
+  subscription_prices:
+    - start_date: "2023-06-01"
+      time_value: 19.83
+      time_unit: "month"    # Optional - default is month
+      price_unit: "€"       # Optional - default is €
+      vat_id: "reduced"
+  transport_prices:
+    - start_date: "2023-06-01"
+      time_value: 34.38
+      time_unit: "year"
+      price_unit: "€"
+      vat_id: "reduced"
+  energy_taxes:
+    - start_date: "2023-06-01"
+      quantity_value: 0.00837
+      quantity_unit: "kWh"  # Optional - default is kWh
+      price_unit: "€"       # Optional - default is €
+      vat_id: "normal"
+```
+
+**Note**: The unit properties are optional. If omitted, the defaults are:
+- `price_unit`: € (euro)
+- `quantity_unit`: kWh (kilowatt-hour)
+- `time_unit`: month
+
+### Migration Steps
+
+1. **Backup your configuration file**
+   ```bash
+   cp configuration.yaml configuration.yaml.backup
+   ```
+
+2. **Update pricing section** using the examples above as a guide:
+   - Replace `value` with `quantity_value` or `time_value` depending on the price type
+   - Replace `value_unit` with `price_unit`
+   - Replace `base_unit` with `quantity_unit` or `time_unit` depending on the price type
+
+3. **Quick reference table**:
+
+   | Price Type | Old Format | New Format |
+   |------------|------------|------------|
+   | Consumption | `value` + `base_unit` (kWh) | `quantity_value` + `quantity_unit` (kWh) |
+   | Subscription | `value` + `base_unit` (month/year) | `time_value` + `time_unit` (month/year) |
+   | Transport (fixed) | `value` + `base_unit` (month/year) | `time_value` + `time_unit` (month/year) |
+   | Transport (variable) | Not available | `quantity_value` + `quantity_unit` (kWh) |
+   | Energy Taxes | `value` + `base_unit` (kWh) | `quantity_value` + `quantity_unit` (kWh) |
+
+4. **Validate your configuration**:
+   - Start the application and check the logs for any parsing errors
+   - The application will report if any deprecated properties are found
+
+5. **Test with a short period** first:
+   - Set `last_days: 7` temporarily
+   - Verify that cost calculations match your expectations
+   - Once validated, restore your original `last_days` value
+
+### New Entities in Home Assistant
+
+After upgrading, you will see new cost breakdown entities:
+
+- `sensor.${name}_consumption_cost`
+- `sensor.${name}_subscription_cost`
+- `sensor.${name}_transport_cost`
+- `sensor.${name}_energy_taxes_cost`
+- `sensor.${name}_total_cost`
+
+You can use these in dashboards to visualize your cost breakdown over time.
 
 ### Environment variable for Docker
 
