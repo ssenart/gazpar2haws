@@ -99,7 +99,7 @@ class TestGazpar:
             daily_history, pygazpar.PropertyName.ENERGY.value, start_date, end_date
         )
 
-        await gazpar.publish_date_array("sensor.gazpar2haws_test", "kWh", energy_array, 0)
+        await gazpar.publish_date_array("sensor.gazpar2haws_test", "gazpar2haws_test", kWh", energy_array, 0)
 
         await self._haws.disconnect()
 
@@ -140,10 +140,11 @@ class TestGazpar:
         else:
             cost_array = None
 
-        await gazpar.publish_date_array("sensor.gazpar2haws_energy_test", "kWh", energy_array, 0)
+        await gazpar.publish_date_array("sensor.gazpar2haws_energy_test", "gazpar2haws_energy_test", "kWh", energy_array, 0)
 
         await gazpar.publish_date_array(
             "sensor.gazpar2haws_cost_test",
+            "gazpar2haws_cost_test",
             cost_array.value_unit,
             cost_array.value_array,
             0,
