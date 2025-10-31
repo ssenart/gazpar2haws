@@ -12,6 +12,7 @@ This document answers common questions about Gazpar2HAWS based on GitHub issues 
 - [Data & Statistics](#data--statistics)
 - [Cost Calculation](#cost-calculation)
 - [Home Assistant Integration](#home-assistant-integration)
+  - [Why doesn't Gazpar2HAWS create regular entities instead of statistics?](#why-doesnt-gazpar2haws-create-regular-entities-states-instead-of-just-statistics)
 - [Docker & Add-on](#docker--add-on)
 - [Troubleshooting](#troubleshooting)
 - [Migration & Upgrades](#migration--upgrades)
@@ -374,6 +375,56 @@ grdf:
 ```
 
 Fixed in v0.1.2.
+
+### Why doesn't Gazpar2HAWS create regular entities (states) instead of just statistics?
+
+**Common Question:** Many users expect to see entities like `sensor.gazpar2haws_energy` with a current state in Home Assistant, similar to other sensor integrations.
+
+**Answer:** Gazpar2HAWS intentionally publishes **cumulative statistics** rather than regular state entities. This is a deliberate design choice, not a limitation.
+
+**Why statistics instead of entities?**
+
+- **Optimized for historical data**: Statistics are specifically designed for time-series energy/gas data
+- **Energy Dashboard compatible**: Works seamlessly with Home Assistant's Energy Dashboard and billing analysis
+- **Database efficient**: Cumulative statistics are stored more efficiently than state history
+- **Accurate timestamps**: Preserves exact meter reading dates (not publication dates) for accurate cost calculations
+- **No data duplication**: Avoids storing the same data in both states and statistics
+
+**If you need regular entities for automations or dashboards:**
+
+You can create them using SQL queries to read from the statistics database. Add to your Home Assistant `configuration.yaml`:
+
+```yaml
+sql:
+  - name: gazpar2haws_energy
+    db_url: !secret recorder.db_url
+    query: >
+      SELECT state FROM statistics
+      JOIN statistics_meta ON statistics.metadata_id = statistics_meta.id
+      WHERE statistics_meta.statistic_id = 'sensor.gazpar2haws_energy'
+      ORDER BY statistics.start DESC LIMIT 1
+    column: 'state'
+    unit_of_measurement: 'kWh'
+    icon: mdi:fire
+    device_class: energy
+    state_class: total_increasing
+  - name: gazpar2haws_volume
+    db_url: !secret recorder.db_url
+    query: >
+      SELECT state FROM statistics
+      JOIN statistics_meta ON statistics.metadata_id = statistics_meta.id
+      WHERE statistics_meta.statistic_id = 'sensor.gazpar2haws_volume'
+      ORDER BY statistics.start DESC LIMIT 1
+    column: 'state'
+    unit_of_measurement: 'm³'
+    icon: mdi:fire
+    device_class: gas
+    state_class: total_increasing
+```
+
+This creates entities `sensor.gazpar2haws_energy` and `sensor.gazpar2haws_volume` that automatically reflect the latest statistics values.
+
+**For more examples**, see the [Creating Entities from Statistics](addons/gazpar2haws/DOCS.md#creating-entities-from-statistics-workaround) section in the add-on documentation.
 
 ---
 

@@ -405,6 +405,14 @@ Published when pricing configuration is provided:
 
 Where `${name}` is the device name from configuration (default: `gazpar2haws`)
 
+**Note on Statistics vs Entities:** Gazpar2HAWS intentionally publishes cumulative statistics rather than regular state entities. This design choice is optimal for:
+- Historical energy/gas data tracking
+- Home Assistant Energy Dashboard integration
+- Efficient database storage of time-series data
+- Accurate cost calculations with precise timestamps
+
+If you need Home Assistant entities (states) for automations or dashboards, see the [SQL Workaround](#creating-entities-from-statistics-workaround) section in the add-on documentation (`addons/gazpar2haws/DOCS.md`).
+
 ### Timezone Handling
 
 All timestamps are localized to the configured timezone (default: `Europe/Paris`) before publishing to Home Assistant.

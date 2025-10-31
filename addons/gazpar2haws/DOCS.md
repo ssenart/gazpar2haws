@@ -349,3 +349,78 @@ Transport prices can now be configured either as:
 If you're upgrading from v0.3.x, you **must** update your pricing configuration to the new format. See the examples above for the correct syntax.
 
 For detailed migration instructions, see the main [README.md](https://github.com/ssenart/gazpar2haws/blob/main/README.md).
+
+## Creating Entities from Statistics (Workaround)
+
+By design, Gazpar2HAWS publishes data as **cumulative statistics** in Home Assistant, not as regular state entities. This is the recommended approach for historical energy/gas data as it's optimized for the Energy Dashboard and historical analysis.
+
+However, if you need regular Home Assistant entities (with states) that reflect the current meter readings, you can create them using SQL queries to read from the statistics database.
+
+### SQL Configuration Workaround
+
+Add the following SQL template sensors to your Home Assistant `configuration.yaml`:
+
+```yaml
+sql:
+  - name: gazpar2haws_energy
+    db_url: !secret recorder.db_url
+    query: >
+      SELECT state FROM statistics
+      JOIN statistics_meta ON statistics.metadata_id = statistics_meta.id
+      WHERE statistics_meta.statistic_id = 'sensor.gazpar2haws_energy'
+      ORDER BY statistics.start DESC LIMIT 1
+    column: 'state'
+    unit_of_measurement: 'kWh'
+    icon: mdi:fire
+    device_class: energy
+    state_class: total_increasing
+  - name: gazpar2haws_volume
+    db_url: !secret recorder.db_url
+    query: >
+      SELECT state FROM statistics
+      JOIN statistics_meta ON statistics.metadata_id = statistics_meta.id
+      WHERE statistics_meta.statistic_id = 'sensor.gazpar2haws_volume'
+      ORDER BY statistics.start DESC LIMIT 1
+    column: 'state'
+    unit_of_measurement: 'm³'
+    icon: mdi:fire
+    device_class: gas
+    state_class: total_increasing
+```
+
+This creates two new entities:
+- `sensor.gazpar2haws_energy` - Latest energy reading (kWh)
+- `sensor.gazpar2haws_volume` - Latest volume reading (m³)
+
+These entities will automatically update whenever new statistics are added by Gazpar2HAWS.
+
+### Alternative: Create Additional Cost Entities
+
+You can adapt the same pattern to create entities for cost statistics:
+
+```yaml
+sql:
+  - name: gazpar2haws_total_cost
+    db_url: !secret recorder.db_url
+    query: >
+      SELECT state FROM statistics
+      JOIN statistics_meta ON statistics.metadata_id = statistics_meta.id
+      WHERE statistics_meta.statistic_id = 'sensor.gazpar2haws_total_cost'
+      ORDER BY statistics.start DESC LIMIT 1
+    column: 'state'
+    unit_of_measurement: '€'
+    icon: mdi:cash
+    device_class: monetary
+    state_class: total_increasing
+```
+
+### Why Statistics Instead of Entities?
+
+Gazpar2HAWS uses statistics because:
+- **Optimized for historical data**: Statistics are designed for time-series energy/gas data
+- **Energy Dashboard compatible**: Works seamlessly with Home Assistant's Energy Dashboard
+- **Database efficient**: Stores cumulative values more efficiently than state history
+- **Accurate billing**: Preserves exact meter readings with timestamps for cost calculations
+- **No duplicate data**: Avoids redundantly storing data in both states and statistics
+
+If you need entities for automations or other purposes, this SQL workaround is the recommended approach.
