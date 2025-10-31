@@ -2,6 +2,42 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Development Commands](#development-commands)
+  - [Setup and Installation](#setup-and-installation)
+  - [Testing](#testing-1)
+  - [Linting and Formatting](#linting-and-formatting)
+  - [Running the Application](#running-the-application)
+  - [Docker](#docker)
+  - [DevContainer Add-on Testing](#devcontainer-add-on-testing)
+- [Architecture](#architecture)
+  - [Core Components](#core-components)
+  - [Data Flow](#data-flow)
+  - [Pricing System](#pricing-system)
+  - [Data Model](#data-model)
+  - [Configuration System](#configuration-system)
+- [Key Implementation Details](#key-implementation-details)
+  - [Statistics Publishing](#statistics-publishing)
+  - [Timezone Handling](#timezone-handling)
+  - [Statistics Reset Mechanism](#statistics-reset-mechanism)
+  - [Data Sources](#data-sources)
+  - [PCE Identifier Gotcha](#pce-identifier-gotcha)
+  - [Pricing Configuration Format (v0.4.0)](#pricing-configuration-format-v040)
+- [Testing](#testing)
+- [Documentation](#documentation)
+- [Release management](#release-management)
+- [Configuration Files and Documentation Maintenance](#configuration-files-and-documentation-maintenance)
+  - [Configuration Files](#configuration-files)
+  - [Documentation Files](#documentation-files)
+  - [Version Update Checklist](#version-update-checklist)
+  - [Property Naming Conventions](#property-naming-conventions)
+  - [Breaking Changes Protocol](#breaking-changes-protocol)
+  - [Cross-Reference Validation](#cross-reference-validation)
+  - [Common Maintenance Scenarios](#common-maintenance-scenarios)
+  - [File Location Quick Reference](#file-location-quick-reference)
+
 ## Project Overview
 
 Gazpar2HAWS is a gateway that reads gas meter data from GrDF (French gas provider) and sends it to Home Assistant using WebSocket interface. It enables uploading historical data and keeping it updated with the latest readings, compatible with Home Assistant Energy Dashboard.
@@ -20,8 +56,40 @@ poetry shell
 
 ### Testing
 
+#### Prerequisites: Test Container
+
+Before running unit tests, you must launch the Home Assistant test container. This provides a local Home Assistant instance with WebSocket interface for integration testing.
+
 ```bash
-# Run all tests
+# Start the Home Assistant test container
+cd tests/containers
+docker compose up -d
+
+# Verify the container is running and healthy
+docker compose ps
+
+# View logs if needed
+docker compose logs -f
+
+# Stop the container when done
+docker compose down
+```
+
+The test container:
+- Runs Home Assistant on port **6123** (mapped from internal 8123)
+- Uses configuration from `tests/containers/config/`
+- Provides a WebSocket interface at `ws://localhost:6123/api/websocket`
+- Includes a health check that verifies Home Assistant is ready
+- Persists data in `tests/containers/config/home-assistant_v2.db`
+
+**Access URLs:**
+- Web UI: http://localhost:6123
+- WebSocket API: ws://localhost:6123/api/websocket
+
+#### Running Tests
+
+```bash
+# Run all tests (ensure test container is running first)
 pytest
 
 # Run a specific test file
@@ -29,6 +97,12 @@ pytest tests/test_pricer.py
 
 # Run a specific test
 pytest tests/test_pricer.py::TestPricer::test_get_composite_price_array
+
+# Run tests with verbose output
+pytest -v
+
+# Run tests that require Home Assistant WebSocket
+pytest tests/test_haws.py
 ```
 
 ### Linting and Formatting
@@ -66,6 +140,90 @@ docker compose -f docker/docker-compose.yaml build
 # Run container
 docker compose -f docker/docker-compose.yaml up -d
 ```
+
+### DevContainer Add-on Testing
+
+The project includes a DevContainer configuration for testing the Home Assistant add-on in a complete Home Assistant environment. This is the recommended approach for add-on development and testing.
+
+**Location**: `.devcontainer/devcontainer.json`
+
+**Prerequisites:**
+- Docker Desktop installed and running
+- Visual Studio Code with "Remote - Containers" extension installed
+- The devcontainer must be launched from VS Code (not command line)
+
+**Setup and Usage:**
+
+1. **Open in DevContainer**:
+   - Open the project folder in VS Code
+   - When prompted (or via Command Palette: "Dev Containers: Reopen in Container"), click "Reopen in Container"
+   - First launch will take several minutes to build the container
+
+2. **Start Home Assistant**:
+   - Once inside the container, open the VS Code integrated terminal
+   - Run the task: `Terminal → Run Task → Start Home Assistant`
+   - Alternatively, run from terminal: `supervisor_run`
+   - This launches Home Assistant with Supervisor, bootstrapping the environment
+
+3. **Access Home Assistant**:
+   - Web UI: http://localhost:7123
+   - The add-on will be automatically detected as a local add-on in the `/addons` directory
+   - Configure and test the add-on through Home Assistant UI or via CLI
+
+4. **CLI Commands Inside DevContainer**:
+   - `supervisor_run` - Starts Home Assistant with Supervisor
+   - `ha` - Home Assistant CLI (requires Supervisor running first)
+   - `ha addon logs gazpar2haws` - View add-on logs
+   - `ha addon restart gazpar2haws` - Restart the add-on
+   - `ha addon config gazpar2haws` - View add-on configuration
+
+5. **Port Mappings**:
+   - Home Assistant Web UI: `7123:8123`
+   - Supervisor API: `7357:4357`
+   - These are configured in `devcontainer.json`
+
+**Testing the Add-on:**
+
+1. Configure the add-on through Home Assistant UI:
+   - Add-ons → Gazpar2HAWS → Configuration
+   - Fill in GrDF credentials and pricing configuration
+   - Click Save
+
+2. Start the add-on:
+   - Add-ons → Gazpar2HAWS → Start
+   - View logs to monitor execution
+
+3. Verify functionality:
+   - Check that entities are created: `sensor.gazpar2haws_volume`, `sensor.gazpar2haws_energy`, etc.
+   - Verify statistics appear in Home Assistant Energy Dashboard
+   - Check logs for errors: `ha addon logs gazpar2haws`
+
+4. Develop and iterate:
+   - Modify code locally
+   - Restart the add-on to test changes
+   - View logs in real-time from the VS Code terminal
+
+**DevContainer Configuration Details:**
+
+- **Base Image**: `ghcr.io/home-assistant/devcontainer:addons` - Includes Supervisor and Home Assistant
+- **Bootstrap Command**: Runs `devcontainer_bootstrap` after container starts
+- **Privileged Mode**: Required for Docker operations inside container
+- **Volume Mount**: `/var/lib/docker` for Docker-in-Docker support
+- **VSCode Extensions**: ShellCheck and Prettier pre-installed
+- **Environment**: `WORKSPACE_DIRECTORY` points to `/workspace`
+
+**Troubleshooting:**
+
+- If Home Assistant fails to start, check logs: `docker logs homeassistant`
+- If the add-on doesn't appear, ensure it's in the correct directory structure
+- To rebuild the container: `Dev Containers: Rebuild Container`
+- To start fresh: `Dev Containers: Rebuild Container` then `Dev Containers: Reopen in Container`
+
+**Cleanup:**
+
+When done testing:
+- Exit the container: `Dev Containers: Reopen Folder Locally`
+- Stop the container via Docker Desktop or: `docker compose -f .devcontainer/docker-compose.yaml down`
 
 ## Architecture
 
@@ -171,6 +329,48 @@ Where `${name}` is the device name from configuration (default: `gazpar2haws`)
 
 All timestamps are localized to the configured timezone (default: `Europe/Paris`) before publishing to Home Assistant.
 
+### Statistics Reset Mechanism
+
+The application provides a mechanism to reset all statistics to zero and clear historical data from Home Assistant. This is controlled by the `reset` configuration flag in the device configuration.
+
+**Implementation Location:**
+- Configuration flag: [gazpar.py:67](gazpar2haws/gazpar.py#L67) - `self._reset = device_config.reset`
+- Reset logic: [gazpar.py:100-116](gazpar2haws/gazpar.py#L100-L116) - In `Gazpar.publish()` method
+- WebSocket API: [haws.py:215-227](gazpar2haws/haws.py#L215-L227) - `HomeAssistantWS.clear_statistics()`
+
+**How It Works:**
+
+1. **Configuration**: Set `reset: true` in the device configuration under `devices` section
+2. **Execution**: On the next scan cycle, before fetching new data:
+   - All 7 entity statistics are cleared from Home Assistant using `recorder/clear_statistics` API
+   - Entities cleared:
+     - `sensor.{name}_volume`
+     - `sensor.{name}_energy`
+     - `sensor.{name}_consumption_cost`
+     - `sensor.{name}_subscription_cost`
+     - `sensor.{name}_transport_cost`
+     - `sensor.{name}_energy_taxes_cost`
+     - `sensor.{name}_total_cost`
+3. **Counter Reset**: After clearing, `find_last_date_and_value()` returns `last_value = 0` for all entities
+4. **Data Republishing**: New data is fetched from GrDF and published with cumulative values starting from zero
+
+**Usage Notes:**
+- This is a **one-time operation** - the reset flag should be removed after the first successful run
+- Clears **all historical statistics** from Home Assistant for the specified device
+- Useful for:
+  - Fixing data corruption or incorrect historical imports
+  - Starting fresh with new pricing configurations
+  - Correcting meter reading offsets
+- If reset fails, an exception is raised and logged
+
+**WebSocket API Call:**
+```python
+{
+    "type": "recorder/clear_statistics",
+    "statistic_ids": [list of entity IDs]
+}
+```
+
 ### Data Sources
 
 PyGazpar supports multiple data sources:
@@ -211,6 +411,27 @@ Tests are organized by module and use pytest:
 - Test configuration files in `tests/config/`
 - Excel-based test data in `tests/XLPricer.xlsx`
 - Multiple pricing examples in `tests/config/example_*.yaml`
+- Home Assistant test container in `tests/containers/`
+
+**Test Container Setup:**
+
+Integration tests that interact with Home Assistant WebSocket API require a local Home Assistant instance. The test container is configured in `tests/containers/docker-compose.yaml`:
+
+- **Purpose**: Provides a ready-to-use Home Assistant instance for WebSocket integration testing
+- **Port**: 6123 (accessible at http://localhost:6123)
+- **WebSocket**: ws://localhost:6123/api/websocket
+- **Configuration**: Pre-configured with test data in `tests/containers/config/`
+- **Database**: Persistent SQLite database for statistics storage
+- **Health Check**: Ensures container is ready before running tests
+
+Start the container before running integration tests (see Development Commands → Testing section above).
+
+**Test Categories:**
+
+- **Unit Tests**: Pricer, model validation, date array operations (no container needed)
+- **Integration Tests**: WebSocket communication, statistics import/export (requires container)
+  - `tests/test_haws.py` - Home Assistant WebSocket tests
+  - Tests for `clear_statistics()`, `import_statistics()`, `get_last_statistic()`
 
 When modifying the Pricer, update the Excel test file and corresponding YAML examples to ensure pricing formulas remain correct.
 
