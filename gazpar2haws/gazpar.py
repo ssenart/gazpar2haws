@@ -380,7 +380,7 @@ class Gazpar:
         # Publish statistics to Home Assistant
         try:
             await self._homeassistant.import_statistics(
-                entity_id, "recorder", "gazpar2haws", unit_of_measurement, statistics
+                entity_id, "recorder", "null", unit_of_measurement, statistics
             )
         except Exception:
             Logger.warning(f"Error while importing statistics to Home Assistant: {traceback.format_exc()}")
