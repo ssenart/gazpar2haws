@@ -5,30 +5,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Table of Contents
 
 - [Project Overview](#project-overview)
-- [Development Commands](#development-commands)
+- [Getting Started & Development Setup](#getting-started--development-setup)
   - [Setup and Installation](#setup-and-installation)
-  - [Testing](#testing-1)
   - [Linting and Formatting](#linting-and-formatting)
-  - [Running the Application](#running-the-application)
-  - [Docker](#docker)
-  - [DevContainer Add-on Testing](#devcontainer-add-on-testing)
+- [Deployment Methods](#deployment-methods)
+  - [Running the Application Locally](#running-the-application-locally)
+  - [Docker Compose (Standalone)](#docker-compose-standalone)
+  - [Home Assistant Add-on (DevContainer)](#home-assistant-add-on-devcontainer)
+- [Testing](#testing)
+  - [Test Container Prerequisites](#test-container-prerequisites)
+  - [Unit Tests](#unit-tests)
+  - [Integration Tests](#integration-tests)
+  - [Add-on Testing with DevContainer](#add-on-testing-with-devcontainer)
+  - [When to Use Which Testing Approach](#when-to-use-which-testing-approach)
 - [Architecture](#architecture)
   - [Core Components](#core-components)
   - [Data Flow](#data-flow)
   - [Pricing System](#pricing-system)
   - [Data Model](#data-model)
   - [Configuration System](#configuration-system)
-- [Key Implementation Details](#key-implementation-details)
+- [Implementation Details](#implementation-details)
   - [Statistics Publishing](#statistics-publishing)
   - [Timezone Handling](#timezone-handling)
   - [Statistics Reset Mechanism](#statistics-reset-mechanism)
   - [Data Sources](#data-sources)
   - [PCE Identifier Gotcha](#pce-identifier-gotcha)
   - [Pricing Configuration Format (v0.4.0)](#pricing-configuration-format-v040)
-- [Testing](#testing)
-- [Documentation](#documentation)
-- [Release management](#release-management)
-- [Configuration Files and Documentation Maintenance](#configuration-files-and-documentation-maintenance)
+- [CI/CD Pipelines](#cicd-pipelines)
+  - [Pipeline Overview](#pipeline-overview)
+  - [CI Pipeline](#ci-pipeline)
+  - [Create Release Pipeline](#create-release-pipeline)
+  - [Publish to DockerHub Pipeline](#publish-to-dockerhub-pipeline)
+  - [Version Management with GitVersion](#version-management-with-gitversion)
+  - [Reusable Actions](#reusable-actions)
+  - [Running Pipelines Manually](#running-pipelines-manually)
+- [Maintenance & Release](#maintenance--release)
   - [Configuration Files](#configuration-files)
   - [Documentation Files](#documentation-files)
   - [Version Update Checklist](#version-update-checklist)
@@ -42,7 +53,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Gazpar2HAWS is a gateway that reads gas meter data from GrDF (French gas provider) and sends it to Home Assistant using WebSocket interface. It enables uploading historical data and keeping it updated with the latest readings, compatible with Home Assistant Energy Dashboard.
 
-## Development Commands
+## Getting Started & Development Setup
 
 ### Setup and Installation
 
@@ -52,57 +63,6 @@ poetry install
 
 # Activate Poetry virtual environment
 poetry shell
-```
-
-### Testing
-
-#### Prerequisites: Test Container
-
-Before running unit tests, you must launch the Home Assistant test container. This provides a local Home Assistant instance with WebSocket interface for integration testing.
-
-```bash
-# Start the Home Assistant test container
-cd tests/containers
-docker compose up -d
-
-# Verify the container is running and healthy
-docker compose ps
-
-# View logs if needed
-docker compose logs -f
-
-# Stop the container when done
-docker compose down
-```
-
-The test container:
-- Runs Home Assistant on port **6123** (mapped from internal 8123)
-- Uses configuration from `tests/containers/config/`
-- Provides a WebSocket interface at `ws://localhost:6123/api/websocket`
-- Includes a health check that verifies Home Assistant is ready
-- Persists data in `tests/containers/config/home-assistant_v2.db`
-
-**Access URLs:**
-- Web UI: http://localhost:6123
-- WebSocket API: ws://localhost:6123/api/websocket
-
-#### Running Tests
-
-```bash
-# Run all tests (ensure test container is running first)
-pytest
-
-# Run a specific test file
-pytest tests/test_pricer.py
-
-# Run a specific test
-pytest tests/test_pricer.py::TestPricer::test_get_composite_price_array
-
-# Run tests with verbose output
-pytest -v
-
-# Run tests that require Home Assistant WebSocket
-pytest tests/test_haws.py
 ```
 
 ### Linting and Formatting
@@ -121,7 +81,13 @@ isort gazpar2haws
 ruff check gazpar2haws
 ```
 
-### Running the Application
+## Deployment Methods
+
+This section covers different ways to run the Gazpar2HAWS application depending on your use case.
+
+### Running the Application Locally
+
+To run the application directly on your machine:
 
 ```bash
 # Run with default configuration files
@@ -131,7 +97,9 @@ python -m gazpar2haws
 python -m gazpar2haws --config /path/to/configuration.yaml --secrets /path/to/secrets.yaml
 ```
 
-### Docker
+### Docker Compose (Standalone)
+
+To run the application in a Docker container for standalone deployment:
 
 ```bash
 # Build Docker image
@@ -141,7 +109,7 @@ docker compose -f docker/docker-compose.yaml build
 docker compose -f docker/docker-compose.yaml up -d
 ```
 
-### DevContainer Add-on Testing
+### Home Assistant Add-on (DevContainer)
 
 The project includes a DevContainer configuration for testing the Home Assistant add-on in a complete Home Assistant environment. This is the recommended approach for add-on development and testing.
 
@@ -225,6 +193,118 @@ When done testing:
 - Exit the container: `Dev Containers: Reopen Folder Locally`
 - Stop the container via Docker Desktop or: `docker compose -f .devcontainer/docker-compose.yaml down`
 
+## Testing
+
+This section covers the different testing approaches available in the project. Understanding when to use each approach is important for effective development.
+
+### Test Container Prerequisites
+
+Before running integration tests, you must launch the Home Assistant test container. This provides a local Home Assistant instance with WebSocket interface for integration testing.
+
+```bash
+# Start the Home Assistant test container
+cd tests/containers
+docker compose up -d
+
+# Verify the container is running and healthy
+docker compose ps
+
+# View logs if needed
+docker compose logs -f
+
+# Stop the container when done
+docker compose down
+```
+
+The test container:
+- Runs Home Assistant on port **6123** (mapped from internal 8123)
+- Uses configuration from `tests/containers/config/`
+- Provides a WebSocket interface at `ws://localhost:6123/api/websocket`
+- Includes a health check that verifies Home Assistant is ready
+- Persists data in `tests/containers/config/home-assistant_v2.db`
+
+**Access URLs:**
+- Web UI: http://localhost:6123
+- WebSocket API: ws://localhost:6123/api/websocket
+
+### Unit Tests
+
+Unit tests validate individual components without external dependencies.
+
+```bash
+# Run all unit tests (no container needed)
+pytest
+
+# Run a specific test file
+pytest tests/test_pricer.py
+
+# Run a specific test
+pytest tests/test_pricer.py::TestPricer::test_get_composite_price_array
+
+# Run tests with verbose output
+pytest -v
+```
+
+**Unit test categories:**
+- Pricer calculations and cost breakdown
+- Model validation and data structures
+- Date array operations
+- Configuration parsing
+
+### Integration Tests
+
+Integration tests interact with Home Assistant via WebSocket API and require the test container to be running.
+
+```bash
+# Start test container first
+cd tests/containers && docker compose up -d
+
+# Run integration tests
+pytest tests/test_haws.py
+
+# Run all tests including integration tests
+pytest -v
+```
+
+**Integration test categories:**
+- WebSocket communication with Home Assistant
+- Statistics import and export
+- `clear_statistics()` functionality
+- `get_last_statistic()` retrieval
+- Configuration file handling
+
+### Add-on Testing with DevContainer
+
+Testing the add-on in a full Home Assistant environment provides the most realistic testing scenario. See the [Home Assistant Add-on (DevContainer)](#home-assistant-add-on-devcontainer) section under Deployment Methods for complete instructions.
+
+### When to Use Which Testing Approach
+
+**Use Unit Tests when:**
+- Developing core business logic (pricer, models, utilities)
+- Testing edge cases and error handling
+- You want fast feedback (no container startup needed)
+- Making changes to configuration parsing
+- You don't need to test Home Assistant integration
+
+**Use Integration Tests when:**
+- Testing WebSocket communication
+- Verifying statistics are correctly imported/exported to Home Assistant
+- Testing the reset mechanism
+- Ensuring the application can connect to and query Home Assistant
+
+**Use DevContainer Add-on Testing when:**
+- Testing the complete add-on deployment
+- Verifying add-on appears in Home Assistant UI
+- Testing add-on configuration through Home Assistant UI
+- Validating entities and statistics in Home Assistant
+- End-to-end testing with real Home Assistant instance
+- Debugging issues with add-on lifecycle
+
+**Example workflow:**
+1. Develop locally with unit tests
+2. When you need HA integration, run integration tests with test container
+3. Before publishing, test the complete add-on with DevContainer
+
 ## Architecture
 
 ### Core Components
@@ -301,7 +381,7 @@ Configuration uses YAML with secret interpolation:
 - `secrets.yaml`: Sensitive values with `${ENV_VAR}` placeholders
 - Loaded via ConfigLoader ([config_utils.py](gazpar2haws/config_utils.py))
 
-## Key Implementation Details
+## Implementation Details
 
 ### Statistics Publishing
 
@@ -405,47 +485,303 @@ The pricing configuration uses the composite price model:
 - `value_unit` → replaced by `price_unit`
 - `base_unit` → replaced by `quantity_unit` or `time_unit`
 
-## Testing
+## CI/CD Pipelines
 
-Tests are organized by module and use pytest:
-- Test configuration files in `tests/config/`
-- Excel-based test data in `tests/XLPricer.xlsx`
-- Multiple pricing examples in `tests/config/example_*.yaml`
-- Home Assistant test container in `tests/containers/`
+This project uses GitHub Actions for continuous integration, testing, building, and release automation. The pipelines are defined in `.github/workflows/` and use reusable composite actions for modularity.
 
-**Test Container Setup:**
+### Pipeline Overview
 
-Integration tests that interact with Home Assistant WebSocket API require a local Home Assistant instance. The test container is configured in `tests/containers/docker-compose.yaml`:
+The project has three main workflows:
 
-- **Purpose**: Provides a ready-to-use Home Assistant instance for WebSocket integration testing
-- **Port**: 6123 (accessible at http://localhost:6123)
-- **WebSocket**: ws://localhost:6123/api/websocket
-- **Configuration**: Pre-configured with test data in `tests/containers/config/`
-- **Database**: Persistent SQLite database for statistics storage
-- **Health Check**: Ensures container is ready before running tests
+1. **CI Pipeline** (`.github/workflows/ci.yaml`) - Automated testing on every push and PR
+2. **Create Release Pipeline** (`.github/workflows/create-release.yaml`) - Creates releases and publishes packages
+3. **Publish to DockerHub Pipeline** (`.github/workflows/publish-to-dockerhub.yaml`) - Publishes Docker images
 
-Start the container before running integration tests (see Development Commands → Testing section above).
+**Trigger Branches:**
+- `main` - Production releases
+- `develop` - Development releases and pre-releases
+- `release/*` - Release candidates
+- `feature/*` - Feature development
+- Pull requests - Always run CI
 
-**Test Categories:**
+### CI Pipeline
 
-- **Unit Tests**: Pricer, model validation, date array operations (no container needed)
-- **Integration Tests**: WebSocket communication, statistics import/export (requires container)
-  - `tests/test_haws.py` - Home Assistant WebSocket tests
-  - Tests for `clear_statistics()`, `import_statistics()`, `get_last_statistic()`
+**Location:** `.github/workflows/ci.yaml`
 
-When modifying the Pricer, update the Excel test file and corresponding YAML examples to ensure pricing formulas remain correct.
+**Triggered on:**
+- Push to `main`, `develop`, `release/*`, `feature/*`
+- All pull requests
+- Manual workflow dispatch (with options to skip lint/tests)
 
-## Documentation
+**Jobs:**
 
-Keep updated README.md and CLAUDE.md regarding to any changes in the code.
+1. **Prepare** (`prepare`)
+   - Computes package version using GitVersion
+   - Outputs: `package-version`, `target_python_versions`, `default_python_version`
+   - Tests: Python 3.10, 3.11, 3.12, 3.13
 
-## Release management
+2. **Lint** (`lint`)
+   - Runs Python linting on default Python version (3.13)
+   - Uses action: `./.github/workflows/python-lint`
+   - Runs: PyLint, Flake8, Black, Isort, Mypy, Ruff
+   - Skippable via input: `skip-lint`
 
-Always suggest to update the CHANGELOG.md with any changes in the code.
+3. **Test** (`test`)
+   - Runs pytest against all target Python versions
+   - Uses action: `./.github/workflows/python-test`
+   - Starts HA test container
+   - Waits for healthy status (30 attempts, 5s intervals)
+   - Runs: `pytest tests/`
+   - Skippable via input: `skip-tests`
 
-## Configuration Files and Documentation Maintenance
+**Conditional Execution:**
+```yaml
+if: ${{ !github.event.inputs.skip-lint }}  # Lint job
+if: ${{ !github.event.inputs.skip-tests }}  # Test job
+```
+
+**To run CI manually:**
+1. Go to GitHub Actions → CI
+2. Click "Run workflow"
+3. Select branch and optional inputs
+4. Click green "Run workflow" button
+
+### Create Release Pipeline
+
+**Location:** `.github/workflows/create-release.yaml`
+
+**Triggered on:** Manual workflow dispatch only
+
+**Purpose:** Creates a new release, bumps versions, and publishes packages to PyPI and DockerHub
+
+**Inputs:**
+- `package-version` (optional) - Specific version to release (auto-computed if empty)
+- `is_final` (optional, default: true) - Whether this is a final release (affects pre-release flag)
+
+**Jobs:**
+
+1. **Prepare** (`prepare`)
+   - Computes version using GitVersion (if not provided)
+   - Selects version from input or computed value
+   - Outputs: `package-version`, `default_python_version`
+
+2. **Build** (`build`)
+   - Bumps version in:
+     - `pyproject.toml` (Poetry)
+     - `addons/gazpar2haws/config.yaml` (Add-on version)
+     - `addons/gazpar2haws/build.yaml` (Add-on build version)
+   - Commits and pushes version bumps
+   - Creates Git tag with version number
+   - Builds package with Poetry: `poetry build`
+   - Uploads artifact: `dist/`
+
+3. **Publish to PyPI** (`publish-to-pypi`)
+   - Runs only on `main`, `develop`, or `release/*` branches
+   - Uses trusted publishing (no explicit tokens needed)
+   - Publishes to official PyPI: https://pypi.org/p/gazpar2haws
+   - Downloads build artifact and publishes
+
+4. **Publish to TestPyPI** (`publish-to-testpypi`)
+   - Runs on any other branches (feature branches)
+   - Publishes to test PyPI: https://test.pypi.org/p/gazpar2haws
+   - Used for testing releases before production
+
+5. **Publish to DockerHub** (`publish-to-dockerhub`)
+   - Checks out the tag created in Build job
+   - Publishes Docker image: `ssenart/gazpar2haws`
+   - Tags: version number and optionally `latest`
+   - Builds for multiple platforms: `linux/amd64`, `linux/arm64`
+
+**How to create a release:**
+1. Go to GitHub → Actions → Create Release
+2. Click "Run workflow"
+3. Select branch (usually `main` or `develop`)
+4. Enter optional version (leave blank for auto-compute)
+5. Toggle `is_final` if needed (true = production, false = pre-release)
+6. Click green "Run workflow"
+7. Monitor job execution in Actions tab
+8. Pipeline automatically:
+   - Bumps version numbers
+   - Creates Git tag
+   - Builds Python package
+   - Publishes to PyPI (or TestPyPI)
+   - Builds and publishes Docker images
+
+### Publish to DockerHub Pipeline
+
+**Location:** `.github/workflows/publish-to-dockerhub.yaml`
+
+**Triggered on:** Manual workflow dispatch only
+
+**Purpose:** Allows publishing specific versions to DockerHub without full release process
+
+**Inputs:**
+- `package-version` (optional) - Specific version to publish (auto-computed if empty)
+- `is_latest` (optional, default: true) - Whether to tag as `latest`
+
+**Jobs:**
+
+1. **Prepare** (`prepare`)
+   - Computes version using GitVersion (if not provided)
+   - Selects version from input or computed value
+
+2. **Publish to DockerHub** (`publish-to-dockerhub`)
+   - Logs in to DockerHub with credentials
+   - Extracts metadata and creates tags
+   - Sets up QEMU for multi-platform builds
+   - Builds and pushes Docker image
+   - Platforms: `linux/amd64`, `linux/arm64`
+   - Tags: `<version>`, optionally `latest`
+
+**Credentials Required:**
+- `DOCKERHUB_USERNAME` - GitHub secret
+- `DOCKERHUB_PASSWORD` - GitHub secret (use token, not password)
+
+### Version Management with GitVersion
+
+**Configuration:** `gitversion.yaml`
+
+**How it works:**
+- Uses GitVersion tool to compute semantic version based on branch
+- Converts to PEP440 format for Python
+- Supports pre-release versions with labels
+
+**Version Format by Branch:**
+```
+main (master):           X.Y.Z                    (final release)
+develop:                 X.Y.Za<commits>         (alpha pre-release)
+release/<name>:          X.Y.Zb<commits>         (beta pre-release)
+feature/<name>:          X.Y.Z.dev<commits>      (development version)
+```
+
+**Examples:**
+- `main` branch, 3 commits after tag 1.0.0 → `1.0.0`
+- `develop` branch, 5 commits after tag → `1.1.0a5`
+- `release/1.1.0` → `1.1.0b0`
+- `feature/new-feature`, 10 commits → `1.1.0.dev10`
+
+**Configuration Details:**
+- Assembly format: `{MajorMinorPatch}{PreReleaseLabel}{CommitsSinceVersionSource}`
+- Pre-release labels:
+  - `develop`: `a` (alpha)
+  - `release/*`: `b` (beta)
+  - `feature/*`: `.dev` (development)
+  - `main`: `` (empty = final)
+
+### Reusable Actions
+
+The project uses composite GitHub Actions for modularity:
+
+**1. compute-version** (`.github/workflows/compute-version/action.yaml`)
+- Purpose: Compute semantic version using GitVersion
+- Output: `pep440-version` - Python-formatted version
+- Used by: CI, Create Release, Publish to DockerHub pipelines
+
+**2. python-lint** (`.github/workflows/python-lint/action.yaml`)
+- Purpose: Run all Python linters
+- Inputs: `python-version`
+- Tools: PyLint, Flake8, Black, Isort, Mypy, Ruff
+- Used by: CI pipeline
+
+**3. python-test** (`.github/workflows/python-test/action.yaml`)
+- Purpose: Run pytest with HA test container
+- Inputs: `python-version`
+- Steps:
+  1. Set up Python
+  2. Install Poetry and project
+  3. Start HA test container
+  4. Wait for healthy status
+  5. Run pytest
+- Used by: CI pipeline
+
+**4. git-tag** (`.github/workflows/git-tag/action.yaml`)
+- Purpose: Create and push Git tag
+- Inputs: `tag-name`
+- Steps:
+  1. Delete existing local tag (if any)
+  2. Delete existing remote tag (if any)
+  3. Create new local tag
+  4. Push to remote
+- Used by: Create Release pipeline
+
+**5. publish-to-dockerhub** (`.github/workflows/publish-to-dockerhub/action.yaml`)
+- Purpose: Build and push Docker image to DockerHub
+- Inputs: `image`, `version`, `is_latest`, `username`, `password`
+- Steps:
+  1. Set up Docker with buildx
+  2. Extract metadata and tags
+  3. Log in to DockerHub
+  4. Set up QEMU (multi-platform)
+  5. Build and push image
+  6. Platforms: `linux/amd64`, `linux/arm64`
+- Used by: Create Release, Publish to DockerHub pipelines
+
+### Running Pipelines Manually
+
+**Via GitHub Web UI:**
+1. Go to GitHub repository
+2. Click Actions tab
+3. Select workflow (CI, Create Release, or Publish to DockerHub)
+4. Click "Run workflow" button
+5. Select branch
+6. Fill in optional inputs
+7. Click green "Run workflow" button
+8. Monitor execution in Actions tab
+
+**Via GitHub CLI:**
+```bash
+# List available workflows
+gh workflow list
+
+# Run specific workflow
+gh workflow run ci.yaml --ref main
+
+# Run workflow with inputs
+gh workflow run create-release.yaml --ref main \
+  -f package-version=1.2.3 \
+  -f is_final=true
+
+# View workflow runs
+gh run list
+
+# View specific run
+gh run view <run-id>
+
+# View run logs
+gh run view <run-id> --log
+```
+
+**Workflow Constraints:**
+- CI pipeline: Runs automatically on push/PR, or manually
+- Create Release: Manual workflow only (controlled release process)
+- Publish to DockerHub: Manual workflow only
+- All workflows are read-only except Create Release (which has write permissions for commits/tags)
+
+### Pipeline Secrets Configuration
+
+**Required Secrets:**
+- `DOCKERHUB_USERNAME` - DockerHub account username
+- `DOCKERHUB_PASSWORD` - DockerHub account token (not password)
+
+**To set up secrets:**
+1. Go to GitHub Settings → Secrets and variables → Actions
+2. Click "New repository secret"
+3. Add `DOCKERHUB_USERNAME` and `DOCKERHUB_PASSWORD`
+4. Save
+
+**PyPI Publishing:**
+- Uses trusted publishing with OIDC
+- No secrets needed for official PyPI
+- TestPyPI also uses trusted publishing
+
+## Maintenance & Release
 
 When making changes to the pricing model, configuration format, or published entities, multiple files across the repository need to be updated to maintain consistency. This section documents all locations that require maintenance.
+
+**Key documentation to update:**
+- Keep **README.md** updated with any user-facing changes
+- Keep **CLAUDE.md** (this file) updated with architecture, implementation, and development changes
+- Always update **CHANGELOG.md** with a new version entry documenting Added/Changed/Fixed/Removed items
 
 ### Configuration Files
 
