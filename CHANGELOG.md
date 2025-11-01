@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-10-30
+
+### Added
+
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Composite price model with dual components - supports both quantity-based (€/kWh) and time-based (€/month) pricing
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Quantity-based transport pricing (€/kWh) support in addition to fixed time-based fees (€/year)
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Enhanced cost breakdown with separate Home Assistant entities for detailed cost analysis:
+  - `sensor.${name}_consumption_cost` - Consumption cost component
+  - `sensor.${name}_subscription_cost` - Subscription fees component
+  - `sensor.${name}_transport_cost` - Transport/delivery fees component
+  - `sensor.${name}_energy_taxes_cost` - Energy taxes component
+  - `sensor.${name}_total_cost` - Total of all cost components
+- Unified pricing API with single `get_composite_price_array()` method and `CostBreakdown` output model
+- Automatic sensor migration from v0.3.x `sensor.${name}_cost` to v0.4.0 `sensor.${name}_total_cost` with smart detection and data preservation
+- Comprehensive [MIGRATIONS.md](MIGRATIONS.md) guide with step-by-step instructions, examples, and troubleshooting
+- Entity names in Home Assistant now properly reflect the sensor type (e.g., "Gazpar2HAWS Energy", "Gazpar2HAWS Volume")
+
+### Changed
+
+- **BREAKING**: Pricing configuration format changed. **See [MIGRATIONS.md](MIGRATIONS.md)** for migration instructions:
+  - `value` → `quantity_value` or `time_value`
+  - `value_unit` → `price_unit`
+  - `base_unit` → `quantity_unit` or `time_unit`
+- `Pricer.compute()` now returns `CostBreakdown` object with 5 separate cost components instead of single value
+- Cost statistics publishing expanded from 1 entity to 5 entities (consumption, subscription, transport, energy_taxes, total)
+
+### Fixed
+
+- Fixed Home Assistant statistics metadata to include proper entity names instead of generic "gazpar2haws" - statistics now display as "Gazpar2HAWS Energy", "Gazpar2HAWS Volume", etc.
+
+### Migration
+
+Users upgrading from v0.3.x must update their pricing configuration to the new format.
+
+**See [MIGRATIONS.md](MIGRATIONS.md)** for complete migration guide including:
+- Step-by-step configuration migration with 7 detailed examples
+- Quick reference table for property mapping
+- Automatic sensor migration (no user action required)
+- Validation checklist
+- Troubleshooting common issues
+
 ## [0.3.3] - 2025-07-22
 
 ### Changed

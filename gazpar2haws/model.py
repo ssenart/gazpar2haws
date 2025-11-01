@@ -1,9 +1,10 @@
+import tempfile
 from datetime import date
 from enum import Enum
 from pathlib import Path
 from typing import Generic, Optional, TypeVar
 
-from pydantic import BaseModel, DirectoryPath, EmailStr, SecretStr, model_validator
+from pydantic import BaseModel, EmailStr, SecretStr, model_validator
 from pydantic_extra_types.timezone_name import TimeZoneName
 
 from gazpar2haws.date_array import DateArray
@@ -53,7 +54,7 @@ class Logging(BaseModel):
 class Device(BaseModel):
     name: str
     data_source: str = "json"
-    tmp_dir: DirectoryPath = DirectoryPath("/tmp")
+    tmp_dir: Optional[str] = None  # If None, will use system temp directory
     as_of_date: Optional[date] = None
     username: Optional[EmailStr] = None
     password: Optional[SecretStr] = None
@@ -72,8 +73,15 @@ class Device(BaseModel):
             raise ValueError("Missing password")
         if self.data_source != "test" and self.pce_identifier is None:
             raise ValueError("Missing pce_identifier")
-        if self.data_source == "excel" and self.tmp_dir is None or not Path(self.tmp_dir).is_dir():
+
+        # Set tmp_dir to system temp directory if not specified
+        if self.tmp_dir is None:
+            self.tmp_dir = tempfile.gettempdir()
+
+        # Validate tmp_dir exists for excel data source
+        if self.data_source == "excel" and not Path(self.tmp_dir).is_dir():
             raise ValueError(f"Invalid tmp_dir {self.tmp_dir}")
+
         return self
 
 
@@ -149,6 +157,20 @@ class Price(Unit[ValueUnit, BaseUnit]):  # pylint: disable=too-few-public-method
 
 
 # ----------------------------------
+class CompositePriceValue(Period):
+    price_unit: Optional[PriceUnit] = None  # € or ¢ (applies to both components)
+    vat_id: Optional[str] = None
+
+    # Quantity component (€/kWh)
+    quantity_value: Optional[float] = None
+    quantity_unit: Optional[QuantityUnit] = None
+
+    # Time component (€/month)
+    time_value: Optional[float] = None
+    time_unit: Optional[TimeUnit] = None
+
+
+# ----------------------------------
 class PriceValue(Price[ValueUnit, BaseUnit], Value):
     pass
 
@@ -179,16 +201,50 @@ class EnergyTaxesPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):  # pylint
 
 
 # ----------------------------------
+class CompositePriceArray(Period):  # pylint: disable=too-few-public-methods
+    name: Optional[str] = None
+    price_unit: Optional[PriceUnit] = None
+    vat_id: Optional[str] = None
+
+    # Quantity component (€/kWh) - vectorized
+    quantity_value_array: Optional[DateArray] = None
+    quantity_unit: Optional[QuantityUnit] = None
+
+    # Time component (€/month) - vectorized
+    time_value_array: Optional[DateArray] = None
+    time_unit: Optional[TimeUnit] = None
+
+    @model_validator(mode="after")
+    def set_value_arrays(self):
+        if self.quantity_value_array is None:
+            self.quantity_value_array = DateArray(
+                name=f"{self.name}_quantity", start_date=self.start_date, end_date=self.end_date
+            )  # pylint: disable=attribute-defined-outside-init
+        if self.time_value_array is None:
+            self.time_value_array = DateArray(
+                name=f"{self.name}_time", start_date=self.start_date, end_date=self.end_date
+            )  # pylint: disable=attribute-defined-outside-init
+        return self
+
+
+# ----------------------------------
 class Pricing(BaseModel):
     vat: Optional[list[VatRate]] = None
-    consumption_prices: list[PriceValue[PriceUnit, QuantityUnit]]
-    subscription_prices: Optional[list[PriceValue[PriceUnit, TimeUnit]]] = None
-    transport_prices: Optional[list[PriceValue[PriceUnit, TimeUnit]]] = None
-    energy_taxes: Optional[list[PriceValue[PriceUnit, QuantityUnit]]] = None
+    consumption_prices: list[CompositePriceValue]
+    subscription_prices: Optional[list[CompositePriceValue]] = None
+    transport_prices: Optional[list[CompositePriceValue]] = None
+    energy_taxes: Optional[list[CompositePriceValue]] = None
 
     @model_validator(mode="before")
     @classmethod
     def propagates_properties(cls, values):
+        # Default units for all price types
+        default_units = {
+            "price_unit": "€",
+            "quantity_unit": "kWh",
+            "time_unit": "month",
+        }
+
         for price_list in [
             "consumption_prices",
             "subscription_prices",
@@ -202,23 +258,19 @@ class Pricing(BaseModel):
 
             if "start_date" not in prices[0]:
                 raise ValueError(f"Missing start_date in first element of {price_list}")
-            if "value_unit" not in prices[0]:
-                prices[0]["value_unit"] = "€"
-            if "base_unit" not in prices[0]:
-                if price_list in ["consumption_prices", "energy_taxes"]:
-                    prices[0]["base_unit"] = "kWh"
-                else:
-                    raise ValueError(
-                        "Missing base_unit in first element of ['transport_prices', 'subscription_prices']"
-                    )
 
+            # Apply defaults to first entry
+            for key, default_value in default_units.items():
+                if key not in prices[0]:
+                    prices[0][key] = default_value
+
+            # Propagate properties through the list
             for i in range(len(prices) - 1):
                 if "end_date" not in prices[i]:
                     prices[i]["end_date"] = prices[i + 1]["start_date"]
-                if "value_unit" not in prices[i + 1]:
-                    prices[i + 1]["value_unit"] = prices[i]["value_unit"]
-                if "base_unit" not in prices[i + 1]:
-                    prices[i + 1]["base_unit"] = prices[i]["base_unit"]
+                for key, default_value in default_units.items():
+                    if key not in prices[i + 1]:
+                        prices[i + 1][key] = prices[i][key]
                 if "vat_id" not in prices[i + 1] and "vat_id" in prices[i]:
                     prices[i + 1]["vat_id"] = prices[i]["vat_id"]
 
@@ -233,3 +285,14 @@ class ConsumptionQuantityArray(Unit[QuantityUnit, TimeUnit], ValueArray):
 # ----------------------------------
 class CostArray(Unit[PriceUnit, TimeUnit], ValueArray):
     pass
+
+
+# ----------------------------------
+class CostBreakdown(BaseModel):
+    """Detailed breakdown of costs with individual components and total."""
+
+    consumption: CostArray
+    subscription: CostArray
+    transport: CostArray
+    energy_taxes: CostArray
+    total: CostArray

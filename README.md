@@ -10,6 +10,38 @@ It is a complement to the other available projects:
 - [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt): [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) alternative but using MQTT events (it reduce coupling with HA).
 - [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card): HA dashboard card compatible with [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) and [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt).
 
+## Documentation
+
+### User Documentation
+
+- **[README.md](README.md)** (this file) - Complete installation, configuration, and usage guide
+- **[FAQ.md](FAQ.md)** - Frequently Asked Questions based on GitHub issues and user feedback
+  - Common configuration issues
+  - Troubleshooting steps
+  - Migration guides
+  - All known issues and solutions
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history with all changes, fixes, and new features
+
+### Developer Documentation
+
+- **[CLAUDE.md](CLAUDE.md)** - Developer guide for working with the codebase
+  - Architecture overview
+  - Development commands (setup, testing, linting)
+  - Key implementation details
+  - Testing guidelines
+- **[TODO.md](TODO.md)** - Planned improvements and test coverage tasks
+  - Test coverage analysis
+  - Missing tests by priority
+  - Implementation schedule
+  - Known issues requiring tests
+
+### Quick Links
+
+- 🐛 Found a bug? → Check [FAQ.md](FAQ.md) first, then open an [issue](https://github.com/ssenart/gazpar2haws/issues)
+- 📝 Want to contribute? → Read [CLAUDE.md](CLAUDE.md) and [TODO.md](TODO.md)
+- 🔄 Upgrading? → Check [CHANGELOG.md](CHANGELOG.md) for breaking changes
+- ❓ Have a question? → See [FAQ.md](FAQ.md) or ask in [discussions](https://github.com/ssenart/gazpar2haws/discussions)
+
 ## Installation
 
 Gazpar2HAWS can be installed in many ways.
@@ -147,7 +179,7 @@ logging:
 grdf:
   scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_ids: sensor.${name}_volume and sensor.${name}_energy.
+    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id prefix: sensor.${name}_*.
       username: "!secret grdf.username"
       password: "!secret grdf.password"
       pce_identifier: "!secret grdf.pce_identifier"
@@ -177,6 +209,11 @@ The history is uploaded on the entities with names:
 
 - sensor.${name}\_volume: Volume history in m³.
 - sensor.${name}\_energy: Energy history in kWh.
+- sensor.${name}\_consumption_cost: Cost from consumption (if pricing configured).
+- sensor.${name}\_subscription_cost: Cost from subscription (if pricing configured).
+- sensor.${name}\_transport_cost: Cost from transport (if pricing configured).
+- sensor.${name}\_energy_taxes_cost: Cost from energy taxes (if pricing configured).
+- sensor.${name}\_total_cost: Total cost (if pricing configured).
 
 `${name}` is 'gazpar2haws' defined in the above configuration file. It can be replaced by any other name.
 
@@ -188,10 +225,10 @@ The cost computation is based in gas prices defined in the configuration files.
 
 The section 'Pricing' is broken into 5 sub-sections:
 - vat: Value added tax definition.
-- consumption_prices: All the gas price history in €/kWh.
-- subscription_prices: The subscription prices in €/month (or year).
-- transport_prices: The fixed prices in €/month (or year) to transport the gas.
-- energy_taxes: Various taxes on energy in €/kWh.
+- consumption_prices: Gas consumption prices, typically in €/kWh (quantity-based).
+- subscription_prices: Fixed subscription prices, typically in €/month or €/year (time-based).
+- transport_prices: Transport prices, either fixed (€/month or €/year) or based on consumption (€/kWh).
+- energy_taxes: Energy taxes, typically in €/kWh (quantity-based).
 
 Below, many examples illustrates how to use pricing configuration for use cases from the simplest to the most complex.
 
@@ -213,14 +250,14 @@ cost[€] = quantity[kWh] * price[€/kWh]
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
 ```
 
 Example 2: A fixed consumption price in another unit
 ---
 
-*value_unit* is the price unit (default: €).
-*base_unit* is the denominator unit (default: kWh).
+*price_unit* is the monetary unit (default: €).
+*quantity_unit* is the energy unit (default: kWh).
 
 **Formula:**
 ```math
@@ -232,9 +269,9 @@ cost[€] = \frac{quantity[kWh] * price[¢/MWh] * converter\_factor[¢->€]} {c
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 7790.0 # Unit is now ¢/MWh.
-      value_unit: "¢"
-      base_unit: "MWh"
+      quantity_value: 7790.0 # Unit is now ¢/MWh.
+      price_unit: "¢"
+      quantity_unit: "MWh"
 ```
 
 Example 3: Multiple prices over time
@@ -244,9 +281,9 @@ Example 3: Multiple prices over time
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
     - start_date: "2024-01-01"
-      value: 0.06888 # Default unit is €/kWh.
+      quantity_value: 0.06888 # Default unit is €/kWh.
 ```
 
 Price is 0.07790 before 2024-01-01.
@@ -267,7 +304,7 @@ pricing:
       value: 0.20 # It is the tax rate in [0, 1.0] <==> [0% - 100%].
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
 ```
 
@@ -294,13 +331,13 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 19.83
-      value_unit: "€"
-      base_unit: "month"
+      time_value: 19.83
+      price_unit: "€"
+      time_unit: "month"
       vat_id: "reduced"
 ```
 
@@ -310,7 +347,7 @@ cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + sub\_pric
 ```
 
 
-Example 6: Transport price
+Example 6: Transport price (fixed fee)
 ---
 
 A fixed yearly transport may be charged as well.
@@ -326,18 +363,48 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 34.38
-      value_unit: "€"
-      base_unit: "year"
+      time_value: 34.38
+      price_unit: "€"
+      time_unit: "year"
       vat_id: reduced
 ```
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price * (1 + vat[reduced])
+cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price[€/year] * (1 + vat[reduced])
+```
+
+Example 6bis: Transport price (based on consumption)
+---
+
+Transport can also be charged per kWh consumed.
+
+```yaml
+pricing:
+  vat:
+    - id: normal
+      start_date: "2023-06-01"
+      value: 0.20
+    - id: reduced
+      start_date: "2023-06-01"
+      value: 0.0550
+  consumption_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 0.07790
+      vat_id: "normal"
+  transport_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 0.00194 # €/kWh
+      price_unit: "€"
+      quantity_unit: "kWh"
+      vat_id: reduced
+```
+**Formula:**
+```math
+cost[€] = quantity[kWh] * (cons\_price[€/kWh] * (1 + vat[normal]) + quantity[kWh] * trans\_price[€/kWh] * (1 + vat[reduced]))
 ```
 
 Example 7: Energy taxes
@@ -356,13 +423,13 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is €/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.00837
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.00837
+      price_unit: "€"
+      quantity_unit: "kWh"
       vat_id: normal
 ```
 **Formula:**
@@ -386,55 +453,96 @@ pricing:
       value: 0.20
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.07790
+      price_unit: "€"
+      quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2023-07-01"
-      value: 0.05392
+      quantity_value: 0.05392
     - start_date: "2023-08-01"
-      value: 0.05568
+      quantity_value: 0.05568
     - start_date: "2023-09-01"
-      value: 0.05412
+      quantity_value: 0.05412
     - start_date: "2023-10-01"
-      value: 0.06333
+      quantity_value: 0.06333
     - start_date: "2023-11-01"
-      value: 0.06716
+      quantity_value: 0.06716
     - start_date: "2023-12-01"
-      value: 0.07235
+      quantity_value: 0.07235
     - start_date: "2024-01-01"
-      value: 0.06888
+      quantity_value: 0.06888
     - start_date: "2024-02-01"
-      value: 0.05972
+      quantity_value: 0.05972
     - start_date: "2024-03-01"
-      value: 0.05506
+      quantity_value: 0.05506
     - start_date: "2024-04-01"
-      value: 0.04842
+      quantity_value: 0.04842
     - start_date: "2025-01-01"
-      value: 0.07807
+      quantity_value: 0.07807
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 19.83
-      value_unit: "€"
-      base_unit: "month"
+      time_value: 19.83
+      price_unit: "€"
+      time_unit: "month"
       vat_id: reduced
     - start_date: "2023-07-01"
-      value: 20.36
+      time_value: 20.36
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 34.38
-      value_unit: "€"
-      base_unit: "year"
+      time_value: 34.38
+      price_unit: "€"
+      time_unit: "year"
       vat_id: reduced
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.00837
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.00837
+      price_unit: "€"
+      quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2024-01-01"
-      value: 0.01637
+      quantity_value: 0.01637
 ```
+
+## What's New in v0.4.0
+
+### Enhanced Cost Breakdown
+
+Starting from version 0.4.0, Gazpar2HAWS provides detailed cost breakdowns in Home Assistant. In addition to the total cost, separate entities are published for each cost component:
+
+- `sensor.${name}_consumption_cost`: Cost from gas consumption (quantity × consumption_price)
+- `sensor.${name}_subscription_cost`: Cost from fixed subscription fees
+- `sensor.${name}_transport_cost`: Cost from transport fees
+- `sensor.${name}_energy_taxes_cost`: Cost from energy taxes
+- `sensor.${name}_total_cost`: Total cost (sum of all components)
+
+Where `${name}` is the device name configured in your `configuration.yaml` file (default: `gazpar2haws`).
+
+This breakdown allows you to analyze which components contribute the most to your total gas bill over time.
+
+### Composite Price Model
+
+The new pricing model supports **composite prices** where each price component can have:
+
+1. **Quantity component**: Variable cost based on consumption (e.g., €/kWh)
+2. **Time component**: Fixed cost based on time period (e.g., €/month)
+
+This provides more flexibility to accurately model your energy provider's billing structure. For example:
+
+- **Consumption prices**: Typically have only a quantity component (€/kWh)
+- **Subscription prices**: Typically have only a time component (€/month)
+- **Transport prices**: Can have either a quantity component (€/kWh) or a time component (€/year)
+- **Energy taxes**: Typically have only a quantity component (€/kWh)
+
+### ⚠️ Migration Required from v0.3.x
+
+**If you are upgrading from v0.3.x**, the pricing configuration format has changed. You must update your configuration file to the new format.
+
+**See [MIGRATIONS.md](MIGRATIONS.md) for detailed step-by-step migration instructions** including:
+- Complete before/after examples for each price type
+- Migration checklist
+- Common issues and troubleshooting
+
+If you're a new user or already on v0.4.0, you can skip this section.
 
 ### Environment variable for Docker
 
@@ -455,33 +563,67 @@ You can setup them directly in a docker-compose.yaml file (environment section) 
 
 ## FAQ
 
-- *Is it an official GrDF application ?*
+For a comprehensive list of frequently asked questions, see **[FAQ.md](FAQ.md)** which includes:
 
-  No, absolutely not. It was made by reverse engineering GrDF website without any guarantee of long-term operation. Indeed, any modification made to their website risks breaking it.
+- 📖 **General questions** - What is Gazpar2HAWS, differences from other solutions
+- ⚙️ **Configuration issues** - PCE identifier, reset parameter, environment variables
+- 📊 **Data & statistics** - Missing data, date issues, historical retrieval
+- 💰 **Cost calculation** - Pricing configuration, v0.4.0 migration, new entities
+- 🏠 **Home Assistant integration** - Entity setup, Energy Dashboard, HassIO issues
+- 🐳 **Docker & Add-on** - Installation, logs, version issues
+- 🔧 **Troubleshooting** - Common errors, log messages, bug reporting
+- 🔄 **Migration & upgrades** - Version upgrade guides, breaking changes
 
-- *I'm confused. What are the differences between [PyGazpar](https://github.com/ssenart/PyGazpar), [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar), [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card), [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt), [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) ?*
+### Quick Answers
 
-    - [PyGazpar](https://github.com/ssenart/PyGazpar) is the low-level Python library used to query GrDF data. It was written for use by other Python programs.
-    - [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) is the first program using PyGazpar. This is a Home Assistant integration which makes it possible to provide an energy sensor. Coupled with the Recorder integration, it is capable of building a history (called statistics in HA) and displaying it using the Energy Dashboard. It is also compatible with the [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card).
-    - [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card) is a HA card which nicely displays historical data in the form of tables or bar graphs. It is also compatible with [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt).
-    - [Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt) offers exactly the same functionality as [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) but runs outside of HA as a standalone application, in a Docker container or in an HA add-on.
-    - [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) replaces the use of home-assistant-gazpar/Gazpar2MQTT with the HA Recorder integration to create a data history (for Energy dashboard integration). The disadvantage of the latter solution is the non-alignment of the actual reading date and its publication date. Reading values ​​are made available for 2 to 5 days (and sometimes longer). [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) timestamps the reading value exactly to the observation dates without any offset. In addition, [Gazpar2HAWS](https://github.com/ssenart/gazpar2haws) is able to reconstruct the complete history of your data up to 3 years in the past, which is very practical in the event of data loss. Finally, it provides ways to calculate and publish energy costs.
+**Is it an official GrDF application?**
 
-- *My PCE ID has a leading zero (e.g. "0123456789") and the application fails with an error indicating that the PCE number is unknown. I can see in the log file that it uses "123456789" without the leading zero. What happened ?*
+No, absolutely not. It was made by reverse engineering GrDF website without any guarantee of long-term operation. Indeed, any modification made to their website risks breaking it.
 
-  The cause is in your configuration file (grdf.devices[].pce_identifier) ​​where you configured your PCE identifier and you did not quote it. Your PCE number is then interpreted as a number instead of a string.
+**What are the differences between PyGazpar, home-assistant-gazpar, Gazpar2MQTT, and Gazpar2HAWS?**
+
+- **[PyGazpar](https://github.com/ssenart/PyGazpar)** - Low-level Python library used to query GrDF data
+- **[home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar)** - Home Assistant integration providing energy sensor with Recorder/Energy Dashboard support
+- **[Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt)** - Standalone application that publishes data via MQTT (reduces coupling with HA)
+- **[Gazpar2HAWS](https://github.com/ssenart/gazpar2haws)** - Uses HA Recorder integration directly, timestamps readings to exact observation dates, reconstructs 3-year history, calculates detailed costs
+
+**My PCE ID has a leading zero (e.g. "0123456789") but it's being truncated. Why?**
+
+The PCE identifier must be quoted in your YAML configuration. Without quotes, it's interpreted as a number and loses the leading zero.
+
+```yaml
+# ✓ Correct
+pce_identifier: "0123456789"
+
+# ✗ Wrong - loses leading zero
+pce_identifier: 0123456789
+```
+
+See [FAQ.md](FAQ.md) for more questions and detailed answers.
 
 ## Troubleshooting
 
+For comprehensive troubleshooting guidance, see **[FAQ.md](FAQ.md#troubleshooting)** which includes:
+
+- Common log messages and their meanings
+- Step-by-step debugging procedures
+- Solutions to known issues from GitHub
+- Error handling guides
+
+### Quick Troubleshooting Steps
+
 Sometimes, for any reason, the application does not work as expected. No entities is created in HA, some error messages are displayed, nothing happens...
 
-In this situation, the most valuable tool for troubleshooting what is happening is the log file.
+**In this situation:**
 
-Take a look at it, try to find a clue that might help solve the problem. Sorry, the log file can sometimes appear cryptic.
+1. **Check the log file** - This is the most valuable troubleshooting tool
+2. **Enable debug logging** - Set `logging.level: debug` in your configuration
+3. **Verify configuration syntax** - Use a YAML validator
+4. **Check [FAQ.md](FAQ.md)** - Many common issues are already documented
 
 If your configuration is correct, you may have spotted a bug.
 
-In this case, capture a Github issue [here](https://github.com/ssenart/gazpar2haws/issues) with the following information:
+In this case, capture a GitHub issue [here](https://github.com/ssenart/gazpar2haws/issues) with the following information:
 1. What kind of setup do you use ? Standalone application, Docker container or HA addon.
 2. Is this a first installation or a version upgrade ? If upgrading version, what was the previous version and did it work well ?
 3. Describe as precisely as possible what is happening.
@@ -489,7 +631,7 @@ In this case, capture a Github issue [here](https://github.com/ssenart/gazpar2ha
 
 The first log lines should be similar to:
 ```log
-2025-02-17 02:01:17,626 INFO [__main__] Starting Gazpar2HAWS version 0.3.0
+2025-02-17 02:01:17,626 INFO [__main__] Starting Gazpar2HAWS version 0.4.0
 2025-02-17 02:01:17,627 INFO [__main__] Running on Python version: 3.12.9 (main, Feb  7 2025, 01:03:02) [GCC 12.2.0]
 ```
 
@@ -539,9 +681,28 @@ All the gazpar2haws images are available [here](https://hub.docker.com/repositor
 
 ## Contributing
 
-Pull requests are welcome. For any change proposal, please open an issue first to discuss what you would like to change.
+Pull requests are welcome! For any change proposal, please open an issue first to discuss what you would like to change.
 
-Please make sure to update tests as appropriate.
+### Before Contributing
+
+1. **Read [CLAUDE.md](CLAUDE.md)** - Developer guide with:
+   - Architecture overview
+   - Development commands (setup, testing, linting)
+   - Code structure and patterns
+   - Testing guidelines
+
+2. **Check [TODO.md](TODO.md)** - For planned improvements and test coverage gaps
+
+3. **Review [CHANGELOG.md](CHANGELOG.md)** - To understand recent changes and version history
+
+### Contribution Guidelines
+
+- Write tests for new features (see [TODO.md](TODO.md) for test coverage goals)
+- Follow existing code style and patterns
+- Update documentation (README.md, FAQ.md) as appropriate
+- Add entries to CHANGELOG.md for your changes
+- Ensure all tests pass: `poetry run pytest`
+- Run linters: `poetry run pylint gazpar2haws`
 
 ## License
 

@@ -1,8 +1,11 @@
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
+import pytz
 import websockets
+
+from gazpar2haws.datetime_utils import convert_statistics_timestamps
 
 Logger = logging.getLogger(__name__)
 
@@ -225,3 +228,112 @@ class HomeAssistantWS:
         await self.send_message(clear_statistics_message)
 
         Logger.debug(f"Cleared {entity_ids} statistics")
+
+    # ----------------------------------
+    async def migrate_statistic(
+        self,
+        old_entity_id: str,
+        new_entity_id: str,
+        new_name: str,
+        unit_of_measurement: str,
+        timezone: str,
+        as_of_date: date,
+    ) -> bool:
+        """
+        Migrate statistics from an old sensor to a new sensor.
+
+        This implements smart detection logic:
+        - If old sensor exists but new doesn't: AUTO-MIGRATE data
+        - If both exist: SKIP with warning (prevent data loss)
+        - If only new exists: SKIP (normal operation, no old data)
+        - On error: LOG WARNING and return False (graceful fallback)
+
+        Args:
+            old_entity_id: Source sensor ID (e.g., sensor.gazpar2haws_cost)
+            new_entity_id: Target sensor ID (e.g., sensor.gazpar2haws_total_cost)
+            new_name: Display name for the new sensor
+            unit_of_measurement: Unit for the new sensor (e.g., "€")
+            timezone: Timezone string (e.g., "Europe/Paris")
+            as_of_date: Latest date to query for migration
+
+        Returns:
+            True if migration was successful or skipped safely, False on error
+        """
+        try:
+            Logger.debug(f"Checking for migration opportunity: {old_entity_id} → {new_entity_id}")
+
+            # Create timezone-aware datetime objects
+            tz = pytz.timezone(timezone)
+
+            # Convert as_of_date to datetime at start of day (00:00:00) in target timezone
+            as_of_datetime = tz.localize(datetime.combine(as_of_date, datetime.min.time()))
+
+            # Very old date to capture all historical data (10 years back from as_of_date)
+            very_old_datetime = as_of_datetime - timedelta(days=3650)
+
+            # Check if old and new sensors have data using statistics_during_period
+            # This is more reliable than list_statistic_ids which may have caching delays
+            old_statistics_data = await self.statistics_during_period(
+                [old_entity_id], very_old_datetime, as_of_datetime
+            )
+
+            old_has_data = old_entity_id in old_statistics_data and old_statistics_data[old_entity_id]
+
+            # Decision logic
+            if not old_has_data:
+                Logger.debug(f"Old sensor {old_entity_id} does not exist or has no data - no migration needed")
+                return True
+
+            # Query new sensor to check if it already has data
+            new_statistics_data = await self.statistics_during_period(
+                [new_entity_id], very_old_datetime, as_of_datetime
+            )
+
+            new_has_data = new_entity_id in new_statistics_data and new_statistics_data[new_entity_id]
+
+            if new_has_data:
+                Logger.warning(
+                    f"Both old sensor {old_entity_id} and new sensor {new_entity_id} have data. "
+                    f"Skipping migration to prevent data loss. Old sensor can be manually deleted if desired."
+                )
+                return True
+
+            # At this point: old has data AND new doesn't → MIGRATE
+            Logger.info(f"Starting automatic migration: {old_entity_id} → {new_entity_id}")
+
+            old_statistics = old_statistics_data[old_entity_id]
+            Logger.debug(f"Found {len(old_statistics)} statistics entries to migrate from {old_entity_id}")
+
+            # Remove 'change' and 'end' fields from old statistics as they are not accepted by import_statistics
+            for stat in old_statistics:
+                if "change" in stat:
+                    del stat["change"]
+                if "end" in stat:
+                    del stat["end"]
+
+            # Convert start and end timestamps from Unix milliseconds to ISO format strings
+            # because import_statistics expects ISO format (using timezone for consistency)
+            converted_statistics = convert_statistics_timestamps(old_statistics, timezone)
+
+            # Import the statistics to the new sensor with same metadata
+            await self.import_statistics(
+                entity_id=new_entity_id,
+                source="recorder",
+                name=new_name,
+                unit_of_measurement=unit_of_measurement,
+                statistics=converted_statistics,
+            )
+
+            Logger.info(
+                f"Successfully migrated {len(old_statistics)} statistics entries "
+                f"from {old_entity_id} to {new_entity_id}. "
+                f"Old sensor can be deleted manually if desired."
+            )
+            return True
+
+        except Exception as exc:  # pylint: disable=broad-except
+            Logger.warning(
+                f"Error during statistic migration from {old_entity_id} to {new_entity_id}: {exc}. "
+                f"Continuing without migration (data is preserved in old sensor)."
+            )
+            return False

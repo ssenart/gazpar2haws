@@ -29,51 +29,51 @@ pricing:
       value: 0.20
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.07790
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.07790
+      quantity_unit: "kWh"
+      price_unit: "€"
       vat_id: normal
     - start_date: "2023-07-01"
-      value: 0.05392
+      quantity_value: 0.05392
     - start_date: "2023-08-01"
-      value: 0.05568
+      quantity_value: 0.05568
     - start_date: "2023-09-01"
-      value: 0.05412
+      quantity_value: 0.05412
     - start_date: "2023-10-01"
-      value: 0.06333
+      quantity_value: 0.06333
     - start_date: "2023-11-01"
-      value: 0.06716
+      quantity_value: 0.06716
     - start_date: "2023-12-01"
-      value: 0.07235
+      quantity_value: 0.07235
     - start_date: "2024-01-01"
-      value: 0.06888
+      quantity_value: 0.06888
     - start_date: "2024-02-01"
-      value: 0.05972  
+      quantity_value: 0.05972
     - start_date: "2024-03-01"
-      value: 0.05506
+      quantity_value: 0.05506
     - start_date: "2024-04-01"
-      value: 0.04842
+      quantity_value: 0.04842
     - start_date: "2025-01-01"
-      value: 0.07807
+      quantity_value: 0.07807
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 19.83
-      value_unit: "€"
-      base_unit: "month"
+      time_value: 19.83
+      time_unit: "month"
+      price_unit: "€"
       vat_id: reduced
     - start_date: "2023-07-01"
-      value: 20.36
+      time_value: 20.36
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 34.38
-      value_unit: "€"
-      base_unit: "year"
+      time_value: 34.38
+      time_unit: "year"
+      price_unit: "€"
       vat_id: reduced
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      value: 0.00837
-      value_unit: "€"
-      base_unit: "kWh"
+      quantity_value: 0.00837
+      quantity_unit: "kWh"
+      price_unit: "€"
       vat_id: normal
     - start_date: "2024-01-01"
-      value: 0.01637
+      quantity_value: 0.01637

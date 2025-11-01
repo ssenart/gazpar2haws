@@ -8,6 +8,7 @@ import pytz
 from pygazpar.datasource import MeterReadings  # type: ignore
 
 from gazpar2haws.date_array import DateArray
+from gazpar2haws.datetime_utils import timestamp_ms_to_date
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
 from gazpar2haws.model import (
     ConsumptionQuantityArray,
@@ -91,12 +92,46 @@ class Gazpar:
         # Volume, energy and cost sensor names.
         volume_sensor_name = f"sensor.{self._name}_volume"
         energy_sensor_name = f"sensor.{self._name}_energy"
-        cost_sensor_name = f"sensor.{self._name}_cost"
+        consumption_cost_sensor_name = f"sensor.{self._name}_consumption_cost"
+        subscription_cost_sensor_name = f"sensor.{self._name}_subscription_cost"
+        transport_cost_sensor_name = f"sensor.{self._name}_transport_cost"
+        energy_taxes_cost_sensor_name = f"sensor.{self._name}_energy_taxes_cost"
+        total_cost_sensor_name = f"sensor.{self._name}_total_cost"
+
+        # Automatic migration from v0.3.x to v0.4.0
+        # Migrate old sensor.{name}_cost to sensor.{name}_total_cost if pricing is enabled
+        if self._pricing_config is not None:
+            try:
+                old_total_cost_sensor_name = f"sensor.{self._name}_cost"
+                await self._homeassistant.migrate_statistic(
+                    old_entity_id=old_total_cost_sensor_name,
+                    new_entity_id=total_cost_sensor_name,
+                    new_name="Gazpar2HAWS Total Cost",
+                    unit_of_measurement="€",
+                    timezone=self._timezone,
+                    as_of_date=as_of_date,
+                )
+            except Exception:  # pylint: disable=broad-except
+                Logger.warning(
+                    f"Error during automatic sensor migration from "
+                    f"{old_total_cost_sensor_name} to {total_cost_sensor_name}: "
+                    f"{traceback.format_exc()}"
+                )
 
         # Eventually reset the sensor in Home Assistant
         if self._reset:
             try:
-                await self._homeassistant.clear_statistics([volume_sensor_name, energy_sensor_name])
+                await self._homeassistant.clear_statistics(
+                    [
+                        volume_sensor_name,
+                        energy_sensor_name,
+                        consumption_cost_sensor_name,
+                        subscription_cost_sensor_name,
+                        transport_cost_sensor_name,
+                        energy_taxes_cost_sensor_name,
+                        total_cost_sensor_name,
+                    ]
+                )
             except Exception:
                 Logger.warning(f"Error while resetting the sensor in Home Assistant: {traceback.format_exc()}")
                 raise
@@ -105,7 +140,21 @@ class Gazpar:
 
         last_date_and_value_by_sensor[volume_sensor_name] = await self.find_last_date_and_value(volume_sensor_name)
         last_date_and_value_by_sensor[energy_sensor_name] = await self.find_last_date_and_value(energy_sensor_name)
-        last_date_and_value_by_sensor[cost_sensor_name] = await self.find_last_date_and_value(cost_sensor_name)
+        last_date_and_value_by_sensor[consumption_cost_sensor_name] = await self.find_last_date_and_value(
+            consumption_cost_sensor_name
+        )
+        last_date_and_value_by_sensor[subscription_cost_sensor_name] = await self.find_last_date_and_value(
+            subscription_cost_sensor_name
+        )
+        last_date_and_value_by_sensor[transport_cost_sensor_name] = await self.find_last_date_and_value(
+            transport_cost_sensor_name
+        )
+        last_date_and_value_by_sensor[energy_taxes_cost_sensor_name] = await self.find_last_date_and_value(
+            energy_taxes_cost_sensor_name
+        )
+        last_date_and_value_by_sensor[total_cost_sensor_name] = await self.find_last_date_and_value(
+            total_cost_sensor_name
+        )
 
         # Compute the start date as the minimum of the last dates plus one day
         start_date = min(min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1), as_of_date)
@@ -113,12 +162,34 @@ class Gazpar:
         # Get all start dates
         energy_start_date = last_date_and_value_by_sensor[energy_sensor_name][0] + timedelta(days=1)
         volume_start_date = last_date_and_value_by_sensor[volume_sensor_name][0] + timedelta(days=1)
-        cost_start_date = last_date_and_value_by_sensor[cost_sensor_name][0] + timedelta(days=1)
+        consumption_cost_start_date = last_date_and_value_by_sensor[consumption_cost_sensor_name][0] + timedelta(days=1)
+        subscription_cost_start_date = last_date_and_value_by_sensor[subscription_cost_sensor_name][0] + timedelta(
+            days=1
+        )
+        transport_cost_start_date = last_date_and_value_by_sensor[transport_cost_sensor_name][0] + timedelta(days=1)
+        energy_taxes_cost_start_date = last_date_and_value_by_sensor[energy_taxes_cost_sensor_name][0] + timedelta(
+            days=1
+        )
+        total_cost_start_date = last_date_and_value_by_sensor[total_cost_sensor_name][0] + timedelta(days=1)
+
+        # Get the minimum cost start date
+        cost_start_date = min(
+            consumption_cost_start_date,
+            subscription_cost_start_date,
+            transport_cost_start_date,
+            energy_taxes_cost_start_date,
+            total_cost_start_date,
+        )
 
         Logger.debug(f"Min start date for all sensors: {start_date}")
         Logger.debug(f"Energy start date: {energy_start_date}")
         Logger.debug(f"Volume start date: {volume_start_date}")
-        Logger.debug(f"Cost start date: {cost_start_date}")
+        Logger.debug(f"Consumption cost start date: {consumption_cost_start_date}")
+        Logger.debug(f"Subscription cost start date: {subscription_cost_start_date}")
+        Logger.debug(f"Transport cost start date: {transport_cost_start_date}")
+        Logger.debug(f"Energy taxes cost start date: {energy_taxes_cost_start_date}")
+        Logger.debug(f"Total cost start date: {total_cost_start_date}")
+        Logger.debug(f"Min cost start date: {cost_start_date}")
 
         # Fetch the data from GrDF and publish it to Home Assistant
         daily_history = self.fetch_daily_gazpar_history(start_date, as_of_date)
@@ -151,6 +222,7 @@ class Gazpar:
         if volume_array is not None:
             await self.publish_date_array(
                 volume_sensor_name,
+                "Gazpar2HAWS Volume",
                 "m³",
                 volume_array,
                 last_date_and_value_by_sensor[volume_sensor_name][1],
@@ -161,6 +233,7 @@ class Gazpar:
         if energy_array is not None and energy_start_date <= end_date:
             await self.publish_date_array(
                 energy_sensor_name,
+                "Gazpar2HAWS Energy",
                 "kWh",
                 energy_array[energy_start_date : end_date + timedelta(days=1)],
                 last_date_and_value_by_sensor[energy_sensor_name][1],
@@ -184,18 +257,55 @@ class Gazpar:
                 value_array=energy_array[cost_start_date : end_date + timedelta(days=1)],
             )
 
-            cost_array = pricer.compute(quantities, PriceUnit.EURO)
+            cost_breakdown = pricer.compute(quantities, PriceUnit.EURO)
         else:
-            cost_array = None
+            cost_breakdown = None
 
-        # Publish the cost to Home Assistant
-        if cost_array is not None:
-            cost_initial_value = last_date_and_value_by_sensor[cost_sensor_name][1]
+        # Publish the cost breakdown to Home Assistant
+        if cost_breakdown is not None:
+            # Publish consumption cost
             await self.publish_date_array(
-                cost_sensor_name,
-                cost_array.value_unit,
-                cost_array.value_array,
-                cost_initial_value,
+                consumption_cost_sensor_name,
+                "Gazpar2HAWS Consumption Cost",
+                cost_breakdown.consumption.value_unit,
+                cost_breakdown.consumption.value_array,
+                last_date_and_value_by_sensor[consumption_cost_sensor_name][1],
+            )
+
+            # Publish subscription cost
+            await self.publish_date_array(
+                subscription_cost_sensor_name,
+                "Gazpar2HAWS Subscription Cost",
+                cost_breakdown.subscription.value_unit,
+                cost_breakdown.subscription.value_array,
+                last_date_and_value_by_sensor[subscription_cost_sensor_name][1],
+            )
+
+            # Publish transport cost
+            await self.publish_date_array(
+                transport_cost_sensor_name,
+                "Gazpar2HAWS Transport Cost",
+                cost_breakdown.transport.value_unit,
+                cost_breakdown.transport.value_array,
+                last_date_and_value_by_sensor[transport_cost_sensor_name][1],
+            )
+
+            # Publish energy taxes cost
+            await self.publish_date_array(
+                energy_taxes_cost_sensor_name,
+                "Gazpar2HAWS Energy Taxes Cost",
+                cost_breakdown.energy_taxes.value_unit,
+                cost_breakdown.energy_taxes.value_array,
+                last_date_and_value_by_sensor[energy_taxes_cost_sensor_name][1],
+            )
+
+            # Publish total cost
+            await self.publish_date_array(
+                total_cost_sensor_name,
+                "Gazpar2HAWS Total Cost",
+                cost_breakdown.total.value_unit,
+                cost_breakdown.total.value_array,
+                last_date_and_value_by_sensor[total_cost_sensor_name][1],
             )
         else:
             Logger.info("No cost data to publish")
@@ -276,6 +386,7 @@ class Gazpar:
     async def publish_date_array(
         self,
         entity_id: str,
+        entity_name: str,
         unit_of_measurement: str,
         date_array: DateArray,
         initial_value: float,
@@ -298,7 +409,7 @@ class Gazpar:
         # Publish statistics to Home Assistant
         try:
             await self._homeassistant.import_statistics(
-                entity_id, "recorder", "gazpar2haws", unit_of_measurement, statistics
+                entity_id, "recorder", entity_name, unit_of_measurement, statistics
             )
         except Exception:
             Logger.warning(f"Error while importing statistics to Home Assistant: {traceback.format_exc()}")
@@ -353,10 +464,7 @@ class Gazpar:
 
             if last_statistic:
                 # Extract the end date of the last statistics from the unix timestamp
-                last_date = datetime.fromtimestamp(
-                    int(str(last_statistic.get("start"))) / 1000,
-                    tz=pytz.timezone(self._timezone),
-                ).date()
+                last_date = timestamp_ms_to_date(last_statistic.get("start"), self._timezone)  # type: ignore[arg-type]
 
                 # Get the last meter value
                 last_value = float(str(last_statistic.get("sum")))
