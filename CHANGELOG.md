@@ -28,10 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Migration
 
-Users upgrading from v0.3.x must update their pricing configuration in `configuration.yaml`:
-- See README.md "Migration from v0.3.x to v0.4.0" section for detailed examples.
-- All examples in README.md have been updated to the new format.
-- Configuration validation will report deprecated properties if found.
+Users upgrading from v0.3.x must update their pricing configuration. **See [MIGRATIONS.md](MIGRATIONS.md)** for:
+- Detailed step-by-step migration instructions
+- Complete before/after examples for each price type
+- Migration validation checklist
+- Troubleshooting common migration issues
 
 ## [0.3.3] - 2025-07-22
 

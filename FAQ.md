@@ -577,26 +577,67 @@ After running once, set it back to `false`.
 
 ### How do I upgrade from v0.3.x to v0.4.0?
 
-v0.4.0 introduces **breaking changes** in the pricing configuration format.
+v0.4.0 introduces **breaking changes** in the pricing configuration format. Your configuration file must be updated.
 
-**Step 1: Update pricing configuration**
+**See [MIGRATIONS.md](MIGRATIONS.md)** for comprehensive migration instructions including:
+- Step-by-step migration guide
+- Before/after examples for each price type
+- Quick reference table
+- Troubleshooting common migration issues
+- Validation checklist
 
-Replace old properties with new ones:
-- `value` → `quantity_value` or `time_value`
+**Quick steps:**
+1. Update pricing configuration (see MIGRATIONS.md for examples)
+2. Update the application:
+   - Docker: `docker compose pull && docker compose up -d`
+   - Standalone: `git pull && poetry install`
+   - Add-on: Update from Home Assistant UI
+3. Verify: Check logs for errors, verify new cost entities appear in Home Assistant
+
+### What's the difference between `quantity_value` and `time_value`?
+
+- **`quantity_value`**: Price based on consumption amount (e.g., €/kWh)
+  - Used for: Consumption prices, Energy taxes, Transport (consumption-based)
+  - Applied per unit consumed
+
+- **`time_value`**: Price based on time period (e.g., €/month, €/year)
+  - Used for: Subscription fees, Transport (fixed), Standing charges
+  - Applied per time period, regardless of consumption
+
+**Example:**
+- Consumption at €0.07790/kWh uses `quantity_value: 0.07790` (€ per each kWh)
+- Subscription at €19.83/month uses `time_value: 19.83` (€ for the entire month)
+
+See [MIGRATIONS.md](MIGRATIONS.md) for detailed examples of each type.
+
+### Will my old cost entities (`sensor.gazpar2haws_cost`) still work after upgrading?
+
+**Yes.** The old `sensor.gazpar2haws_cost` entity (v0.3.x total cost) will still exist in Home Assistant and retain its historical data.
+
+**However:** Gazpar2HAWS v0.4.0+ only updates the new breakdown entities:
+- `sensor.gazpar2haws_consumption_cost`
+- `sensor.gazpar2haws_subscription_cost`
+- `sensor.gazpar2haws_transport_cost`
+- `sensor.gazpar2haws_energy_taxes_cost`
+- `sensor.gazpar2haws_total_cost`
+
+The old `sensor.gazpar2haws_cost` entity will stop receiving updates. You can:
+1. Use the new `sensor.gazpar2haws_total_cost` in your dashboards/automations (recommended)
+2. Or manually delete the old entity from Home Assistant if you want to clean up
+
+### My configuration file has deprecated properties - how do I fix this?
+
+**Deprecated properties (v0.3.x):**
+- `value` (deprecated)
+- `value_unit` (deprecated)
+- `base_unit` (deprecated)
+
+**Replace with:**
+- `value` → `quantity_value` (for consumption-based) or `time_value` (for time-based)
 - `value_unit` → `price_unit`
-- `base_unit` → `quantity_unit` or `time_unit`
+- `base_unit` → `quantity_unit` (for consumption-based) or `time_unit` (for time-based)
 
-See the [complete migration guide](README.md#migration-from-v03x-to-v040) in README.md with detailed examples.
-
-**Step 2: Update the application**
-- Docker: `docker compose pull && docker compose up -d`
-- Standalone: `git pull && poetry install`
-- Add-on: Update from Home Assistant UI
-
-**Step 3: Verify**
-- Check logs for any configuration errors
-- Verify new cost entities appear in Home Assistant
-- Confirm cost calculations match expectations
+**See [MIGRATIONS.md](MIGRATIONS.md)** for specific examples matching your price type (consumption, subscription, transport, energy_taxes).
 
 ### Do I need to reset data when upgrading?
 

@@ -346,9 +346,14 @@ Transport prices can now be configured either as:
 
 ### Migration from v0.3.x
 
-If you're upgrading from v0.3.x, you **must** update your pricing configuration to the new format. See the examples above for the correct syntax.
+If you're upgrading from v0.3.x, you **must** update your pricing configuration to the new format.
 
-For detailed migration instructions, see the main [README.md](https://github.com/ssenart/gazpar2haws/blob/main/README.md).
+**See [MIGRATIONS.md](https://github.com/ssenart/gazpar2haws/blob/main/MIGRATIONS.md)** for comprehensive migration instructions including:
+- Step-by-step migration guide
+- Before/after examples for each price type
+- Quick reference table
+- Troubleshooting common migration issues
+- Validation checklist
 
 ## Creating Entities from Statistics (Workaround)
 

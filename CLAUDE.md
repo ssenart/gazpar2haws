@@ -939,12 +939,17 @@ When adding new configuration properties:
 
 When introducing breaking changes to configuration:
 
-1. **CHANGELOG.md**: Mark section with "BREAKING" and provide migration table
-2. **README.md**: Add migration guide with before/after examples
-3. **FAQ.md**: Add Q&A about the migration
-4. **DOCS.md**: Add "What's New" section explaining changes
-5. **Model validation**: Consider adding deprecation warnings before full removal
-6. **Version bump**: Use semantic versioning (breaking change = major version bump)
+1. **MIGRATIONS.md**: Add comprehensive migration guide with:
+   - Before/after configuration examples
+   - Step-by-step migration instructions
+   - Validation checklist
+   - Troubleshooting section
+2. **CHANGELOG.md**: Mark "Migration" section and reference MIGRATIONS.md
+3. **README.md**: Add brief "What's New" section and warning banner linking to MIGRATIONS.md
+4. **FAQ.md**: Add Q&A about the migration, linking to MIGRATIONS.md for details
+5. **addons/gazpar2haws/DOCS.md**: Update examples to new format, link to MIGRATIONS.md
+6. **Model validation**: Consider adding deprecation warnings before full removal
+7. **Version bump**: Use semantic versioning (breaking change = major version bump)
 
 ### Cross-Reference Validation
 
@@ -996,12 +1001,13 @@ Configuration Files:
 └── tests/config/example_*.yaml           # Test configurations
 
 Documentation Files:
-├── README.md                              # Main user docs
+├── README.md                              # Main user docs (overview, features, quick links)
+├── MIGRATIONS.md                          # Version upgrade guides (breaking changes, step-by-step)
+├── FAQ.md                                 # User questions (links to MIGRATIONS.md for upgrades)
+├── CHANGELOG.md                           # Version history (links to MIGRATIONS.md for breaking changes)
 ├── CLAUDE.md                              # Developer guide
-├── FAQ.md                                 # User questions
-├── CHANGELOG.md                           # Version history
 ├── TODO.md                                # Planned improvements
-└── addons/gazpar2haws/DOCS.md            # Add-on user guide
+└── addons/gazpar2haws/DOCS.md            # Add-on user guide (links to MIGRATIONS.md)
 
 Test Data:
 └── tests/XLPricer.xlsx                   # Expected pricing calculations
