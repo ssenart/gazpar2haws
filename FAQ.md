@@ -16,6 +16,7 @@ This document answers common questions about Gazpar2HAWS based on GitHub issues 
 - [Docker & Add-on](#docker--add-on)
 - [Troubleshooting](#troubleshooting)
 - [Migration & Upgrades](#migration--upgrades)
+  - [Automatic Sensor Migration](#what-happens-to-my-historical-cost-data-when-i-upgrade-to-v040)
 
 ---
 
@@ -612,18 +613,31 @@ See [MIGRATIONS.md](MIGRATIONS.md) for detailed examples of each type.
 
 ### Will my old cost entities (`sensor.gazpar2haws_cost`) still work after upgrading?
 
-**Yes.** The old `sensor.gazpar2haws_cost` entity (v0.3.x total cost) will still exist in Home Assistant and retain its historical data.
+**Yes, with automatic data migration.** When you upgrade from v0.3.x to v0.4.0, Gazpar2HAWS automatically handles the transition:
 
-**However:** Gazpar2HAWS v0.4.0+ only updates the new breakdown entities:
-- `sensor.gazpar2haws_consumption_cost`
-- `sensor.gazpar2haws_subscription_cost`
-- `sensor.gazpar2haws_transport_cost`
-- `sensor.gazpar2haws_energy_taxes_cost`
-- `sensor.gazpar2haws_total_cost`
+**Automatic Migration (happens automatically on first run):**
+- The old `sensor.gazpar2haws_cost` entity (v0.3.x total cost) is detected
+- All historical data is **automatically copied** to the new `sensor.gazpar2haws_total_cost` entity
+- No data loss - everything is preserved in the new sensor
+- The old sensor remains in Home Assistant for reference
 
-The old `sensor.gazpar2haws_cost` entity will stop receiving updates. You can:
-1. Use the new `sensor.gazpar2haws_total_cost` in your dashboards/automations (recommended)
-2. Or manually delete the old entity from Home Assistant if you want to clean up
+**New entities created in v0.4.0+:**
+- `sensor.gazpar2haws_consumption_cost` - Consumption cost breakdown
+- `sensor.gazpar2haws_subscription_cost` - Subscription fees breakdown
+- `sensor.gazpar2haws_transport_cost` - Transport fees breakdown
+- `sensor.gazpar2haws_energy_taxes_cost` - Energy taxes breakdown
+- `sensor.gazpar2haws_total_cost` - New total cost (replacing old `sensor.gazpar2haws_cost`)
+
+**After upgrading:**
+1. ✅ Historical data is automatically migrated from old to new sensor
+2. ✅ Check logs for migration success: `"Successfully migrated X statistics entries..."`
+3. ✅ Use the new `sensor.gazpar2haws_total_cost` in your dashboards/automations (recommended)
+4. ✅ Optionally delete the old `sensor.gazpar2haws_cost` entity from Home Assistant if you want to clean up
+
+**See [MIGRATIONS.md - Automatic Sensor Migration](MIGRATIONS.md#automatic-sensor-migration)** for complete details including:
+- How smart detection works (no action required)
+- What to check in the logs
+- Troubleshooting if something goes wrong
 
 ### My configuration file has deprecated properties - how do I fix this?
 
@@ -638,6 +652,28 @@ The old `sensor.gazpar2haws_cost` entity will stop receiving updates. You can:
 - `base_unit` → `quantity_unit` (for consumption-based) or `time_unit` (for time-based)
 
 **See [MIGRATIONS.md](MIGRATIONS.md)** for specific examples matching your price type (consumption, subscription, transport, energy_taxes).
+
+### What happens to my historical cost data when I upgrade to v0.4.0?
+
+**Your historical data is automatically preserved and migrated.** Gazpar2HAWS v0.4.0 includes smart automatic migration:
+
+**What happens automatically (no action required):**
+1. On first run with v0.4.0, the application checks for your old `sensor.gazpar2haws_cost` sensor
+2. If it has historical data, **all statistics are automatically copied** to the new `sensor.gazpar2haws_total_cost` sensor
+3. The old sensor remains in Home Assistant (can be deleted manually if desired)
+4. All 5 new cost breakdown entities start receiving updates from now on
+
+**How to verify the migration worked:**
+- Check the application logs for: `"Successfully migrated X statistics entries..."`
+- Check Home Assistant: New `sensor.gazpar2haws_total_cost` should contain all your historical data
+- Check in Home Assistant Developer Tools → Statistics to verify both sensors
+
+**What if something goes wrong?**
+- If migration fails, you'll see a warning in the logs but the application continues normally
+- Your old data remains safe in the old `sensor.gazpar2haws_cost` sensor
+- You can manually import the data later if needed
+
+**See [MIGRATIONS.md - Automatic Sensor Migration](MIGRATIONS.md#automatic-sensor-migration)** for troubleshooting specific scenarios.
 
 ### Do I need to reset data when upgrading?
 

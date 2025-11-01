@@ -9,6 +9,7 @@ This document provides step-by-step instructions for upgrading Gazpar2HAWS betwe
   - [Breaking Changes](#breaking-changes)
   - [Migration Examples](#migration-examples)
   - [Migration Steps](#migration-steps)
+  - [Automatic Sensor Migration](#automatic-sensor-migration)
   - [Validation Checklist](#validation-checklist)
 
 ---
@@ -343,6 +344,68 @@ grdf:
 
 ---
 
+### Automatic Sensor Migration
+
+When you upgrade from v0.3.x to v0.4.0, Gazpar2HAWS **automatically handles migration of historical cost data** from the old sensor to the new one.
+
+#### What Happens Automatically
+
+**Old Sensor:** `sensor.{name}_cost`
+**New Sensor:** `sensor.{name}_total_cost`
+
+On the first run with v0.4.0:
+
+1. **Detection**: The application checks if your old `sensor.{name}_cost` has historical data in Home Assistant
+2. **Smart Logic**:
+   - If old sensor exists AND new doesn't exist → **AUTO-MIGRATE** all historical data
+   - If both sensors exist → **SKIP** to prevent data loss (you can manually delete old sensor)
+   - If only new sensor exists → **SKIP** (normal operation, no migration needed)
+3. **Data Transfer**: All historical statistics from the old sensor are copied to the new sensor
+4. **Old Sensor**: Remains in Home Assistant for reference (can be manually hidden or deleted)
+
+#### No Action Required
+
+You **do not need to do anything** - the migration happens automatically during the first run with v0.4.0 when pricing configuration is enabled.
+
+**Check the logs** after the first run:
+```
+INFO gazpar2haws.haws: Starting automatic migration: sensor.gazpar2haws_cost → sensor.gazpar2haws_total_cost
+INFO gazpar2haws.haws: Successfully migrated 365 statistics entries from sensor.gazpar2haws_cost to sensor.gazpar2haws_total_cost
+```
+
+#### Troubleshooting Automatic Migration
+
+**Problem**: "Both old sensor and new sensor exist. Skipping migration..."
+
+**Cause**: The new sensor was created before migration ran
+
+**Solution**:
+1. Check if you manually created `sensor.{name}_total_cost`
+2. If yes, you can safely delete the old `sensor.{name}_cost` sensor
+3. Or, if needed, manually query the old sensor's data and import it to the new one
+
+---
+
+**Problem**: "No historical data found in sensor.gazpar2haws_cost - nothing to migrate"
+
+**Cause**: The old sensor exists but has no historical data
+
+**Solution**: This is normal. The application will continue with normal operation.
+
+---
+
+**Problem**: "Error during statistic migration... Continuing without migration"
+
+**Cause**: WebSocket or HA communication issue during migration attempt
+
+**Solution**:
+1. Check your Home Assistant logs for connectivity issues
+2. Verify the HA token is valid
+3. Restart the application/add-on
+4. The application continues safely - old data is preserved in the old sensor for manual recovery
+
+---
+
 ### Validation Checklist
 
 After migration, verify:
@@ -361,7 +424,9 @@ After migration, verify:
   - `sensor.{name}_energy_taxes_cost`
   - `sensor.{name}_total_cost`
 - [ ] Cost values in Home Assistant match your expectations
-- [ ] Historical data is preserved (old `sensor.{name}_cost` entity still contains history)
+- [ ] Automatic sensor migration completed successfully (check logs for migration messages)
+- [ ] Historical data from old `sensor.{name}_cost` has been copied to new `sensor.{name}_total_cost`
+- [ ] New `sensor.{name}_total_cost` contains all historical data from before the upgrade
 
 ---
 

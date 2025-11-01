@@ -225,3 +225,88 @@ class HomeAssistantWS:
         await self.send_message(clear_statistics_message)
 
         Logger.debug(f"Cleared {entity_ids} statistics")
+
+    # ----------------------------------
+    async def migrate_statistic(
+        self, old_entity_id: str, new_entity_id: str, new_name: str, unit_of_measurement: str
+    ) -> bool:
+        """
+        Migrate statistics from an old sensor to a new sensor.
+
+        This implements smart detection logic:
+        - If old sensor exists but new doesn't: AUTO-MIGRATE data
+        - If both exist: SKIP with warning (prevent data loss)
+        - If only new exists: SKIP (normal operation, no old data)
+        - On error: LOG WARNING and return False (graceful fallback)
+
+        Args:
+            old_entity_id: Source sensor ID (e.g., sensor.gazpar2haws_cost)
+            new_entity_id: Target sensor ID (e.g., sensor.gazpar2haws_total_cost)
+            new_name: Display name for the new sensor
+            unit_of_measurement: Unit for the new sensor (e.g., "€")
+
+        Returns:
+            True if migration was successful or skipped safely, False on error
+        """
+        try:
+            Logger.debug(f"Checking for migration opportunity: {old_entity_id} → {new_entity_id}")
+
+            # Check if old and new sensors exist
+            old_exists = await self.exists_statistic_id(old_entity_id, "sum")
+            new_exists = await self.exists_statistic_id(new_entity_id, "sum")
+
+            # Decision logic
+            if not old_exists:
+                Logger.debug(f"Old sensor {old_entity_id} does not exist - no migration needed")
+                return True
+
+            if new_exists:
+                Logger.warning(
+                    f"Both old sensor {old_entity_id} and new sensor {new_entity_id} exist. "
+                    f"Skipping migration to prevent data loss. Old sensor can be manually deleted if desired."
+                )
+                return True
+
+            # At this point: old exists AND new doesn't → MIGRATE
+            Logger.info(f"Starting automatic migration: {old_entity_id} → {new_entity_id}")
+
+            # Query all historical data from old sensor
+            # Use a wide time range to capture all historical data
+            very_old_date = datetime(1970, 1, 1)
+            today = datetime.now()
+
+            statistics_data = await self.statistics_during_period(
+                [old_entity_id],
+                very_old_date,
+                today
+            )
+
+            if old_entity_id not in statistics_data or not statistics_data[old_entity_id]:
+                Logger.info(f"No historical data found in {old_entity_id} - nothing to migrate")
+                return True
+
+            old_statistics = statistics_data[old_entity_id]
+            Logger.debug(f"Found {len(old_statistics)} statistics entries to migrate from {old_entity_id}")
+
+            # Import the statistics to the new sensor with same metadata
+            await self.import_statistics(
+                entity_id=new_entity_id,
+                source="gazpar2haws.migrator",
+                name=new_name,
+                unit_of_measurement=unit_of_measurement,
+                statistics=old_statistics
+            )
+
+            Logger.info(
+                f"Successfully migrated {len(old_statistics)} statistics entries "
+                f"from {old_entity_id} to {new_entity_id}. "
+                f"Old sensor can be deleted manually if desired."
+            )
+            return True
+
+        except Exception as exc:  # pylint: disable=broad-except
+            Logger.warning(
+                f"Error during statistic migration from {old_entity_id} to {new_entity_id}: {exc}. "
+                f"Continuing without migration (data is preserved in old sensor)."
+            )
+            return False

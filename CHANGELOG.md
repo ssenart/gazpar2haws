@@ -9,30 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Enhanced cost breakdown - separate entities for consumption, subscription, transport, energy taxes, and total costs.
-- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Support for quantity-based transport pricing (€/kWh) in addition to time-based pricing (€/year).
-- New Home Assistant entities: `sensor.${name}_consumption_cost`, `sensor.${name}_subscription_cost`, `sensor.${name}_transport_cost`, `sensor.${name}_energy_taxes_cost`, `sensor.${name}_total_cost`.
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Composite price model with dual components - supports both quantity-based (€/kWh) and time-based (€/month) pricing
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Quantity-based transport pricing (€/kWh) support in addition to fixed time-based fees (€/year)
+- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Enhanced cost breakdown with separate Home Assistant entities for detailed cost analysis:
+  - `sensor.${name}_consumption_cost` - Consumption cost component
+  - `sensor.${name}_subscription_cost` - Subscription fees component
+  - `sensor.${name}_transport_cost` - Transport/delivery fees component
+  - `sensor.${name}_energy_taxes_cost` - Energy taxes component
+  - `sensor.${name}_total_cost` - Total of all cost components
+- Unified pricing API with single `get_composite_price_array()` method and `CostBreakdown` output model
+- Automatic sensor migration from v0.3.x `sensor.${name}_cost` to v0.4.0 `sensor.${name}_total_cost` with smart detection and data preservation
+- Comprehensive [MIGRATIONS.md](MIGRATIONS.md) guide with step-by-step instructions, examples, and troubleshooting
+- Entity names in Home Assistant now properly reflect the sensor type (e.g., "Gazpar2HAWS Energy", "Gazpar2HAWS Volume")
 
 ### Changed
 
-- **BREAKING**: Pricing configuration format updated to composite price model.
-  - `value` → replaced by `quantity_value` or `time_value`
-  - `value_unit` → replaced by `price_unit`
-  - `base_unit` → replaced by `quantity_unit` or `time_unit`
-- Unified pricing API: replaced four separate methods with single `get_composite_price_array()` method.
-- `Pricer.compute()` now returns `CostBreakdown` object with detailed breakdown instead of single `CostArray`.
+- **BREAKING**: Pricing configuration format changed. **See [MIGRATIONS.md](MIGRATIONS.md)** for migration instructions:
+  - `value` → `quantity_value` or `time_value`
+  - `value_unit` → `price_unit`
+  - `base_unit` → `quantity_unit` or `time_unit`
+- `Pricer.compute()` now returns `CostBreakdown` object with 5 separate cost components instead of single value
+- Cost statistics publishing expanded from 1 entity to 5 entities (consumption, subscription, transport, energy_taxes, total)
 
 ### Fixed
 
-- [#83](https://github.com/ssenart/gazpar2haws/issues/83): Fixed bug where transport prices with quantity component were incorrectly processed as time component.
+- Fixed Home Assistant statistics metadata to include proper entity names instead of generic "gazpar2haws" - statistics now display as "Gazpar2HAWS Energy", "Gazpar2HAWS Volume", etc.
 
 ### Migration
 
-Users upgrading from v0.3.x must update their pricing configuration. **See [MIGRATIONS.md](MIGRATIONS.md)** for:
-- Detailed step-by-step migration instructions
-- Complete before/after examples for each price type
-- Migration validation checklist
-- Troubleshooting common migration issues
+Users upgrading from v0.3.x must update their pricing configuration to the new format.
+
+**See [MIGRATIONS.md](MIGRATIONS.md)** for complete migration guide including:
+- Step-by-step configuration migration with 7 detailed examples
+- Quick reference table for property mapping
+- Automatic sensor migration (no user action required)
+- Validation checklist
+- Troubleshooting common issues
 
 ## [0.3.3] - 2025-07-22
 

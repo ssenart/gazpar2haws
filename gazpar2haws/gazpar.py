@@ -97,6 +97,24 @@ class Gazpar:
         energy_taxes_cost_sensor_name = f"sensor.{self._name}_energy_taxes_cost"
         total_cost_sensor_name = f"sensor.{self._name}_total_cost"
 
+        # Automatic migration from v0.3.x to v0.4.0
+        # Migrate old sensor.{name}_cost to sensor.{name}_total_cost if pricing is enabled
+        if self._pricing_config is not None:
+            try:
+                old_total_cost_sensor_name = f"sensor.{self._name}_cost"
+                await self._homeassistant.migrate_statistic(
+                    old_entity_id=old_total_cost_sensor_name,
+                    new_entity_id=total_cost_sensor_name,
+                    new_name="Gazpar2HAWS Total Cost",
+                    unit_of_measurement="€"
+                )
+            except Exception:  # pylint: disable=broad-except
+                Logger.warning(
+                    f"Error during automatic sensor migration from "
+                    f"{old_total_cost_sensor_name} to {total_cost_sensor_name}: "
+                    f"{traceback.format_exc()}"
+                )
+
         # Eventually reset the sensor in Home Assistant
         if self._reset:
             try:
