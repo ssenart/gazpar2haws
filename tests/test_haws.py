@@ -1,9 +1,9 @@
 """Test haws module."""
 
+import asyncio
 from datetime import datetime
 
 import pytest
-import asyncio
 
 from gazpar2haws import config_utils
 from gazpar2haws.haws import HomeAssistantWS
@@ -125,13 +125,14 @@ class TestHomeAssistantWS:
 
         # Migrate from non-existent old sensor - should return True (success/skip)
         from datetime import date
+
         result = await self._haws.migrate_statistic(
             "sensor.gazpar2haws_nonexistent",
             "sensor.gazpar2haws_total_cost",
             "Gazpar2HAWS Total Cost",
             "€",
             timezone="Europe/Paris",
-            as_of_date=date.today()
+            as_of_date=date.today(),
         )
 
         assert result is True
@@ -148,9 +149,7 @@ class TestHomeAssistantWS:
 
         # Clear any existing data from previous tests
         try:
-            await self._haws.clear_statistics(
-                ["sensor.gazpar2haws_cost", "sensor.gazpar2haws_total_cost"]
-            )
+            await self._haws.clear_statistics(["sensor.gazpar2haws_cost", "sensor.gazpar2haws_total_cost"])
         except Exception:  # pylint: disable=broad-except
             pass  # OK if sensors don't exist yet
 
@@ -163,9 +162,7 @@ class TestHomeAssistantWS:
             {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
         ]
 
-        await self._haws.import_statistics(
-            "sensor.gazpar2haws_cost", "recorder", "Old Cost", "€", old_statistics
-        )
+        await self._haws.import_statistics("sensor.gazpar2haws_cost", "recorder", "Old Cost", "€", old_statistics)
         await self._haws.import_statistics(
             "sensor.gazpar2haws_total_cost", "recorder", "New Total Cost", "€", new_statistics
         )
@@ -175,13 +172,14 @@ class TestHomeAssistantWS:
 
         # Attempt migration when both exist - should return True (skip with warning)
         from datetime import date
+
         result = await self._haws.migrate_statistic(
             "sensor.gazpar2haws_cost",
             "sensor.gazpar2haws_total_cost",
             "Gazpar2HAWS Total Cost",
             "€",
             timezone="Europe/Paris",
-            as_of_date=date(2024, 12, 31)
+            as_of_date=date(2024, 12, 31),
         )
 
         assert result is True
@@ -191,19 +189,16 @@ class TestHomeAssistantWS:
 
         # Verify new sensor still has original data (not overwritten)
         import pytz
+
         tz = pytz.timezone("Europe/Paris")
         start = tz.localize(datetime(2024, 12, 1))
         end = tz.localize(datetime(2024, 12, 31))
-        new_stats = await self._haws.statistics_during_period(
-            ["sensor.gazpar2haws_total_cost"], start, end
-        )
+        new_stats = await self._haws.statistics_during_period(["sensor.gazpar2haws_total_cost"], start, end)
         assert len(new_stats["sensor.gazpar2haws_total_cost"]) == 1
         assert new_stats["sensor.gazpar2haws_total_cost"][0]["sum"] == 300.0
 
         # Clean up
-        await self._haws.clear_statistics(
-            ["sensor.gazpar2haws_cost", "sensor.gazpar2haws_total_cost"]
-        )
+        await self._haws.clear_statistics(["sensor.gazpar2haws_cost", "sensor.gazpar2haws_total_cost"])
 
         await self._haws.disconnect()
 
@@ -239,13 +234,14 @@ class TestHomeAssistantWS:
 
         # Perform migration - should succeed and copy all data
         from datetime import date
+
         result = await self._haws.migrate_statistic(
             "sensor.gazpar2haws_cost_migrate_test",
             "sensor.gazpar2haws_total_cost_migrate_test",
             "Gazpar2HAWS Total Cost",
             "€",
             timezone="Europe/Paris",
-            as_of_date=date(2024, 12, 31)
+            as_of_date=date(2024, 12, 31),
         )
 
         assert result is True
@@ -255,6 +251,7 @@ class TestHomeAssistantWS:
 
         # Verify new sensor has all the data from old sensor
         import pytz
+
         tz = pytz.timezone("Europe/Paris")
         start = tz.localize(datetime(2024, 12, 1))
         end = tz.localize(datetime(2024, 12, 31))

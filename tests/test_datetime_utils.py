@@ -165,9 +165,7 @@ class TestConvertStatisticsTimestamps:
 
     def test_convert_single_statistic_with_start_timestamp(self):
         """Test converting single statistic with start timestamp."""
-        statistics: list[dict] = [
-            {"start": 1608009600000, "state": 100.0, "sum": 100.0}
-        ]
+        statistics: list[dict] = [{"start": 1608009600000, "state": 100.0, "sum": 100.0}]
         converted = convert_statistics_timestamps(statistics)
 
         assert len(converted) == 1
@@ -212,9 +210,7 @@ class TestConvertStatisticsTimestamps:
 
     def test_convert_with_timezone(self):
         """Test converting statistics with specific timezone."""
-        statistics: list[dict] = [
-            {"start": 1734182400000, "state": 100.0, "sum": 100.0}
-        ]
+        statistics: list[dict] = [{"start": 1734182400000, "state": 100.0, "sum": 100.0}]
         converted = convert_statistics_timestamps(statistics, "Europe/Paris")
 
         # Should be ISO format with timezone
@@ -224,9 +220,7 @@ class TestConvertStatisticsTimestamps:
 
     def test_does_not_modify_original_list(self):
         """Test that original statistics list is not modified."""
-        statistics = [
-            {"start": 1608009600000, "state": 100.0, "sum": 100.0}
-        ]
+        statistics = [{"start": 1608009600000, "state": 100.0, "sum": 100.0}]
         original_start = statistics[0]["start"]
 
         convert_statistics_timestamps(statistics)
@@ -256,9 +250,7 @@ class TestConvertStatisticsTimestamps:
 
     def test_handles_missing_end_timestamp(self):
         """Test that conversion handles statistics without end timestamp."""
-        statistics = [
-            {"start": 1608009600000, "state": 100.0, "sum": 100.0}
-        ]
+        statistics = [{"start": 1608009600000, "state": 100.0, "sum": 100.0}]
         converted = convert_statistics_timestamps(statistics)
 
         assert "end" not in converted[0]
@@ -301,9 +293,7 @@ class TestConvertStatisticsTimestamps:
                 del stat["change"]
 
         # Convert timestamps
-        converted = convert_statistics_timestamps(
-            old_statistics, "Europe/Paris"
-        )
+        converted = convert_statistics_timestamps(old_statistics, "Europe/Paris")
 
         assert len(converted) == 3
         # Verify dates are in ISO format with timezone
