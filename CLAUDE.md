@@ -939,17 +939,33 @@ When adding new configuration properties:
 
 When introducing breaking changes to configuration:
 
+**Core Documentation Updates:**
 1. **MIGRATIONS.md**: Add comprehensive migration guide with:
    - Before/after configuration examples
    - Step-by-step migration instructions
    - Validation checklist
    - Troubleshooting section
+
 2. **CHANGELOG.md**: Mark "Migration" section and reference MIGRATIONS.md
+
 3. **README.md**: Add brief "What's New" section and warning banner linking to MIGRATIONS.md
+
 4. **FAQ.md**: Add Q&A about the migration, linking to MIGRATIONS.md for details
-5. **addons/gazpar2haws/DOCS.md**: Update examples to new format, link to MIGRATIONS.md
-6. **Model validation**: Consider adding deprecation warnings before full removal
-7. **Version bump**: Use semantic versioning (breaking change = major version bump)
+
+**Add-on Documentation Updates (MUST NOT FORGET):**
+5. **addons/gazpar2haws/README.md**: Update migration guide link if needed
+6. **addons/gazpar2haws/DOCS.md**:
+   - Update all configuration examples to new format
+   - Add "Migration from vX.X.x" section with reference to MIGRATIONS.md
+   - Update pricing examples showing new property names
+7. **addons/gazpar2haws/config.yaml**: Update:
+   - Version number (line 3)
+   - Options section with example pricing (new format)
+   - Schema section with new property definitions
+
+**Code & Configuration Updates:**
+8. **Model validation**: Consider adding deprecation warnings before full removal
+9. **Version bump**: Use semantic versioning (breaking change = major version bump)
 
 ### Cross-Reference Validation
 
@@ -960,6 +976,31 @@ After making changes, verify consistency across:
 - Formulas match between DOCS.md examples and Pricer implementation
 - Version numbers match across all files
 - Migration guides reference the correct property mappings
+- **ADD-ON DOCUMENTATION**: Always check `addons/gazpar2haws/` folder for:
+  - `README.md` - Links to migration guides and documentation
+  - `DOCS.md` - Configuration examples and explanations
+  - `config.yaml` - Options section (examples) and schema section (validation)
+
+### Add-on Documentation Maintenance Reminder
+
+**⚠️ CRITICAL: Do NOT forget add-on documentation when making changes!**
+
+The `addons/gazpar2haws/` folder must be kept in sync with main documentation:
+
+1. **README.md** - Links to MIGRATIONS.md, FAQ.md, etc.
+2. **DOCS.md** - Configuration examples MUST match main documentation format
+3. **config.yaml** - Schema definitions MUST match configuration requirements
+4. **DOCS.md migration sections** - MUST reference MIGRATIONS.md for detailed steps
+
+**Checklist before releasing:**
+- [ ] Main README.md updated with new content
+- [ ] MIGRATIONS.md created/updated if breaking changes
+- [ ] FAQ.md updated with Q&A if needed
+- [ ] `addons/gazpar2haws/README.md` checked and updated
+- [ ] `addons/gazpar2haws/DOCS.md` examples match new format
+- [ ] `addons/gazpar2haws/config.yaml` options and schema match
+- [ ] Version number updated in `addons/gazpar2haws/config.yaml` line 3
+- [ ] All links verified (no broken references between docs)
 
 ### Common Maintenance Scenarios
 
@@ -975,20 +1016,34 @@ After making changes, verify consistency across:
 
 **Scenario 2: Renaming configuration properties**
 1. Update `model.py` - Change property names
-2. Update all config files with new property names
-3. Update schema definitions in add-on config.yaml
-4. Update all documentation examples
-5. Add migration guide to README.md
-6. Add deprecation warnings if possible
-7. Update CHANGELOG.md with breaking change notice
-8. Add FAQ entry about migration
+2. Update all config files with new property names:
+   - `config/configuration.yaml`
+   - `config/configuration.template.yaml`
+   - `addons/gazpar2haws/config.yaml` (options AND schema sections)
+3. Update schema definitions in `addons/gazpar2haws/config.yaml`
+4. Update all documentation examples:
+   - `README.md`
+   - `addons/gazpar2haws/DOCS.md` (all pricing examples)
+5. Create/update migration guide in MIGRATIONS.md
+6. Add brief "What's New" to README.md with link to MIGRATIONS.md
+7. Update `addons/gazpar2haws/README.md` migration guide section
+8. Update `addons/gazpar2haws/DOCS.md` with migration section
+9. Add deprecation warnings if possible
+10. Update CHANGELOG.md with breaking change notice
+11. Add FAQ entry about migration
 
 **Scenario 3: Changing published entities**
 1. Update `gazpar.py` - Sensor name definitions and publishing logic
-2. Update entity lists in README.md, CLAUDE.md, DOCS.md
-3. Update "What's New" section in DOCS.md
-4. Update CHANGELOG.md
+2. Update entity lists in:
+   - `README.md` (Configuration section, "What's New" section)
+   - `CLAUDE.md` (Architecture section)
+   - `addons/gazpar2haws/DOCS.md` (entity descriptions)
+3. Update "What's New" section in both:
+   - `README.md`
+   - `addons/gazpar2haws/DOCS.md`
+4. Update CHANGELOG.md with entity changes
 5. Consider impact on existing Home Assistant installations
+6. If entity names changed: Add migration note to MIGRATIONS.md and `addons/gazpar2haws/DOCS.md`
 
 ### File Location Quick Reference
 
