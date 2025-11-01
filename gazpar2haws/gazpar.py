@@ -8,6 +8,7 @@ import pytz
 from pygazpar.datasource import MeterReadings  # type: ignore
 
 from gazpar2haws.date_array import DateArray
+from gazpar2haws.datetime_utils import timestamp_ms_to_date
 from gazpar2haws.haws import HomeAssistantWS, HomeAssistantWSException
 from gazpar2haws.model import (
     ConsumptionQuantityArray,
@@ -106,7 +107,9 @@ class Gazpar:
                     old_entity_id=old_total_cost_sensor_name,
                     new_entity_id=total_cost_sensor_name,
                     new_name="Gazpar2HAWS Total Cost",
-                    unit_of_measurement="€"
+                    unit_of_measurement="€",
+                    timezone=self._timezone,
+                    as_of_date=as_of_date,
                 )
             except Exception:  # pylint: disable=broad-except
                 Logger.warning(
@@ -461,10 +464,7 @@ class Gazpar:
 
             if last_statistic:
                 # Extract the end date of the last statistics from the unix timestamp
-                last_date = datetime.fromtimestamp(
-                    int(str(last_statistic.get("start"))) / 1000,
-                    tz=pytz.timezone(self._timezone),
-                ).date()
+                last_date = timestamp_ms_to_date(last_statistic.get("start"), self._timezone)  # type: ignore[arg-type]
 
                 # Get the last meter value
                 last_value = float(str(last_statistic.get("sum")))

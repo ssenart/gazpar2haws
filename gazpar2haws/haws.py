@@ -1,8 +1,11 @@
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
+import pytz
 import websockets
+
+from gazpar2haws.datetime_utils import convert_statistics_timestamps
 
 Logger = logging.getLogger(__name__)
 
@@ -228,7 +231,13 @@ class HomeAssistantWS:
 
     # ----------------------------------
     async def migrate_statistic(
-        self, old_entity_id: str, new_entity_id: str, new_name: str, unit_of_measurement: str
+        self,
+        old_entity_id: str,
+        new_entity_id: str,
+        new_name: str,
+        unit_of_measurement: str,
+        timezone: str,
+        as_of_date: date,
     ) -> bool:
         """
         Migrate statistics from an old sensor to a new sensor.
@@ -244,6 +253,8 @@ class HomeAssistantWS:
             new_entity_id: Target sensor ID (e.g., sensor.gazpar2haws_total_cost)
             new_name: Display name for the new sensor
             unit_of_measurement: Unit for the new sensor (e.g., "€")
+            timezone: Timezone string (e.g., "Europe/Paris")
+            as_of_date: Latest date to query for migration
 
         Returns:
             True if migration was successful or skipped safely, False on error
@@ -251,50 +262,66 @@ class HomeAssistantWS:
         try:
             Logger.debug(f"Checking for migration opportunity: {old_entity_id} → {new_entity_id}")
 
-            # Check if old and new sensors exist
-            old_exists = await self.exists_statistic_id(old_entity_id, "sum")
-            new_exists = await self.exists_statistic_id(new_entity_id, "sum")
+            # Create timezone-aware datetime objects
+            tz = pytz.timezone(timezone)
+
+            # Convert as_of_date to datetime at start of day (00:00:00) in target timezone
+            as_of_datetime = tz.localize(datetime.combine(as_of_date, datetime.min.time()))
+
+            # Very old date to capture all historical data (3 years back from as_of_date)
+            very_old_datetime = as_of_datetime - timedelta(days=1095)
+
+            # Check if old and new sensors have data using statistics_during_period
+            # This is more reliable than list_statistic_ids which may have caching delays
+            old_statistics_data = await self.statistics_during_period(
+                [old_entity_id], very_old_datetime, as_of_datetime
+            )
+
+            old_has_data = old_entity_id in old_statistics_data and old_statistics_data[old_entity_id]
 
             # Decision logic
-            if not old_exists:
-                Logger.debug(f"Old sensor {old_entity_id} does not exist - no migration needed")
+            if not old_has_data:
+                Logger.debug(f"Old sensor {old_entity_id} does not exist or has no data - no migration needed")
                 return True
 
-            if new_exists:
+            # Query new sensor to check if it already has data
+            new_statistics_data = await self.statistics_during_period(
+                [new_entity_id], very_old_datetime, as_of_datetime
+            )
+
+            new_has_data = new_entity_id in new_statistics_data and new_statistics_data[new_entity_id]
+
+            if new_has_data:
                 Logger.warning(
-                    f"Both old sensor {old_entity_id} and new sensor {new_entity_id} exist. "
+                    f"Both old sensor {old_entity_id} and new sensor {new_entity_id} have data. "
                     f"Skipping migration to prevent data loss. Old sensor can be manually deleted if desired."
                 )
                 return True
 
-            # At this point: old exists AND new doesn't → MIGRATE
+            # At this point: old has data AND new doesn't → MIGRATE
             Logger.info(f"Starting automatic migration: {old_entity_id} → {new_entity_id}")
 
-            # Query all historical data from old sensor
-            # Use a wide time range to capture all historical data
-            very_old_date = datetime(1970, 1, 1)
-            today = datetime.now()
-
-            statistics_data = await self.statistics_during_period(
-                [old_entity_id],
-                very_old_date,
-                today
-            )
-
-            if old_entity_id not in statistics_data or not statistics_data[old_entity_id]:
-                Logger.info(f"No historical data found in {old_entity_id} - nothing to migrate")
-                return True
-
-            old_statistics = statistics_data[old_entity_id]
+            old_statistics = old_statistics_data[old_entity_id]
             Logger.debug(f"Found {len(old_statistics)} statistics entries to migrate from {old_entity_id}")
+
+            # Remove 'change' and 'end' fields from old statistics as they are not accepted by import_statistics
+            for stat in old_statistics:
+                if "change" in stat:
+                    del stat["change"]
+                if "end" in stat:
+                    del stat["end"]
+
+            # Convert start and end timestamps from Unix milliseconds to ISO format strings
+            # because import_statistics expects ISO format (using timezone for consistency)
+            converted_statistics = convert_statistics_timestamps(old_statistics, timezone)
 
             # Import the statistics to the new sensor with same metadata
             await self.import_statistics(
                 entity_id=new_entity_id,
-                source="gazpar2haws.migrator",
+                source="recorder",
                 name=new_name,
                 unit_of_measurement=unit_of_measurement,
-                statistics=old_statistics
+                statistics=converted_statistics,
             )
 
             Logger.info(
