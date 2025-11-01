@@ -268,8 +268,8 @@ class HomeAssistantWS:
             # Convert as_of_date to datetime at start of day (00:00:00) in target timezone
             as_of_datetime = tz.localize(datetime.combine(as_of_date, datetime.min.time()))
 
-            # Very old date to capture all historical data (3 years back from as_of_date)
-            very_old_datetime = as_of_datetime - timedelta(days=1095)
+            # Very old date to capture all historical data (10 years back from as_of_date)
+            very_old_datetime = as_of_datetime - timedelta(days=3650)
 
             # Check if old and new sensors have data using statistics_during_period
             # This is more reliable than list_statistic_ids which may have caching delays
