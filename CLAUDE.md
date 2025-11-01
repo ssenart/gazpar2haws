@@ -67,19 +67,31 @@ poetry shell
 
 ### Linting and Formatting
 
+**Before committing code, run ALL of these linting and formatting tools to ensure code quality:**
+
 ```bash
-# Run all linters
-pylint gazpar2haws
-flake8 gazpar2haws
-mypy gazpar2haws
+# Run all linters individually
+poetry run pylint gazpar2haws
+poetry run flake8 gazpar2haws
+poetry run mypy gazpar2haws
+poetry run ruff check gazpar2haws
 
 # Format code
-black gazpar2haws
-isort gazpar2haws
+poetry run black gazpar2haws
+poetry run isort gazpar2haws
 
-# Run ruff (includes linting and formatting)
-ruff check gazpar2haws
+# Or run all tests to verify everything passes
+poetry run pytest tests/ -v
 ```
+
+**Quality Assurance Checklist Before Committing:**
+- ✓ Run `poetry run pylint gazpar2haws` - Must achieve 10.00/10 score
+- ✓ Run `poetry run flake8 gazpar2haws` - Must have no errors
+- ✓ Run `poetry run mypy gazpar2haws` - Must have no type errors
+- ✓ Run `poetry run black gazpar2haws` - Code must be formatted correctly
+- ✓ Run `poetry run isort gazpar2haws` - Imports must be sorted correctly
+- ✓ Run `poetry run ruff check gazpar2haws` - All checks must pass
+- ✓ Run `poetry run pytest tests/ -v` - All tests must pass
 
 ## Deployment Methods
 
