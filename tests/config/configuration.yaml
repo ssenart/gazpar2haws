@@ -31,7 +31,7 @@ pricing:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.07790
       quantity_unit: "kWh"
-      price_unit: "€"
+      price_unit: "EUR"
       vat_id: normal
     - start_date: "2023-07-01"
       quantity_value: 0.05392
@@ -59,7 +59,7 @@ pricing:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 19.83
       time_unit: "month"
-      price_unit: "€"
+      price_unit: "EUR"
       vat_id: reduced
     - start_date: "2023-07-01"
       time_value: 20.36
@@ -67,13 +67,13 @@ pricing:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 34.38
       time_unit: "year"
-      price_unit: "€"
+      price_unit: "EUR"
       vat_id: reduced
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.00837
       quantity_unit: "kWh"
-      price_unit: "€"
+      price_unit: "EUR"
       vat_id: normal
     - start_date: "2024-01-01"
       quantity_value: 0.01637

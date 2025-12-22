@@ -1,3 +1,4 @@
+from decimal import InvalidOperation
 import json
 import logging
 from datetime import date, datetime, timedelta
@@ -163,6 +164,12 @@ class HomeAssistantWS:
 
         return response
 
+    async def get_statistics_metadata(self, statistic_ids: str) -> dict:
+        return await self.send_message({
+            "type": "recorder/get_statistics_metadata",
+            "statistic_ids": statistic_ids,
+        })
+
     # ----------------------------------
     async def get_last_statistic(self, entity_id: str, as_of_date: datetime, depth_days: int) -> dict:
 
@@ -217,6 +224,21 @@ class HomeAssistantWS:
 
         Logger.debug(f"Imported {len(statistics)} statistics for {entity_id} from {source}")
 
+    async def update_statistics_metadata(
+        self,
+        entity_id: str,
+        unit_class: str,
+        unit_of_measurement: str,
+    ):
+        await self.send_message({
+            "type": "recorder/update_statistics_metadata",
+            "statistic_id": entity_id,
+            "unit_class": unit_class,
+            "unit_of_measurement": unit_of_measurement,
+        })
+
+        Logger.debug(f"Updated statistics metadata for {entity_id} to {unit_class} {unit_of_measurement}")
+
     # ----------------------------------
     async def clear_statistics(self, entity_ids: list[str]):
 
@@ -233,7 +255,7 @@ class HomeAssistantWS:
         Logger.debug(f"Cleared {entity_ids} statistics")
 
     # ----------------------------------
-    async def migrate_statistic(
+    async def migrate_statistic_from_v_0_3_x(
         self,
         old_entity_id: str,
         new_entity_id: str,
@@ -257,7 +279,7 @@ class HomeAssistantWS:
             new_entity_id: Target sensor ID (e.g., sensor.gazpar2haws_total_cost)
             new_name: Display name for the new sensor
             unit_class: Device class for the new sensor (see https://developers.home-assistant.io/docs/core/entity/sensor/#device-class)
-            unit_of_measurement: Unit for the new sensor (e.g., "€")
+            unit_of_measurement: Unit for the new sensor (e.g., "EUR")
             timezone: Timezone string (e.g., "Europe/Paris")
             as_of_date: Latest date to query for migration
 
@@ -343,3 +365,96 @@ class HomeAssistantWS:
                 f"Continuing without migration (data is preserved in old sensor)."
             )
             return False
+
+
+    # ----------------------------------
+    async def migrate_statistics_from_v_0_4_x(
+        self,
+        entity_ids: list[str],
+        unit_class: str,
+        unit_of_measurement: str,
+        timezone: str,
+        as_of_date: date,
+    ) -> bool:
+        """
+        Migrate statistics from a sensor using a old cost unit.
+
+        This implements smart detection logic:
+        - If sensor exists with old but supported unit: AUTO-MIGRATE data
+        - If sensor exists with old but unsupported unit: SKIP with warning (prevent data loss)
+        - If sensor exists with new unit: SKIP (normal operation)
+        - If sensor does not exist: SKIP (normal operation, no old data)
+        - On error: LOG WARNING and return False (graceful fallback)
+
+        Args:
+            entity_ids: List of entity identifiers to migrate.
+            unit_class: Device class for the new sensor (see https://developers.home-assistant.io/docs/core/entity/sensor/#device-class)
+            unit_of_measurement: Unit for the new sensor (e.g., "EUR")
+            timezone: Timezone string (e.g., "Europe/Paris")
+            as_of_date: Latest date to query for migration
+
+        Returns:
+            True if migration was successful or skipped safely, False on error
+        """
+        Logger.debug(f"Checking for unit migration opportunity: {entity_ids}")
+
+        # Create timezone-aware datetime objects
+        tz = pytz.timezone(timezone)
+
+        # Convert as_of_date to datetime at start of day (00:00:00) in target timezone
+        as_of_datetime = tz.localize(datetime.combine(as_of_date, datetime.min.time()))
+
+        # Very old date to capture all historical data (10 years back from as_of_date)
+        very_old_datetime = as_of_datetime - timedelta(days=3650)
+
+        entity_ids_to_convert = []
+        entity_ids_to_migrate = []
+        for metadata in await self.get_statistics_metadata(entity_ids):
+            if metadata.get("statistics_unit_of_measurement") == "¢":
+                entity_ids_to_convert.append(metadata.get("statistic_id"))
+            elif metadata.get("statistics_unit_of_measurement") == "€":
+                entity_ids_to_migrate.append(metadata.get("statistic_id"))
+
+        if len(entity_ids_to_convert) == 0 and len(entity_ids_to_migrate) == 0:
+            Logger.debug("No entity IDs to migrate")
+            return True
+
+        if len(entity_ids_to_convert) != 0:
+            # Check if old and new sensors have data using statistics_during_period
+            # This is more reliable than list_statistic_ids which may have caching delays
+            old_statistics_data = await self.statistics_during_period(
+                entity_ids_to_convert, very_old_datetime, as_of_datetime
+            )
+
+            for statistic, data in old_statistics_data.items():
+                # Remove 'change' and 'end' fields from old statistics as they are not accepted by import_statistics
+                for datum in data:
+                    if "change" in datum:
+                        del datum["change"]
+                    if "end" in datum:
+                        del datum["end"]
+                    datum["state"] = datum["state"] * 100
+                    datum["sum"] = datum["sum"] * 100
+
+                # Convert start and end timestamps from Unix milliseconds to ISO format strings
+                # because import_statistics expects ISO format (using timezone for consistency)
+                data = convert_statistics_timestamps(data, timezone)
+
+                await self.import_statistics(
+                    entity_id=statistic,
+                    source="recorder",
+                    name=statistic,
+                    unit_class=unit_class,
+                    unit_of_measurement=unit_of_measurement,
+                    statistics=data,
+                )
+
+        if len(entity_ids_to_migrate) != 0:
+            for entity_id in entity_ids_to_migrate:
+                await self.update_statistics_metadata(
+                    entity_id=entity_id,
+                    unit_class=unit_class,
+                    unit_of_measurement=unit_of_measurement,
+                )
+
+        return True

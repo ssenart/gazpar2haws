@@ -225,10 +225,10 @@ The cost computation is based in gas prices defined in the configuration files.
 
 The section 'Pricing' is broken into 5 sub-sections:
 - vat: Value added tax definition.
-- consumption_prices: Gas consumption prices, typically in €/kWh (quantity-based).
-- subscription_prices: Fixed subscription prices, typically in €/month or €/year (time-based).
-- transport_prices: Transport prices, either fixed (€/month or €/year) or based on consumption (€/kWh).
-- energy_taxes: Energy taxes, typically in €/kWh (quantity-based).
+- consumption_prices: Gas consumption prices, typically in EUR/kWh (quantity-based).
+- subscription_prices: Fixed subscription prices, typically in EUR/month or EUR/year (time-based).
+- transport_prices: Transport prices, either fixed (EUR/month or EUR/year) or based on consumption (EUR/kWh).
+- energy_taxes: Energy taxes, typically in EUR/kWh (quantity-based).
 
 Below, many examples illustrates how to use pricing configuration for use cases from the simplest to the most complex.
 
@@ -238,11 +238,11 @@ Example 1: A fixed consumption price
 
 The given price applies at the given date, after and before.
 
-The default unit is € per kWh.
+The default unit is EUR per kWh.
 
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * price[€/kWh]
+cost[EUR] = quantity[kWh] * price[EUR/kWh]
 ```
 
 
@@ -250,18 +250,18 @@ cost[€] = quantity[kWh] * price[€/kWh]
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      quantity_value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is EUR/kWh.
 ```
 
 Example 2: A fixed consumption price in another unit
 ---
 
-*price_unit* is the monetary unit (default: €).
+*price_unit* is the monetary unit (default: EUR).
 *quantity_unit* is the energy unit (default: kWh).
 
 **Formula:**
 ```math
-cost[€] = \frac{quantity[kWh] * price[¢/MWh] * converter\_factor[¢->€]} {converter\_factor[MWh->kWh]}
+cost[EUR] = \frac{quantity[kWh] * price[EUR/MWh]} {converter\_factor[MWh->kWh]}
 ```
 
 
@@ -269,8 +269,8 @@ cost[€] = \frac{quantity[kWh] * price[¢/MWh] * converter\_factor[¢->€]} {c
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      quantity_value: 7790.0 # Unit is now ¢/MWh.
-      price_unit: "¢"
+      quantity_value: 77.90 # Unit is now EUR/MWh.
+      price_unit: "EUR"
       quantity_unit: "MWh"
 ```
 
@@ -281,9 +281,9 @@ Example 3: Multiple prices over time
 pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      quantity_value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is EUR/kWh.
     - start_date: "2024-01-01"
-      quantity_value: 0.06888 # Default unit is €/kWh.
+      quantity_value: 0.06888 # Default unit is EUR/kWh.
 ```
 
 Price is 0.07790 before 2024-01-01.
@@ -304,13 +304,13 @@ pricing:
       value: 0.20 # It is the tax rate in [0, 1.0] <==> [0% - 100%].
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      quantity_value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is EUR/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
 ```
 
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * price[€/kWh] * (1 + vat[normal])
+cost[EUR] = quantity[kWh] * price[EUR/kWh] * (1 + vat[normal])
 ```
 
 Example 5: Subscription price
@@ -331,19 +331,19 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      quantity_value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is EUR/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 19.83
-      price_unit: "€"
+      price_unit: "EUR"
       time_unit: "month"
       vat_id: "reduced"
 ```
 
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + sub\_price * (1 + vat[reduced])
+cost[EUR] = quantity[kWh] * cons\_price[EUR/kWh] * (1 + vat[normal]) + sub\_price * (1 + vat[reduced])
 ```
 
 
@@ -363,18 +363,18 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      quantity_value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is EUR/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 34.38
-      price_unit: "€"
+      price_unit: "EUR"
       time_unit: "year"
       vat_id: reduced
 ```
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * cons\_price[€/kWh] * (1 + vat[normal]) + trans\_price[€/year] * (1 + vat[reduced])
+cost[EUR] = quantity[kWh] * cons\_price[EUR/kWh] * (1 + vat[normal]) + trans\_price[EUR/year] * (1 + vat[reduced])
 ```
 
 Example 6bis: Transport price (based on consumption)
@@ -397,14 +397,14 @@ pricing:
       vat_id: "normal"
   transport_prices:
     - start_date: "2023-06-01"
-      quantity_value: 0.00194 # €/kWh
-      price_unit: "€"
+      quantity_value: 0.00194 # EUR/kWh
+      price_unit: "EUR"
       quantity_unit: "kWh"
       vat_id: reduced
 ```
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * (cons\_price[€/kWh] * (1 + vat[normal]) + quantity[kWh] * trans\_price[€/kWh] * (1 + vat[reduced]))
+cost[EUR] = quantity[kWh] * (cons\_price[EUR/kWh] * (1 + vat[normal]) + quantity[kWh] * trans\_price[EUR/kWh] * (1 + vat[reduced]))
 ```
 
 Example 7: Energy taxes
@@ -423,18 +423,18 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      quantity_value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is EUR/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.00837
-      price_unit: "€"
+      price_unit: "EUR"
       quantity_unit: "kWh"
       vat_id: normal
 ```
 **Formula:**
 ```math
-cost[€] = quantity[kWh] * (cons\_price[€/kWh] + ener\_taxes[€/kWh])* (1 + vat[normal])
+cost[EUR] = quantity[kWh] * (cons\_price[EUR/kWh] + ener\_taxes[EUR/kWh])* (1 + vat[normal])
 ```
 
 Example 8: All in one
@@ -454,7 +454,7 @@ pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.07790
-      price_unit: "€"
+      price_unit: "EUR"
       quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2023-07-01"
@@ -482,7 +482,7 @@ pricing:
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 19.83
-      price_unit: "€"
+      price_unit: "EUR"
       time_unit: "month"
       vat_id: reduced
     - start_date: "2023-07-01"
@@ -490,13 +490,13 @@ pricing:
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 34.38
-      price_unit: "€"
+      price_unit: "EUR"
       time_unit: "year"
       vat_id: reduced
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.00837
-      price_unit: "€"
+      price_unit: "EUR"
       quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2024-01-01"

@@ -31,7 +31,7 @@ options:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.07790
-      price_unit: "€"
+      price_unit: "EUR"
       quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2023-07-01"
@@ -43,7 +43,7 @@ options:
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 19.83
-      price_unit: "€"
+      price_unit: "EUR"
       time_unit: "month"
       vat_id: reduced
     - start_date: "2023-07-01"
@@ -51,13 +51,13 @@ options:
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 34.38
-      price_unit: "€"
+      price_unit: "EUR"
       time_unit: "year"
       vat_id: reduced
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.00837
-      price_unit: "€"
+      price_unit: "EUR"
       quantity_unit: "kWh"
       vat_id: normal
     - start_date: "2024-01-01"
@@ -80,8 +80,8 @@ schema:
   consumption_prices:
     - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
       end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
-      quantity_value: float? # Price per energy unit (e.g., €/kWh).
-      price_unit: str? # Monetary unit: €, ¢.
+      quantity_value: float? # Price per energy unit (e.g., EUR/kWh).
+      price_unit: str? # Monetary unit: EUR, USD, ...
       quantity_unit: str? # Energy unit: Wh, kWh, MWh, m³, l.
       time_value: float? # Price per time unit (for composite prices).
       time_unit: str? # Time unit: day, week, month, year (for composite prices).
@@ -89,8 +89,8 @@ schema:
   subscription_prices:
     - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
       end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
-      time_value: float? # Price per time unit (e.g., €/month).
-      price_unit: str? # Monetary unit: €, ¢.
+      time_value: float? # Price per time unit (e.g., EUR/month).
+      price_unit: str? # Monetary unit: EUR, USD, ...
       time_unit: str? # Time unit: day, week, month, year.
       quantity_value: float? # Price per energy unit (for composite prices).
       quantity_unit: str? # Energy unit: Wh, kWh, MWh (for composite prices).
@@ -98,17 +98,17 @@ schema:
   transport_prices:
     - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
       end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
-      time_value: float? # Fixed price per time unit (e.g., €/year).
-      price_unit: str? # Monetary unit: €, ¢.
+      time_value: float? # Fixed price per time unit (e.g., EUR/year).
+      price_unit: str? # Monetary unit: EUR, USD, ...
       time_unit: str? # Time unit: day, week, month, year.
-      quantity_value: float? # Variable price per energy unit (e.g., €/kWh) - NEW in v0.4.0.
+      quantity_value: float? # Variable price per energy unit (e.g., EUR/kWh) - NEW in v0.4.0.
       quantity_unit: str? # Energy unit: Wh, kWh, MWh - NEW in v0.4.0.
       vat_id: str? # Identifier of the VAT rate.
   energy_taxes:
     - start_date: match(^\d{4}-\d{2}-\d{2}$) # Start date of the price. Format is "YYYY-MM-DD".
       end_date: match(^\d{4}-\d{2}-\d{2}$)? # End date of the price. Format is "YYYY-MM-DD".
-      quantity_value: float? # Tax per energy unit (e.g., €/kWh).
-      price_unit: str? # Monetary unit: €, ¢.
+      quantity_value: float? # Tax per energy unit (e.g., EUR/kWh).
+      price_unit: str? # Monetary unit: EUR, USD, ...
       quantity_unit: str? # Energy unit: Wh, kWh, MWh, m³, l.
       time_value: float? # Tax per time unit (for composite taxes).
       time_unit: str? # Time unit: day, week, month, year (for composite taxes).

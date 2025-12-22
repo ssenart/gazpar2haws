@@ -29,11 +29,11 @@ pricing:
       value: 0.0550
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
-      quantity_value: 0.07790 # Default unit is €/kWh.
+      quantity_value: 0.07790 # Default unit is EUR/kWh.
       vat_id: "normal" # Reference to the vat rate that is applied for this period.
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.00194
       quantity_unit: "kWh"
-      price_unit: "€"
+      price_unit: "EUR"
       vat_id: reduced

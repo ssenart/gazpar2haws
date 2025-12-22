@@ -366,12 +366,12 @@ The application follows a layered architecture with three main components:
 
 The Pricer ([pricer.py](gazpar2haws/pricer.py)) implements a sophisticated cost calculation system:
 
-- **CompositePriceValue**: Represents prices with both quantity and time components (e.g., €/kWh + €/month)
+- **CompositePriceValue**: Represents prices with both quantity and time components (e.g., EUR/kWh + EUR/month)
 - **CompositePriceArray**: Vectorized form holding both quantity_value_array and time_value_array
 - **CostBreakdown**: Result structure with separate consumption, subscription, transport, energy_taxes, and total cost arrays
 - **VAT support**: Multiple VAT rates (reduced, normal) applied to different price components
 - **Time-varying prices**: Prices change over time, with automatic interpolation
-- **Unit conversion**: Automatic conversion between price units (€, ¢), quantity units (Wh, kWh, MWh), and time units (day, week, month, year)
+- **Unit conversion**: Automatic conversion between quantity units (Wh, kWh, MWh), and time units (day, week, month, year)
 - **Formula**: `cost = quantity × (consumption_price + energy_taxes) + subscription_price + transport_price` (all with VAT applied)
 
 ### Data Model
@@ -409,11 +409,11 @@ Always published:
 - `sensor.${name}_energy` (kWh)
 
 Published when pricing configuration is provided:
-- `sensor.${name}_consumption_cost` (€) - Variable cost from gas consumption
-- `sensor.${name}_subscription_cost` (€) - Fixed subscription fees
-- `sensor.${name}_transport_cost` (€) - Transport fees (fixed or variable)
-- `sensor.${name}_energy_taxes_cost` (€) - Energy taxes
-- `sensor.${name}_total_cost` (€) - Sum of all cost components
+- `sensor.${name}_consumption_cost` (EUR) - Variable cost from gas consumption
+- `sensor.${name}_subscription_cost` (EUR) - Fixed subscription fees
+- `sensor.${name}_transport_cost` (EUR) - Transport fees (fixed or variable)
+- `sensor.${name}_energy_taxes_cost` (EUR) - Energy taxes
+- `sensor.${name}_total_cost` (EUR) - Sum of all cost components
 
 Where `${name}` is the device name from configuration (default: `gazpar2haws`)
 
@@ -482,16 +482,16 @@ PyGazpar supports multiple data sources:
 
 PCE identifiers must be quoted in YAML to preserve leading zeros. Unquoted values like `0123456789` are interpreted as numbers and lose the leading zero.
 
-### Pricing Configuration Format (v0.4.0)
+### Pricing Configuration Format (v0.5.0)
 
 The pricing configuration uses the composite price model:
 
 **YAML Properties:**
-- `quantity_value`: Numeric value for quantity-based pricing (e.g., 0.07790 for €/kWh)
+- `quantity_value`: Numeric value for quantity-based pricing (e.g., 0.07790 for EUR/kWh)
 - `quantity_unit`: Energy unit (Wh, kWh, MWh) - default: kWh
-- `time_value`: Numeric value for time-based pricing (e.g., 19.83 for €/month)
+- `time_value`: Numeric value for time-based pricing (e.g., 19.83 for EUR/month)
 - `time_unit`: Time unit (day, week, month, year) - default: month
-- `price_unit`: Monetary unit (€, ¢) - default: €
+- `price_unit`: Monetary unit (EUR, USD, ...) - default: EUR
 - `vat_id`: Reference to VAT rate ID
 
 **Price Type Guidelines:**
@@ -499,6 +499,9 @@ The pricing configuration uses the composite price model:
 - **subscription_prices**: Use `time_value` + `time_unit` (month/year)
 - **transport_prices**: Use either `time_value` (fixed fee) OR `quantity_value` (per kWh)
 - **energy_taxes**: Use `quantity_value` + `quantity_unit` (kWh)
+
+**Deprecated (v0.4.x):**
+- `time_unit` → Possible values `€` and `¢` replaced by `EUR` or other [ISO-4217 codes](https://en.wikipedia.org/wiki/ISO_4217#Active_codes)
 
 **Deprecated (v0.3.x):**
 - `value` → replaced by `quantity_value` or `time_value`
