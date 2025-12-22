@@ -1,6 +1,7 @@
 import tempfile
 from datetime import date
 from enum import Enum
+import logging
 from pathlib import Path
 from typing import Generic, Optional, TypeVar
 
@@ -29,8 +30,21 @@ class TimeUnit(str, Enum):
 
 # ----------------------------------
 class PriceUnit(str, Enum):
+    EUR = "EUR"
+
+
+# ----------------------------------
+class _OldPriceUnit(str, Enum):
     EURO = "€"
     CENT = "¢"
+
+    def convert_to_new(self, value: float) -> [PriceUnit, float]:
+        if self == _OldPriceUnit.EURO:
+            return [PriceUnit.EUR, value]
+        elif self == _OldPriceUnit.CENT:
+            return [PriceUnit.EUR, value / 100]
+        else:
+            raise ValueError(f"Invalid old price unit: {self}")
 
 
 # ----------------------------------
@@ -158,14 +172,14 @@ class Price(Unit[ValueUnit, BaseUnit]):  # pylint: disable=too-few-public-method
 
 # ----------------------------------
 class CompositePriceValue(Period):
-    price_unit: Optional[PriceUnit] = None  # € or ¢ (applies to both components)
+    price_unit: Optional[PriceUnit | _OldPriceUnit] = None  # EUR (applies to both components)
     vat_id: Optional[str] = None
 
-    # Quantity component (€/kWh)
+    # Quantity component (EUR/kWh)
     quantity_value: Optional[float] = None
     quantity_unit: Optional[QuantityUnit] = None
 
-    # Time component (€/month)
+    # Time component (EUR/month)
     time_value: Optional[float] = None
     time_unit: Optional[TimeUnit] = None
 
@@ -206,11 +220,11 @@ class CompositePriceArray(Period):  # pylint: disable=too-few-public-methods
     price_unit: Optional[PriceUnit] = None
     vat_id: Optional[str] = None
 
-    # Quantity component (€/kWh) - vectorized
+    # Quantity component (EUR/kWh) - vectorized
     quantity_value_array: Optional[DateArray] = None
     quantity_unit: Optional[QuantityUnit] = None
 
-    # Time component (€/month) - vectorized
+    # Time component (EUR/month) - vectorized
     time_value_array: Optional[DateArray] = None
     time_unit: Optional[TimeUnit] = None
 
@@ -227,6 +241,8 @@ class CompositePriceArray(Period):  # pylint: disable=too-few-public-methods
         return self
 
 
+Logger = logging.getLogger(__name__)
+
 # ----------------------------------
 class Pricing(BaseModel):
     vat: Optional[list[VatRate]] = None
@@ -240,7 +256,7 @@ class Pricing(BaseModel):
     def propagates_properties(cls, values):
         # Default units for all price types
         default_units = {
-            "price_unit": "€",
+            "price_unit": PriceUnit.EUR,
             "quantity_unit": "kWh",
             "time_unit": "month",
         }
@@ -264,6 +280,10 @@ class Pricing(BaseModel):
                 if key not in prices[0]:
                     prices[0][key] = default_value
 
+            if prices[0]["price_unit"] is _OldPriceUnit:
+                Logger.warning(f"Converting old price unit {prices[0]['price_unit']} to new price unit. See the section [What are the new cost units in v0.5.0?](../FAQ.md#what-are-the-new-cost-units-in-v050) in the FAQ for more information.")
+                prices[0]["price_unit"], prices[0]["quantity_value"] = prices[0]["price_unit"].convert_to_new(prices[0]["quantity_value"])
+
             # Propagate properties through the list
             for i in range(len(prices) - 1):
                 if "end_date" not in prices[i]:
@@ -271,6 +291,9 @@ class Pricing(BaseModel):
                 for key, default_value in default_units.items():
                     if key not in prices[i + 1]:
                         prices[i + 1][key] = prices[i][key]
+                if "price_unit" in prices[i + 1] and prices[i + 1]["price_unit"] is _OldPriceUnit:
+                    Logger.warning(f"Converting old price unit {prices[i + 1]['price_unit']} to new price unit. See the section [What are the new cost units in v0.5.0?](../FAQ.md#what-are-the-new-cost-units-in-v050) in the FAQ for more information.")
+                    prices[i + 1]["price_unit"], prices[i + 1]["quantity_value"] = prices[i + 1]["price_unit"].convert_to_new(prices[i + 1]["quantity_value"])
                 if "vat_id" not in prices[i + 1] and "vat_id" in prices[i]:
                     prices[i + 1]["vat_id"] = prices[i]["vat_id"]
 

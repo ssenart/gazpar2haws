@@ -1,6 +1,6 @@
 logging:
   file: log/gazpar2haws.log
-  console: true  
+  console: true
   level: debug
   format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
 
@@ -32,7 +32,7 @@ pricing:
   consumption_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.07790  # Price per kWh (v0.4.0: renamed from 'value')
-      price_unit: "€"          # Monetary unit (v0.4.0: renamed from 'value_unit')
+      price_unit: "EUR"        # Monetary unit (v0.4.0: renamed from 'value_unit')
       quantity_unit: "kWh"     # Energy unit (v0.4.0: renamed from 'base_unit')
       vat_id: normal
     - start_date: "2023-07-01"
@@ -60,7 +60,7 @@ pricing:
   subscription_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 19.83        # Fixed price per month (v0.4.0: renamed from 'value')
-      price_unit: "€"          # Monetary unit (v0.4.0: renamed from 'value_unit')
+      price_unit: "EUR"        # Monetary unit (v0.4.0: renamed from 'value_unit')
       time_unit: "month"       # Time unit (v0.4.0: renamed from 'base_unit')
       vat_id: reduced
     - start_date: "2023-07-01"
@@ -68,7 +68,7 @@ pricing:
   transport_prices:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       time_value: 34.38        # Fixed price per year (v0.4.0: renamed from 'value')
-      price_unit: "€"          # Monetary unit (v0.4.0: renamed from 'value_unit')
+      price_unit: "EUR"        # Monetary unit (v0.4.0: renamed from 'value_unit')
       time_unit: "year"        # Time unit (v0.4.0: renamed from 'base_unit')
       vat_id: reduced
       # Alternative: quantity-based transport (new in v0.4.0)
@@ -77,7 +77,7 @@ pricing:
   energy_taxes:
     - start_date: "2023-06-01" # Date of the price. Format is "YYYY-MM-DD".
       quantity_value: 0.00837  # Price per kWh (v0.4.0: renamed from 'value')
-      price_unit: "€"          # Monetary unit (v0.4.0: renamed from 'value_unit')
+      price_unit: "EUR"        # Monetary unit (v0.4.0: renamed from 'value_unit')
       quantity_unit: "kWh"     # Energy unit (v0.4.0: renamed from 'base_unit')
       vat_id: normal
     - start_date: "2024-01-01"

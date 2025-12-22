@@ -565,26 +565,6 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def get_price_unit_convertion_factor(cls, from_price_unit: PriceUnit, to_price_unit: PriceUnit) -> float:
-
-        if from_price_unit == to_price_unit:
-            return 1.0
-
-        switcher = {
-            PriceUnit.EURO: 1.0,
-            PriceUnit.CENT: 100.0,
-        }
-
-        if from_price_unit not in switcher:
-            raise ValueError(f"Invalid 'from' price unit: {from_price_unit}")
-
-        if to_price_unit not in switcher:
-            raise ValueError(f"Invalid 'to' price unit: {to_price_unit}")
-
-        return switcher[to_price_unit] / switcher[from_price_unit]
-
-    # ----------------------------------
-    @classmethod
     def get_quantity_unit_convertion_factor(
         cls, from_quantity_unit: QuantityUnit, to_quantity_unit: QuantityUnit
     ) -> float:
@@ -634,15 +614,13 @@ class Pricer:
             and isinstance(from_unit[0], PriceUnit)
             and isinstance(from_unit[1], QuantityUnit)
         ):
-            return cls.get_price_unit_convertion_factor(
-                from_unit[0], to_unit[0]
-            ) / cls.get_quantity_unit_convertion_factor(from_unit[1], to_unit[1])
+            return 1 / cls.get_quantity_unit_convertion_factor(from_unit[1], to_unit[1])
         if isinstance(from_unit, tuple) and isinstance(from_unit[0], PriceUnit) and isinstance(from_unit[1], TimeUnit):
             if dt is None:
                 raise ValueError(
                     f"dt must not be None when from_unit {from_unit} and to_unit {to_unit} are of type Tuple[PriceUnit, TimeUnit]"
                 )
-            return cls.get_price_unit_convertion_factor(from_unit[0], to_unit[0]) / cls.get_time_unit_convertion_factor(
+            return 1 / cls.get_time_unit_convertion_factor(
                 from_unit[1], to_unit[1], dt
             )
 

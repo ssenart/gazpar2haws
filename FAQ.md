@@ -230,6 +230,32 @@ pricing:
       vat_id: "normal"
 ```
 
+### I upgraded to v0.5.0 and my pricing configuration doesn't work
+
+**Issue:** [#83](https://github.com/ssenart/gazpar2haws/issues/83)
+
+**Cause:** v0.5.0 introduced a **breaking change** in the pricing configuration format.
+
+**Solution:** Migrate your configuration from the old format to the new format:
+
+**Old format (v0.4.0+):**
+```yaml
+consumption_prices:
+  - start_date: "2025-12-22"
+    quantity_value: 0.07791
+    price_unit: "€"
+    quantity_unit: "kWh"
+```
+
+**New format (v0.5.0+):**
+```yaml
+consumption_prices:
+  - start_date: "2025-12-22"
+    quantity_value: 0.07791
+    price_unit: "EUR"  # Currency: ISO 4217 code
+    quantity_unit: "kWh"
+```
+
 ### I upgraded to v0.4.0 and my pricing configuration doesn't work
 
 **Issue:** [#83](https://github.com/ssenart/gazpar2haws/issues/83)
@@ -247,16 +273,22 @@ consumption_prices:
     base_unit: "kWh"
 ```
 
-**New format (v0.4.0+):**
+**New format:**
 ```yaml
 consumption_prices:
   - start_date: "2023-06-01"
-    quantity_value: 0.07790  # Renamed from 'value'
-    price_unit: "€"          # Renamed from 'value_unit'
-    quantity_unit: "kWh"     # Renamed from 'base_unit'
+    quantity_value: 0.07790               # Renamed from 'value'
+    price_unit: "EUR"  # or € in v.0.4.0  # Renamed from 'value_unit'
+    quantity_unit: "kWh"                  # Renamed from 'base_unit'
 ```
 
 See [README.md Migration Guide](README.md#migration-from-v03x-to-v040) for complete migration instructions.
+
+### What are the new cost units in v0.5.0?
+
+Starting from v0.5.0, Gazpar2HAWS publishes the cost entities with a Standardized unit instead of a raw string. Units are now based on the [ISO-4217 codes](https://en.wikipedia.org/wiki/ISO_4217#Active_codes).
+
+This standardizes the montetary sensor in Home Automation.
 
 ### What are the new cost entities in v0.4.0?
 
@@ -279,7 +311,7 @@ This allows detailed cost analysis in Home Assistant.
 transport_prices:
   - start_date: "2023-06-01"
     time_value: 34.38
-    price_unit: "€"
+    price_unit: "EUR" # or € in v.0.4.0
     time_unit: "year"
 ```
 
@@ -288,7 +320,7 @@ transport_prices:
 transport_prices:
   - start_date: "2023-06-01"
     quantity_value: 0.00194
-    price_unit: "€"
+    price_unit: "EUR" # or € in v.0.4.0
     quantity_unit: "kWh"
 ```
 
@@ -296,9 +328,9 @@ transport_prices:
 
 The complete formula is:
 ```
-cost[€] = quantity[kWh] × (consumption_price[€/kWh] + energy_taxes[€/kWh]) × (1 + vat)
-        + subscription_price[€/month] × (1 + vat)
-        + transport_price[€/year or €/kWh] × (1 + vat)
+cost[EUR] = quantity[kWh] × (consumption_price[EUR/kWh] + energy_taxes[EUR/kWh]) × (1 + vat)
+          + subscription_price[EUR/month] × (1 + vat)
+          + transport_price[EUR/year or EUR/kWh] × (1 + vat)
 ```
 
 Each component can have different VAT rates and supports time-varying prices.
@@ -316,11 +348,11 @@ For each device, the following entities are created:
 - `sensor.${name}_energy` - Energy in kWh
 
 **Created when pricing is configured:**
-- `sensor.${name}_consumption_cost` - Consumption cost in €
-- `sensor.${name}_subscription_cost` - Subscription cost in €
-- `sensor.${name}_transport_cost` - Transport cost in €
-- `sensor.${name}_energy_taxes_cost` - Energy taxes in €
-- `sensor.${name}_total_cost` - Total cost in €
+- `sensor.${name}_consumption_cost` - Consumption cost in EUR
+- `sensor.${name}_subscription_cost` - Subscription cost in EUR
+- `sensor.${name}_transport_cost` - Transport cost in EUR
+- `sensor.${name}_energy_taxes_cost` - Energy taxes in EUR
+- `sensor.${name}_total_cost` - Total cost in EUR
 
 Where `${name}` is the device name from your configuration (default: `gazpar2haws`).
 
@@ -597,17 +629,17 @@ v0.4.0 introduces **breaking changes** in the pricing configuration format. Your
 
 ### What's the difference between `quantity_value` and `time_value`?
 
-- **`quantity_value`**: Price based on consumption amount (e.g., €/kWh)
+- **`quantity_value`**: Price based on consumption amount (e.g., EUR/kWh)
   - Used for: Consumption prices, Energy taxes, Transport (consumption-based)
   - Applied per unit consumed
 
-- **`time_value`**: Price based on time period (e.g., €/month, €/year)
+- **`time_value`**: Price based on time period (e.g., EUR/month, EUR/year)
   - Used for: Subscription fees, Transport (fixed), Standing charges
   - Applied per time period, regardless of consumption
 
 **Example:**
-- Consumption at €0.07790/kWh uses `quantity_value: 0.07790` (€ per each kWh)
-- Subscription at €19.83/month uses `time_value: 19.83` (€ for the entire month)
+- Consumption at 0.07790 EUR/kWh uses `quantity_value: 0.07790` (EUR per each kWh)
+- Subscription at 19.83 EUR/month uses `time_value: 19.83` (EUR for the entire month)
 
 See [MIGRATIONS.md](MIGRATIONS.md) for detailed examples of each type.
 

@@ -45,7 +45,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=self._pricer.pricing_data().consumption_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.DAY,
         )
@@ -65,7 +65,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=self._pricer.pricing_data().consumption_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.DAY,
         )
@@ -85,7 +85,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=self._pricer.pricing_data().consumption_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.DAY,
         )
@@ -104,7 +104,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=self._pricer.pricing_data().consumption_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.DAY,
         )
@@ -123,7 +123,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=self._pricer.pricing_data().consumption_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.DAY,
         )
@@ -143,7 +143,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=self._pricer.pricing_data().consumption_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.DAY,
         )
@@ -162,7 +162,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=self._pricer.pricing_data().consumption_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.DAY,
         )
@@ -214,14 +214,6 @@ class TestPricer:  # pylint: disable=R0904
         )
 
     # ----------------------------------
-    def test_get_price_unit_convertion_factor(self):
-
-        assert math.isclose(
-            Pricer.get_price_unit_convertion_factor(PriceUnit.EURO, PriceUnit.CENT), 100.0, rel_tol=1e-6
-        )
-        assert math.isclose(Pricer.get_price_unit_convertion_factor(PriceUnit.CENT, PriceUnit.EURO), 0.01, rel_tol=1e-6)
-
-    # ----------------------------------
     def test_get_quantity_unit_convertion_factor(self):
 
         assert math.isclose(
@@ -248,26 +240,17 @@ class TestPricer:  # pylint: disable=R0904
 
         dt = date(2023, 8, 20)
 
-        euro_per_kwh = (PriceUnit.EURO, QuantityUnit.KWH)
-        cent_per_kwh = (PriceUnit.CENT, QuantityUnit.KWH)
-        euro_per_mwh = (PriceUnit.EURO, QuantityUnit.MWH)
-        cent_per_mwh = (PriceUnit.CENT, QuantityUnit.MWH)
+        euro_per_kwh = (PriceUnit.EUR, QuantityUnit.KWH)
+        euro_per_mwh = (PriceUnit.EUR, QuantityUnit.MWH)
 
-        euro_per_year = (PriceUnit.EURO, TimeUnit.YEAR)
-        cent_per_year = (PriceUnit.CENT, TimeUnit.YEAR)
-        euro_per_month = (PriceUnit.EURO, TimeUnit.MONTH)
-        cent_per_month = (PriceUnit.CENT, TimeUnit.MONTH)
-        euro_per_day = (PriceUnit.EURO, TimeUnit.DAY)
-        cent_per_day = (PriceUnit.CENT, TimeUnit.DAY)
+        euro_per_year = (PriceUnit.EUR, TimeUnit.YEAR)
+        euro_per_month = (PriceUnit.EUR, TimeUnit.MONTH)
+        euro_per_day = (PriceUnit.EUR, TimeUnit.DAY)
 
         assert math.isclose(Pricer.get_convertion_factor(euro_per_kwh, euro_per_kwh), 1.0, rel_tol=1e-6)
-        assert math.isclose(Pricer.get_convertion_factor(euro_per_kwh, cent_per_kwh), 100.0, rel_tol=1e-6)
-        assert math.isclose(Pricer.get_convertion_factor(cent_per_kwh, euro_per_kwh), 0.01, rel_tol=1e-6)
 
         assert math.isclose(Pricer.get_convertion_factor(euro_per_kwh, euro_per_mwh), 1000.0, rel_tol=1e-6)
         assert math.isclose(Pricer.get_convertion_factor(euro_per_mwh, euro_per_kwh), 0.001, rel_tol=1e-6)
-
-        assert math.isclose(Pricer.get_convertion_factor(cent_per_mwh, euro_per_kwh), 0.00001, rel_tol=1e-6)
 
         assert math.isclose(Pricer.get_convertion_factor(euro_per_year, euro_per_month, dt), 1 / 12, rel_tol=1e-6)
         assert math.isclose(Pricer.get_convertion_factor(euro_per_month, euro_per_year, dt), 12, rel_tol=1e-6)
@@ -276,25 +259,20 @@ class TestPricer:  # pylint: disable=R0904
         assert math.isclose(Pricer.get_convertion_factor(euro_per_month, euro_per_day, dt), 1 / 31, rel_tol=1e-6)
         assert math.isclose(Pricer.get_convertion_factor(euro_per_day, euro_per_month, dt), 31, rel_tol=1e-6)
 
-        assert math.isclose(Pricer.get_convertion_factor(cent_per_year, cent_per_month, dt), 1 / 12, rel_tol=1e-6)
-        assert math.isclose(Pricer.get_convertion_factor(cent_per_month, cent_per_year, dt), 12, rel_tol=1e-6)
-        assert math.isclose(Pricer.get_convertion_factor(cent_per_year, cent_per_day, dt), 1 / 365, rel_tol=1e-6)
-        assert math.isclose(Pricer.get_convertion_factor(cent_per_day, cent_per_year, dt), 365, rel_tol=1e-6)
-
     # ----------------------------------
     def test_convert(self):
 
         consumption_prices = self._pricer.pricing_data().consumption_prices
 
-        converted_prices = Pricer.convert(consumption_prices, (PriceUnit.CENT, QuantityUnit.WH, TimeUnit.DAY))
+        converted_prices = Pricer.convert(consumption_prices, (PriceUnit.EUR, QuantityUnit.WH, TimeUnit.DAY))
 
         for i in range(len(consumption_prices) - 1):
             consumption_price = consumption_prices[i]
             converted_price = converted_prices[i]
 
-            assert converted_price.price_unit == PriceUnit.CENT
+            assert converted_price.price_unit == PriceUnit.EUR
             assert converted_price.quantity_unit == QuantityUnit.WH
-            assert converted_price.quantity_value == 0.1 * consumption_price.quantity_value
+            assert converted_price.quantity_value == 0.001 * consumption_price.quantity_value
 
     # ----------------------------------
     def _create_quantities(
@@ -320,7 +298,7 @@ class TestPricer:  # pylint: disable=R0904
 
         quantities = self._create_quantities(start_date, end_date, 1.0, QuantityUnit.KWH)
 
-        cost_breakdown = self._pricer.compute(quantities, PriceUnit.EURO)
+        cost_breakdown = self._pricer.compute(quantities, PriceUnit.EUR)
 
         # Verify breakdown structure
         assert cost_breakdown.consumption is not None
@@ -332,7 +310,7 @@ class TestPricer:  # pylint: disable=R0904
         # Verify total cost array
         assert cost_breakdown.total.start_date == start_date
         assert cost_breakdown.total.end_date == end_date
-        assert cost_breakdown.total.value_unit == "€"
+        assert cost_breakdown.total.value_unit == PriceUnit.EUR
         assert len(cost_breakdown.total.value_array) == 6
         assert math.isclose(cost_breakdown.total.value_array[start_date], 0.86912910, rel_tol=1e-6)
         assert math.isclose(cost_breakdown.total.value_array[end_date], 0.86912910, rel_tol=1e-6)
@@ -354,7 +332,7 @@ class TestPricer:  # pylint: disable=R0904
         quantities = self._create_quantities(single_date, single_date, quantity, unit)
 
         # Compute the cost (returns breakdown with detailed components)
-        cost_breakdown = pricer.compute(quantities, PriceUnit.EURO)
+        cost_breakdown = pricer.compute(quantities, PriceUnit.EUR)
 
         if cost_breakdown.total.value_array is not None:
             return cost_breakdown.total.value_array[single_date]
@@ -495,8 +473,8 @@ class TestPricer:  # pylint: disable=R0904
         """Test with transport_prices having quantity_value instead of time_value.
 
         This config has:
-        - consumption_prices: 0.07790 €/kWh with normal VAT (20%)
-        - transport_prices: 0.00194 €/kWh with reduced VAT (5.5%)
+        - consumption_prices: 0.07790 EUR/kWh with normal VAT (20%)
+        - transport_prices: 0.00194 EUR/kWh with reduced VAT (5.5%)
 
         The new implementation correctly handles transport as a quantity-based price.
         """
@@ -573,20 +551,20 @@ class TestPricer:  # pylint: disable=R0904
             CompositePriceValue(
                 start_date=date(2023, 6, 1),
                 end_date=date(2023, 6, 3),
-                price_unit=PriceUnit.EURO,
-                quantity_value=0.08,  # €/kWh
+                price_unit=PriceUnit.EUR,
+                quantity_value=0.08,  # EUR/kWh
                 quantity_unit=QuantityUnit.KWH,
-                time_value=20.0,  # €/month
+                time_value=20.0,  # EUR/month
                 time_unit=TimeUnit.MONTH,
                 vat_id="normal",
             ),
             CompositePriceValue(
                 start_date=date(2023, 6, 3),
                 end_date=date(2023, 6, 10),
-                price_unit=PriceUnit.EURO,
-                quantity_value=0.07,  # €/kWh (changed)
+                price_unit=PriceUnit.EUR,
+                quantity_value=0.07,  # EUR/kWh (changed)
                 quantity_unit=QuantityUnit.KWH,
-                time_value=25.0,  # €/month (changed)
+                time_value=25.0,  # EUR/month (changed)
                 time_unit=TimeUnit.MONTH,
                 vat_id="normal",
             ),
@@ -598,7 +576,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=composite_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.MONTH,
         )
@@ -607,7 +585,7 @@ class TestPricer:  # pylint: disable=R0904
         assert composite_price_array is not None
         assert composite_price_array.start_date == start_date
         assert composite_price_array.end_date == end_date
-        assert composite_price_array.price_unit == PriceUnit.EURO
+        assert composite_price_array.price_unit == PriceUnit.EUR
         assert composite_price_array.quantity_unit == QuantityUnit.KWH
         assert composite_price_array.time_unit == TimeUnit.MONTH
         assert composite_price_array.vat_id == "normal"
@@ -648,8 +626,8 @@ class TestPricer:  # pylint: disable=R0904
         composite_prices = [
             CompositePriceValue(
                 start_date=date(2023, 7, 1),
-                price_unit=PriceUnit.EURO,
-                quantity_value=0.05,  # €/kWh
+                price_unit=PriceUnit.EUR,
+                quantity_value=0.05,  # EUR/kWh
                 quantity_unit=QuantityUnit.KWH,
                 time_value=None,  # No time component
                 time_unit=TimeUnit.MONTH,
@@ -662,7 +640,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=composite_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.MONTH,
         )
@@ -690,10 +668,10 @@ class TestPricer:  # pylint: disable=R0904
         composite_prices = [
             CompositePriceValue(
                 start_date=date(2023, 7, 1),
-                price_unit=PriceUnit.EURO,
+                price_unit=PriceUnit.EUR,
                 quantity_value=None,  # No quantity component
                 quantity_unit=QuantityUnit.KWH,
-                time_value=15.0,  # €/month
+                time_value=15.0,  # EUR/month
                 time_unit=TimeUnit.MONTH,
                 vat_id="reduced",
             ),
@@ -704,7 +682,7 @@ class TestPricer:  # pylint: disable=R0904
             end_date=end_date,
             composite_prices=composite_prices,
             vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=PriceUnit.EURO,
+            target_price_unit=PriceUnit.EUR,
             target_quantity_unit=QuantityUnit.KWH,
             target_time_unit=TimeUnit.MONTH,
         )
