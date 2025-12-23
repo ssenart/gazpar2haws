@@ -107,6 +107,7 @@ class Gazpar:
                     old_entity_id=old_total_cost_sensor_name,
                     new_entity_id=total_cost_sensor_name,
                     new_name="Gazpar2HAWS Total Cost",
+                    unit_class=None,
                     unit_of_measurement="€",
                     timezone=self._timezone,
                     as_of_date=as_of_date,
@@ -223,6 +224,7 @@ class Gazpar:
             await self.publish_date_array(
                 volume_sensor_name,
                 "Gazpar2HAWS Volume",
+                "volume",
                 "m³",
                 volume_array,
                 last_date_and_value_by_sensor[volume_sensor_name][1],
@@ -234,6 +236,7 @@ class Gazpar:
             await self.publish_date_array(
                 energy_sensor_name,
                 "Gazpar2HAWS Energy",
+                "energy",
                 "kWh",
                 energy_array[energy_start_date : end_date + timedelta(days=1)],
                 last_date_and_value_by_sensor[energy_sensor_name][1],
@@ -267,6 +270,7 @@ class Gazpar:
             await self.publish_date_array(
                 consumption_cost_sensor_name,
                 "Gazpar2HAWS Consumption Cost",
+                None,
                 cost_breakdown.consumption.value_unit,
                 cost_breakdown.consumption.value_array,
                 last_date_and_value_by_sensor[consumption_cost_sensor_name][1],
@@ -276,6 +280,7 @@ class Gazpar:
             await self.publish_date_array(
                 subscription_cost_sensor_name,
                 "Gazpar2HAWS Subscription Cost",
+                None,
                 cost_breakdown.subscription.value_unit,
                 cost_breakdown.subscription.value_array,
                 last_date_and_value_by_sensor[subscription_cost_sensor_name][1],
@@ -285,6 +290,7 @@ class Gazpar:
             await self.publish_date_array(
                 transport_cost_sensor_name,
                 "Gazpar2HAWS Transport Cost",
+                None,
                 cost_breakdown.transport.value_unit,
                 cost_breakdown.transport.value_array,
                 last_date_and_value_by_sensor[transport_cost_sensor_name][1],
@@ -294,6 +300,7 @@ class Gazpar:
             await self.publish_date_array(
                 energy_taxes_cost_sensor_name,
                 "Gazpar2HAWS Energy Taxes Cost",
+                None,
                 cost_breakdown.energy_taxes.value_unit,
                 cost_breakdown.energy_taxes.value_array,
                 last_date_and_value_by_sensor[energy_taxes_cost_sensor_name][1],
@@ -303,6 +310,7 @@ class Gazpar:
             await self.publish_date_array(
                 total_cost_sensor_name,
                 "Gazpar2HAWS Total Cost",
+                None,
                 cost_breakdown.total.value_unit,
                 cost_breakdown.total.value_array,
                 last_date_and_value_by_sensor[total_cost_sensor_name][1],
@@ -387,6 +395,7 @@ class Gazpar:
         self,
         entity_id: str,
         entity_name: str,
+        unit_class: str | None,
         unit_of_measurement: str,
         date_array: DateArray,
         initial_value: float,
@@ -409,7 +418,7 @@ class Gazpar:
         # Publish statistics to Home Assistant
         try:
             await self._homeassistant.import_statistics(
-                entity_id, "recorder", entity_name, unit_of_measurement, statistics
+                entity_id, "recorder", entity_name, unit_class, unit_of_measurement, statistics
             )
         except Exception:
             Logger.warning(f"Error while importing statistics to Home Assistant: {traceback.format_exc()}")
