@@ -186,6 +186,7 @@ class HomeAssistantWS:
         entity_id: str,
         source: str,
         name: str,
+        unit_class: str | None,
         unit_of_measurement: str,
         statistics: list[dict],
     ):
@@ -201,10 +202,12 @@ class HomeAssistantWS:
             "type": "recorder/import_statistics",
             "metadata": {
                 "has_mean": False,
+                "mean_type": 0,
                 "has_sum": True,
                 "statistic_id": entity_id,
                 "source": source,
                 "name": name,
+                "unit_class": unit_class,
                 "unit_of_measurement": unit_of_measurement,
             },
             "stats": statistics,
@@ -235,6 +238,7 @@ class HomeAssistantWS:
         old_entity_id: str,
         new_entity_id: str,
         new_name: str,
+        unit_class: str | None,
         unit_of_measurement: str,
         timezone: str,
         as_of_date: date,
@@ -252,6 +256,7 @@ class HomeAssistantWS:
             old_entity_id: Source sensor ID (e.g., sensor.gazpar2haws_cost)
             new_entity_id: Target sensor ID (e.g., sensor.gazpar2haws_total_cost)
             new_name: Display name for the new sensor
+            unit_class: Device class for the new sensor (see https://developers.home-assistant.io/docs/core/entity/sensor/#device-class)
             unit_of_measurement: Unit for the new sensor (e.g., "€")
             timezone: Timezone string (e.g., "Europe/Paris")
             as_of_date: Latest date to query for migration
@@ -320,6 +325,7 @@ class HomeAssistantWS:
                 entity_id=new_entity_id,
                 source="recorder",
                 name=new_name,
+                unit_class=unit_class,
                 unit_of_measurement=unit_of_measurement,
                 statistics=converted_statistics,
             )
