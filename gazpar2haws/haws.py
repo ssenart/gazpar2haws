@@ -193,7 +193,7 @@ class HomeAssistantWS:
         entity_id: str,
         source: str,
         name: str,
-        unit_class: str,
+        unit_class: str | None,
         unit_of_measurement: str,
         statistics: list[dict],
     ):
