@@ -108,7 +108,7 @@ class Gazpar:
                     new_entity_id=total_cost_sensor_name,
                     new_name="Gazpar2HAWS Total Cost",
                     unit_class=None,
-                    unit_of_measurement="€",
+                    unit_of_measurement=self._convert_euro_symbol_to_iso4217("€"),
                     timezone=self._timezone,
                     as_of_date=as_of_date,
                 )
@@ -260,6 +260,7 @@ class Gazpar:
                 value_array=energy_array[cost_start_date : end_date + timedelta(days=1)],
             )
 
+            # Price all the costs and require results in Euro.
             cost_breakdown = pricer.compute(quantities, PriceUnit.EURO)
         else:
             cost_breakdown = None
@@ -271,7 +272,7 @@ class Gazpar:
                 consumption_cost_sensor_name,
                 "Gazpar2HAWS Consumption Cost",
                 None,
-                cost_breakdown.consumption.value_unit,
+                self._convert_euro_symbol_to_iso4217(cost_breakdown.consumption.value_unit),
                 cost_breakdown.consumption.value_array,
                 last_date_and_value_by_sensor[consumption_cost_sensor_name][1],
             )
@@ -281,7 +282,7 @@ class Gazpar:
                 subscription_cost_sensor_name,
                 "Gazpar2HAWS Subscription Cost",
                 None,
-                cost_breakdown.subscription.value_unit,
+                self._convert_euro_symbol_to_iso4217(cost_breakdown.subscription.value_unit),
                 cost_breakdown.subscription.value_array,
                 last_date_and_value_by_sensor[subscription_cost_sensor_name][1],
             )
@@ -291,7 +292,7 @@ class Gazpar:
                 transport_cost_sensor_name,
                 "Gazpar2HAWS Transport Cost",
                 None,
-                cost_breakdown.transport.value_unit,
+                self._convert_euro_symbol_to_iso4217(cost_breakdown.transport.value_unit),
                 cost_breakdown.transport.value_array,
                 last_date_and_value_by_sensor[transport_cost_sensor_name][1],
             )
@@ -301,7 +302,7 @@ class Gazpar:
                 energy_taxes_cost_sensor_name,
                 "Gazpar2HAWS Energy Taxes Cost",
                 None,
-                cost_breakdown.energy_taxes.value_unit,
+                self._convert_euro_symbol_to_iso4217(cost_breakdown.energy_taxes.value_unit),
                 cost_breakdown.energy_taxes.value_array,
                 last_date_and_value_by_sensor[energy_taxes_cost_sensor_name][1],
             )
@@ -311,7 +312,7 @@ class Gazpar:
                 total_cost_sensor_name,
                 "Gazpar2HAWS Total Cost",
                 None,
-                cost_breakdown.total.value_unit,
+                self._convert_euro_symbol_to_iso4217(cost_breakdown.total.value_unit),
                 cost_breakdown.total.value_array,
                 last_date_and_value_by_sensor[total_cost_sensor_name][1],
             )
@@ -495,3 +496,30 @@ class Gazpar:
         Logger.debug(f"Entity '{entity_id}' => Last date: {last_date}, last value: {last_value}")
 
         return last_date, last_value
+
+    # ---------------------------------
+    # Convert Euro symbol to ISO 4217 code (EUR)
+    @staticmethod
+    def _convert_euro_symbol_to_iso4217(currency_symbol: str) -> str:
+        """
+        Convert Euro symbol (€) to ISO 4217 code (EUR) for Home Assistant.
+
+        This maintains separation between the domain model (which uses €)
+        and the Home Assistant integration (which requires ISO 4217 codes).
+
+        Note: Only Euro is currently supported as this is what the pricer
+        module returns when called with PriceUnit.EURO.
+
+        Args:
+            currency_symbol: Euro symbol (€)
+
+        Returns:
+            ISO 4217 currency code (EUR)
+
+        Raises:
+            ValueError: If currency_symbol is not €
+        """
+        if currency_symbol == "€":
+            return "EUR"
+
+        raise ValueError(f"Unexpected currency symbol: {currency_symbol}. Only € (Euro) is supported.")

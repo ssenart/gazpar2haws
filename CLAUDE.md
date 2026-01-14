@@ -409,13 +409,15 @@ Always published:
 - `sensor.${name}_energy` (kWh)
 
 Published when pricing configuration is provided:
-- `sensor.${name}_consumption_cost` (€) - Variable cost from gas consumption
-- `sensor.${name}_subscription_cost` (€) - Fixed subscription fees
-- `sensor.${name}_transport_cost` (€) - Transport fees (fixed or variable)
-- `sensor.${name}_energy_taxes_cost` (€) - Energy taxes
-- `sensor.${name}_total_cost` (€) - Sum of all cost components
+- `sensor.${name}_consumption_cost` (EUR) - Variable cost from gas consumption
+- `sensor.${name}_subscription_cost` (EUR) - Fixed subscription fees
+- `sensor.${name}_transport_cost` (EUR) - Transport fees (fixed or variable)
+- `sensor.${name}_energy_taxes_cost` (EUR) - Energy taxes
+- `sensor.${name}_total_cost` (EUR) - Sum of all cost components
 
 Where `${name}` is the device name from configuration (default: `gazpar2haws`)
+
+**Note on Currency Units:** While the domain model and configuration use € symbols, statistics published to Home Assistant use ISO 4217 currency codes (EUR) for standards compliance. This conversion happens in the integration layer (gazpar.py) to maintain clean separation between business logic and external system requirements.
 
 **Note on Statistics vs Entities:** Gazpar2HAWS intentionally publishes cumulative statistics rather than regular state entities. This design choice is optimal for:
 - Historical energy/gas data tracking

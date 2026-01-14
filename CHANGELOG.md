@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- [#103](https://github.com/ssenart/gazpar2haws/issues/103): Cost statistics now use ISO 4217 currency codes (EUR) instead of symbols (€) for Home Assistant integration. This improves standards compliance and ensures proper currency display across Home Assistant interfaces. The domain model continues to use currency symbols internally, maintaining clean separation between business logic and integration layers.
+
 ### Fixed
 
 - [#97](https://github.com/ssenart/gazpar2haws/issues/97): Specify `unit_class` and `mean_type` in statistics metadata to ensure proper sensor classification and display in Home Assistant.
