@@ -7,6 +7,7 @@ import pytest
 
 from gazpar2haws import config_utils
 from gazpar2haws.haws import HomeAssistantWS
+from gazpar2haws.model import PriceUnit
 
 # See WebSocket source code here: https://git.informatik.uni-kl.de/s_menne19/hassio-core/-/blob/fix-tests-assist/homeassistant/components/recorder/websocket_api.py
 
@@ -118,7 +119,34 @@ class TestHomeAssistantWS:
     # ----------------------------------
     # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
-    async def test_migrate_statistic_old_sensor_not_exists(self):
+    async def test_update_statistics_metadata(self):
+
+        await self._haws.connect()
+
+        await self._haws.update_statistics_metadata(
+            "sensor.gazpar2haws_energy",
+            "energy",
+            "kWh",
+        )
+
+        await self._haws.update_statistics_metadata(
+            "sensor.gazpar2haws_cost",
+            None,
+            PriceUnit.EUR,
+        )
+
+        await self._haws.update_statistics_metadata(
+            "sensor.gazpar2haws_volume",
+            "volume",
+            "m³",
+        )
+
+        await self._haws.disconnect()
+
+    # ----------------------------------
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
+    @pytest.mark.asyncio
+    async def test_migrate_statistic_from_v_0_3_x_old_sensor_not_exists(self):
         """Test migration when old sensor doesn't exist - should skip gracefully."""
 
         await self._haws.connect()
@@ -126,12 +154,12 @@ class TestHomeAssistantWS:
         # Migrate from non-existent old sensor - should return True (success/skip)
         from datetime import date
 
-        result = await self._haws.migrate_statistic(
+        result = await self._haws.migrate_statistic_from_v_0_3_x(
             "sensor.gazpar2haws_nonexistent",
             "sensor.gazpar2haws_total_cost",
             "Gazpar2HAWS Total Cost",
             None,
-            "€",
+            PriceUnit.EUR,
             timezone="Europe/Paris",
             as_of_date=date.today(),
         )
@@ -143,7 +171,7 @@ class TestHomeAssistantWS:
     # ----------------------------------
     # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
-    async def test_migrate_statistic_both_sensors_exist(self):
+    async def test_migrate_statistic_from_v_0_3_x_both_sensors_exist(self):
         """Test migration when both old and new sensors exist - should skip to prevent data loss."""
 
         await self._haws.connect()
@@ -163,9 +191,9 @@ class TestHomeAssistantWS:
             {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
         ]
 
-        await self._haws.import_statistics("sensor.gazpar2haws_cost", "recorder", "Old Cost", None, "€", old_statistics)
+        await self._haws.import_statistics("sensor.gazpar2haws_cost", "recorder", "Old Cost", None, PriceUnit.EUR, old_statistics)
         await self._haws.import_statistics(
-            "sensor.gazpar2haws_total_cost", "recorder", "New Total Cost", None, "€", new_statistics
+            "sensor.gazpar2haws_total_cost", "recorder", "New Total Cost", None, PriceUnit.EUR, new_statistics
         )
 
         # Wait a moment for Home Assistant to process the import
@@ -174,12 +202,12 @@ class TestHomeAssistantWS:
         # Attempt migration when both exist - should return True (skip with warning)
         from datetime import date
 
-        result = await self._haws.migrate_statistic(
+        result = await self._haws.migrate_statistic_from_v_0_3_x(
             "sensor.gazpar2haws_cost",
             "sensor.gazpar2haws_total_cost",
             "Gazpar2HAWS Total Cost",
             None,
-            "€",
+            PriceUnit.EUR,
             timezone="Europe/Paris",
             as_of_date=date(2024, 12, 31),
         )
@@ -207,7 +235,7 @@ class TestHomeAssistantWS:
     # ----------------------------------
     # @pytest.mark.skip(reason="Requires Home Assistant server")
     @pytest.mark.asyncio
-    async def test_migrate_statistic_successful_migration(self):
+    async def test_migrate_statistic_from_v_0_3_x_successful_migration(self):
         """Test successful migration of data from old to new sensor."""
 
         await self._haws.connect()
@@ -228,7 +256,7 @@ class TestHomeAssistantWS:
         ]
 
         await self._haws.import_statistics(
-            "sensor.gazpar2haws_cost_migrate_test", "recorder", "Old Cost", None, "€", old_statistics
+            "sensor.gazpar2haws_cost_migrate_test", "recorder", "Old Cost", None, PriceUnit.EUR, old_statistics
         )
 
         # Wait a moment for Home Assistant to process the import
@@ -237,12 +265,12 @@ class TestHomeAssistantWS:
         # Perform migration - should succeed and copy all data
         from datetime import date
 
-        result = await self._haws.migrate_statistic(
+        result = await self._haws.migrate_statistic_from_v_0_3_x(
             "sensor.gazpar2haws_cost_migrate_test",
             "sensor.gazpar2haws_total_cost_migrate_test",
             "Gazpar2HAWS Total Cost",
             None,
-            "€",
+            PriceUnit.EUR,
             timezone="Europe/Paris",
             as_of_date=date(2024, 12, 31),
         )
@@ -271,5 +299,202 @@ class TestHomeAssistantWS:
         await self._haws.clear_statistics(
             ["sensor.gazpar2haws_cost_migrate_test", "sensor.gazpar2haws_total_cost_migrate_test"]
         )
+
+        await self._haws.disconnect()
+
+    # ----------------------------------
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
+    @pytest.mark.asyncio
+    async def test_migrate_statistics_from_v_0_4_x_successful_migration(self):
+        """Test successful migration of data from old to new units."""
+
+        await self._haws.connect()
+
+        # Clear any existing data from previous tests
+        try:
+            await self._haws.clear_statistics(
+                ["sensor.gazpar2haws_consumption_cost_migrate_test", "sensor.gazpar2haws_subscription_cost_migrate_test"]
+            )
+        except Exception:  # pylint: disable=broad-except
+            pass  # OK if sensors don't exist yet
+
+        # Create old sensor with historical data
+        consumption_cost_statistics = [
+            {"start": "2024-12-14T00:00:00+00:00", "state": 100.0, "sum": 100.0},
+            {"start": "2024-12-15T00:00:00+00:00", "state": 200.0, "sum": 200.0},
+            {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
+        ]
+
+        subscription_cost_statistics = [
+            {"start": "2024-12-14T00:00:00+00:00", "state": 100.0, "sum": 100.0},
+            {"start": "2024-12-15T00:00:00+00:00", "state": 200.0, "sum": 200.0},
+            {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
+        ]
+
+        sensors = {
+            "sensor.gazpar2haws_consumption_cost_migrate_test": consumption_cost_statistics,
+            "sensor.gazpar2haws_subscription_cost_migrate_test": subscription_cost_statistics,
+        }
+
+        for sensor_id, statistics in sensors.items():
+            await self._haws.import_statistics(sensor_id, "recorder", "Old " + sensor_id.split("_")[-1], None, "€", statistics)
+
+        # Wait a moment for Home Assistant to process the import
+        await asyncio.sleep(1)
+
+        # Perform migration - should succeed and copy all data
+        from datetime import date
+
+        result = await self._haws.migrate_statistics_from_v_0_4_x(
+            entity_ids=[sensor for sensor in sensors.keys()],
+            unit_class=None,
+            unit_of_measurement=PriceUnit.EUR,
+            timezone="Europe/Paris",
+            as_of_date=date(2024, 12, 31),
+        )
+
+        assert result is True
+
+        # Wait a moment for Home Assistant to process the import
+        await asyncio.sleep(1)
+
+        # Verify new sensor has all the data from old sensor
+        import pytz
+
+        tz = pytz.timezone("Europe/Paris")
+        start = tz.localize(datetime(2024, 12, 1))
+        end = tz.localize(datetime(2024, 12, 31))
+        new_stats = await self._haws.statistics_during_period(list(sensors.keys()), start, end)
+
+        for sensor_id in sensors.keys():
+            assert sensor_id in new_stats
+            assert len(new_stats[sensor_id]) == 3
+            assert new_stats[sensor_id][0]["sum"] == 100.0
+            assert new_stats[sensor_id][1]["sum"] == 200.0
+            assert new_stats[sensor_id][2]["sum"] == 300.0
+
+        await self._haws.disconnect()
+
+    # ----------------------------------
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
+    @pytest.mark.asyncio
+    async def test_migrate_statistics_from_v_0_4_x_with_cents_unit(self):
+        """Test successful migration of data from old to new units with cents unit."""
+
+        await self._haws.connect()
+
+        # Clear any existing data from previous tests
+        try:
+            await self._haws.clear_statistics(
+                ["sensor.gazpar2haws_transport_cost_migrate_test", "sensor.gazpar2haws_energy_taxes_cost_migrate_test"]
+            )
+        except Exception:  # pylint: disable=broad-except
+            pass  # OK if sensors don't exist yet
+
+        # Create old sensor with historical data
+
+        transport_cost_statistics = [
+            {"start": "2024-12-14T00:00:00+00:00", "state": 100.0, "sum": 100.0},
+            {"start": "2024-12-15T00:00:00+00:00", "state": 200.0, "sum": 200.0},
+            {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
+        ]
+
+        energy_taxes_cost_statistics = [
+            {"start": "2024-12-14T00:00:00+00:00", "state": 100.0, "sum": 100.0},
+            {"start": "2024-12-15T00:00:00+00:00", "state": 200.0, "sum": 200.0},
+            {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
+        ]
+
+        sensors = {
+            "sensor.gazpar2haws_transport_cost_migrate_test": transport_cost_statistics,
+            "sensor.gazpar2haws_energy_taxes_cost_migrate_test": energy_taxes_cost_statistics,
+        }
+
+        for sensor_id, statistics in sensors.items():
+            await self._haws.import_statistics(sensor_id, "recorder", "Old " + sensor_id.split("_")[-1], None, "¢", statistics)
+
+        # Wait a moment for Home Assistant to process the import
+        await asyncio.sleep(1)
+
+        # Perform migration - should succeed and copy all data
+        from datetime import date
+
+        result = await self._haws.migrate_statistics_from_v_0_4_x(
+            entity_ids=[sensor for sensor in sensors.keys()],
+            unit_class=None,
+            unit_of_measurement=PriceUnit.EUR,
+            timezone="Europe/Paris",
+            as_of_date=date(2024, 12, 31),
+        )
+
+        assert result is True
+
+        # Wait a moment for Home Assistant to process the import
+        await asyncio.sleep(1)
+
+        # Verify new sensor has all the data from old sensor
+        import pytz
+
+        tz = pytz.timezone("Europe/Paris")
+        start = tz.localize(datetime(2024, 12, 1))
+        end = tz.localize(datetime(2024, 12, 31))
+        new_stats = await self._haws.statistics_during_period(list(sensors.keys()), start, end)
+
+        for sensor_id in sensors.keys():
+            assert sensor_id in new_stats
+            assert len(new_stats[sensor_id]) == 3
+            assert new_stats[sensor_id][0]["sum"] == 10000.0
+            assert new_stats[sensor_id][1]["sum"] == 20000.0
+            assert new_stats[sensor_id][2]["sum"] == 30000.0
+
+        await self._haws.disconnect()
+
+
+    # ----------------------------------
+    # @pytest.mark.skip(reason="Requires Home Assistant server")
+    @pytest.mark.asyncio
+    async def test_migrate_statistics_from_v_0_4_x_no_old_data(self):
+        """Test successful migration of data from old to new units with no old data."""
+
+        await self._haws.connect()
+
+        # Clear any existing data from previous tests
+        try:
+            await self._haws.clear_statistics(
+                ["sensor.gazpar2haws_consumption_cost_migrate_test", "sensor.gazpar2haws_subscription_cost_migrate_test"]
+            )
+        except Exception:  # pylint: disable=broad-except
+            pass  # OK if sensors don't exist yet
+
+        # Wait a moment for Home Assistant to process the import
+        await asyncio.sleep(1)
+
+        # Perform migration - should succeed and copy all data
+        from datetime import date
+
+        result = await self._haws.migrate_statistics_from_v_0_4_x(
+            entity_ids=["sensor.gazpar2haws_consumption_cost_migrate_test", "sensor.gazpar2haws_subscription_cost_migrate_test"],
+            unit_class=None,
+            unit_of_measurement=PriceUnit.EUR,
+            timezone="Europe/Paris",
+            as_of_date=date(2024, 12, 31),
+        )
+
+        assert result is True
+
+        # Wait a moment for Home Assistant to process the import
+        await asyncio.sleep(1)
+
+        # Verify new sensor has all the data from old sensor
+        import pytz
+
+        tz = pytz.timezone("Europe/Paris")
+        start = tz.localize(datetime(2024, 12, 1))
+        end = tz.localize(datetime(2024, 12, 31))
+
+        new_stats = await self._haws.statistics_during_period(["sensor.gazpar2haws_consumption_cost_migrate_test", "sensor.gazpar2haws_subscription_cost_migrate_test"], start, end)
+
+        for sensor_id in ["sensor.gazpar2haws_consumption_cost_migrate_test", "sensor.gazpar2haws_subscription_cost_migrate_test"]:
+            assert sensor_id not in new_stats
 
         await self._haws.disconnect()

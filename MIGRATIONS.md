@@ -14,7 +14,7 @@ This document provides step-by-step instructions for upgrading Gazpar2HAWS betwe
 
 ---
 
-## Upgrading from v0.3.x to v0.4.0
+## Upgrading from v0.3.x
 
 ### What Changed
 
@@ -55,36 +55,43 @@ The pricing configuration format has changed to support the composite price mode
 - `time_value` - The numeric value for the time component (e.g., €/month)
 - `time_unit` - The unit for time-based pricing (day, week, month, year)
 
+#### New Properties (v0.5.0)
+
+- `price_unit` - The monetary unit (EUR or any [ISO-4217 codes](https://en.wikipedia.org/wiki/ISO_4217#Active_codes))
+
 #### Quick Reference Table
 
 | Price Type | Old Format | New Format | Example |
 |------------|------------|------------|---------|
-| Consumption | `value: 0.07790` `base_unit: kWh` | `quantity_value: 0.07790` `quantity_unit: kWh` | €/kWh pricing |
-| Subscription | `value: 19.83` `base_unit: month` | `time_value: 19.83` `time_unit: month` | €/month fee |
-| Transport (fixed) | `value: 34.38` `base_unit: year` | `time_value: 34.38` `time_unit: year` | €/year fee |
-| Transport (variable) | Not available | `quantity_value: 0.00194` `quantity_unit: kWh` | **NEW**: €/kWh fee |
-| Energy Taxes | `value: 0.00837` `base_unit: kWh` | `quantity_value: 0.00837` `quantity_unit: kWh` | €/kWh tax |
+| Consumption | `value: 0.07790` `base_unit: kWh` | `quantity_value: 0.07790` `quantity_unit: kWh` | EUR/kWh pricing |
+| Subscription | `value: 19.83` `base_unit: month` | `time_value: 19.83` `time_unit: month` | EUR/month fee |
+| Transport (fixed) | `value: 34.38` `base_unit: year` | `time_value: 34.38` `time_unit: year` | EUR/year fee |
+| Transport (variable) | Not available | `quantity_value: 0.00194` `quantity_unit: kWh` | **NEW**: EUR/kWh fee |
+| Energy Taxes | `value: 0.00837` `base_unit: kWh` | `quantity_value: 0.00837` `quantity_unit: kWh` | EUR/kWh tax |
 
 ---
 
 ### Migration Examples
 
 #### Example 1: Simple Consumption Price
+<details>
+  <summary>From v0.3.x:</summary>
 
-**Before (v0.3.x):**
 ```yaml
 pricing:
   consumption_prices:
     - start_date: "2023-06-01"
-      value: 0.07790  # €/kWh
+      value: 0.07790  # EUR/kWh
 ```
+</details>
 
-**After (v0.4.0):**
+**To v0.4.0+**
+
 ```yaml
 pricing:
   consumption_prices:
     - start_date: "2023-06-01"
-      quantity_value: 0.07790  # €/kWh
+      quantity_value: 0.07790  # EUR/kWh
 ```
 
 **Explanation**: The `value` property is replaced by `quantity_value` since consumption is based on quantity (kWh).
@@ -92,8 +99,9 @@ pricing:
 ---
 
 #### Example 2: Consumption Price with Custom Units
+<details>
+  <summary>From v0.3.x</summary>
 
-**Before (v0.3.x):**
 ```yaml
 pricing:
   consumption_prices:
@@ -102,14 +110,28 @@ pricing:
       value_unit: "¢"     # cents
       base_unit: "MWh"    # megawatt-hour
 ```
+</details>
 
-**After (v0.4.0):**
+<details>
+  <summary>From v0.4.0:</summary>
+
 ```yaml
 pricing:
   consumption_prices:
     - start_date: "2023-06-01"
       quantity_value: 7790.0
       price_unit: "¢"      # cents
+      quantity_unit: "MWh" # megawatt-hour
+```
+</details>
+
+**To v0.5.0:**
+```yaml
+pricing:
+  consumption_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 77.90
+      price_unit: "EUR"      # cents
       quantity_unit: "MWh" # megawatt-hour
 ```
 
@@ -121,8 +143,9 @@ pricing:
 ---
 
 #### Example 3: Subscription Price
+<details>
+  <summary>From v0.3.x</summary>
 
-**Before (v0.3.x):**
 ```yaml
 pricing:
   subscription_prices:
@@ -132,14 +155,29 @@ pricing:
       base_unit: "month"
       vat_id: "reduced"
 ```
+</details>
 
-**After (v0.4.0):**
+<details>
+  <summary>From v0.4.0</summary>
+
 ```yaml
 pricing:
   subscription_prices:
     - start_date: "2023-06-01"
       time_value: 19.83
       price_unit: "€"
+      time_unit: "month"
+      vat_id: "reduced"
+```
+</details>
+
+**To v0.5.0:**
+```yaml
+pricing:
+  subscription_prices:
+    - start_date: "2023-06-01"
+      time_value: 19.83
+      price_unit: "EUR"
       time_unit: "month"
       vat_id: "reduced"
 ```
@@ -153,7 +191,9 @@ pricing:
 
 #### Example 4: Transport Price (Fixed Fee)
 
-**Before (v0.3.x):**
+<details>
+  <summary>From v0.3.x</summary>
+
 ```yaml
 pricing:
   transport_prices:
@@ -163,14 +203,29 @@ pricing:
       base_unit: "year"
       vat_id: "reduced"
 ```
+</details>
 
-**After (v0.4.0):**
+<details>
+  <summary>From v0.4.0</summary>
+
 ```yaml
 pricing:
   transport_prices:
     - start_date: "2023-06-01"
       time_value: 34.38
       price_unit: "€"
+      time_unit: "year"
+      vat_id: "reduced"
+```
+</details>
+
+**To v0.5.0:**
+```yaml
+pricing:
+  transport_prices:
+    - start_date: "2023-06-01"
+      time_value: 34.38
+      price_unit: "EUR"
       time_unit: "year"
       vat_id: "reduced"
 ```
@@ -181,25 +236,26 @@ pricing:
 
 #### Example 5: Transport Price (Based on Consumption)
 
-**New capability in v0.4.0 - not available in v0.3.x:**
+**New capability in v0.5.0 - not available in v0.3.x:**
 
 ```yaml
 pricing:
   transport_prices:
     - start_date: "2024-01-01"
       quantity_value: 0.00194
-      price_unit: "€"
+      price_unit: "EUR"
       quantity_unit: "kWh"
       vat_id: "reduced"
 ```
 
-**Explanation**: Transport can now be quantity-based (€/kWh) instead of only time-based.
+**Explanation**: Transport can now be quantity-based (EUR/kWh) instead of only time-based.
 
 ---
 
 #### Example 6: Energy Taxes
+<details>
+  <summary>From v0.3.x:</summary>
 
-**Before (v0.3.x):**
 ```yaml
 pricing:
   energy_taxes:
@@ -209,8 +265,11 @@ pricing:
       base_unit: "kWh"
       vat_id: "normal"
 ```
+</details>
 
-**After (v0.4.0):**
+<details>
+  <summary>From v0.4.0:</summary>
+
 ```yaml
 pricing:
   energy_taxes:
@@ -220,14 +279,27 @@ pricing:
       quantity_unit: "kWh"
       vat_id: "normal"
 ```
+</details>
+
+**To v0.5.0:**
+```yaml
+pricing:
+  energy_taxes:
+    - start_date: "2023-06-01"
+      quantity_value: 0.00837
+      price_unit: "EUR"
+      quantity_unit: "kWh"
+      vat_id: "normal"
+```
 
 **Explanation**: Energy taxes are quantity-based, so use `quantity_value` and `quantity_unit`.
 
 ---
 
 #### Example 7: Complete Configuration Migration
+<details>
+  <summary>From v0.3.x:</summary>
 
-**Before (v0.3.x):**
 ```yaml
 pricing:
   vat:
@@ -262,8 +334,11 @@ pricing:
       base_unit: "kWh"
       vat_id: "normal"
 ```
+</details>
 
-**After (v0.4.0):**
+<details>
+  <summary>From v0.4.0:</summary>
+
 ```yaml
 pricing:
   vat:
@@ -298,9 +373,46 @@ pricing:
       price_unit: "€"       # Optional - default is €
       vat_id: "normal"
 ```
+</details>
+
+**To v0.5.0:**
+```yaml
+pricing:
+  vat:
+    - id: reduced
+      start_date: "2023-06-01"
+      value: 0.0550
+    - id: normal
+      start_date: "2023-06-01"
+      value: 0.20
+  consumption_prices:
+    - start_date: "2023-06-01"
+      quantity_value: 0.07790
+      quantity_unit: "kWh"  # Optional - default is kWh
+      price_unit: "EUR"     # Optional - default is EUR
+      vat_id: "normal"
+  subscription_prices:
+    - start_date: "2023-06-01"
+      time_value: 19.83
+      time_unit: "month"    # Optional - default is month
+      price_unit: "EUR"     # Optional - default is EUR
+      vat_id: "reduced"
+  transport_prices:
+    - start_date: "2023-06-01"
+      time_value: 34.38
+      time_unit: "year"
+      price_unit: "EUR"
+      vat_id: "reduced"
+  energy_taxes:
+    - start_date: "2023-06-01"
+      quantity_value: 0.00837
+      quantity_unit: "kWh"  # Optional - default is kWh
+      price_unit: "EUR"     # Optional - default is EUR
+      vat_id: "normal"
+```
 
 **Note**: The unit properties are optional. If omitted, the defaults are:
-- `price_unit`: € (euro)
+- `price_unit`: EUR (€, euro)
 - `quantity_unit`: kWh (kilowatt-hour)
 - `time_unit`: month
 
@@ -485,4 +597,3 @@ After migration, verify:
 ## Future Migration Guides
 
 When upgrading to future versions, additional migration guides will be documented here.
-
