@@ -98,7 +98,7 @@ class TestHomeAssistantWS:
             {"start": "2020-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
         ]
 
-        await self._haws.import_statistics("sensor.gazpar2haws_volume", "recorder", "test", "m³", statistics)
+        await self._haws.import_statistics("sensor.gazpar2haws_volume", "recorder", "test", "volume", "m³", statistics)
 
         await self._haws.disconnect()
 
@@ -130,6 +130,7 @@ class TestHomeAssistantWS:
             "sensor.gazpar2haws_nonexistent",
             "sensor.gazpar2haws_total_cost",
             "Gazpar2HAWS Total Cost",
+            None,
             "€",
             timezone="Europe/Paris",
             as_of_date=date.today(),
@@ -162,9 +163,9 @@ class TestHomeAssistantWS:
             {"start": "2024-12-16T00:00:00+00:00", "state": 300.0, "sum": 300.0},
         ]
 
-        await self._haws.import_statistics("sensor.gazpar2haws_cost", "recorder", "Old Cost", "€", old_statistics)
+        await self._haws.import_statistics("sensor.gazpar2haws_cost", "recorder", "Old Cost", None, "€", old_statistics)
         await self._haws.import_statistics(
-            "sensor.gazpar2haws_total_cost", "recorder", "New Total Cost", "€", new_statistics
+            "sensor.gazpar2haws_total_cost", "recorder", "New Total Cost", None, "€", new_statistics
         )
 
         # Wait a moment for Home Assistant to process the import
@@ -177,6 +178,7 @@ class TestHomeAssistantWS:
             "sensor.gazpar2haws_cost",
             "sensor.gazpar2haws_total_cost",
             "Gazpar2HAWS Total Cost",
+            None,
             "€",
             timezone="Europe/Paris",
             as_of_date=date(2024, 12, 31),
@@ -226,7 +228,7 @@ class TestHomeAssistantWS:
         ]
 
         await self._haws.import_statistics(
-            "sensor.gazpar2haws_cost_migrate_test", "recorder", "Old Cost", "€", old_statistics
+            "sensor.gazpar2haws_cost_migrate_test", "recorder", "Old Cost", None, "€", old_statistics
         )
 
         # Wait a moment for Home Assistant to process the import
@@ -239,6 +241,7 @@ class TestHomeAssistantWS:
             "sensor.gazpar2haws_cost_migrate_test",
             "sensor.gazpar2haws_total_cost_migrate_test",
             "Gazpar2HAWS Total Cost",
+            None,
             "€",
             timezone="Europe/Paris",
             as_of_date=date(2024, 12, 31),
