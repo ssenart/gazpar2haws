@@ -6,10 +6,11 @@ FROM $BUILD_FROM
 ARG GAZPAR2HAWS_VERSION
 
 # gettext is required for envsubst
-RUN apk add --no-cache gettext
+RUN apt-get update && apt-get install -y --no-install-recommends gettext-base && rm -rf /var/lib/apt/lists/*
 
 # yq is required for the configuration file: yaml to json
-RUN apk add --no-cache yq
+# Install yq via pip since Debian doesn't have it in default repos
+RUN pip3 install --no-cache-dir yq
 
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 

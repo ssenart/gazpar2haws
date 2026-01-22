@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- [#105](https://github.com/ssenart/gazpar2haws/issues/105): Fixed segmentation fault (exit code 139) on Home Assistant 2026.1.x by switching from Alpine Linux (musl libc) to Debian 12 (glibc) base images. Alpine's musl libc has compatibility issues with pydantic-core (Rust-based), causing crashes on startup. The add-on now uses Python 3.13 Debian-based images which are fully compatible with pydantic and match Home Assistant 2026.1 requirements.
 - [#97](https://github.com/ssenart/gazpar2haws/issues/97): Specify `unit_class` and `mean_type` in statistics metadata to ensure proper sensor classification and display in Home Assistant.
 
 ## [0.4.0] - 2025-10-30
