@@ -92,11 +92,15 @@ class Gazpar:
         # Volume, energy and cost sensor names.
         volume_sensor_name = f"sensor.{self._name}_volume"
         energy_sensor_name = f"sensor.{self._name}_energy"
-        consumption_cost_sensor_name = f"sensor.{self._name}_consumption_cost"
-        subscription_cost_sensor_name = f"sensor.{self._name}_subscription_cost"
-        transport_cost_sensor_name = f"sensor.{self._name}_transport_cost"
-        energy_taxes_cost_sensor_name = f"sensor.{self._name}_energy_taxes_cost"
         total_cost_sensor_name = f"sensor.{self._name}_total_cost"
+
+        # Generate component cost sensor names dynamically
+        component_sensor_names = {}
+        if self._pricing_config is not None:
+            for component_name in self._pricing_config.get_components().keys():
+                sensor_suffix = self._get_legacy_sensor_suffix(component_name)
+                sensor_name = f"sensor.{self._name}_{sensor_suffix}"
+                component_sensor_names[component_name] = sensor_name
 
         # Automatic migration from v0.3.x to v0.4.0
         # Migrate old sensor.{name}_cost to sensor.{name}_total_cost if pricing is enabled
@@ -122,17 +126,10 @@ class Gazpar:
         # Eventually reset the sensor in Home Assistant
         if self._reset:
             try:
-                await self._homeassistant.clear_statistics(
-                    [
-                        volume_sensor_name,
-                        energy_sensor_name,
-                        consumption_cost_sensor_name,
-                        subscription_cost_sensor_name,
-                        transport_cost_sensor_name,
-                        energy_taxes_cost_sensor_name,
-                        total_cost_sensor_name,
-                    ]
-                )
+                sensors_to_clear = [volume_sensor_name, energy_sensor_name, total_cost_sensor_name]
+                # Add all component cost sensors dynamically
+                sensors_to_clear.extend(component_sensor_names.values())
+                await self._homeassistant.clear_statistics(sensors_to_clear)
             except Exception:
                 Logger.warning(f"Error while resetting the sensor in Home Assistant: {traceback.format_exc()}")
                 raise
@@ -141,21 +138,13 @@ class Gazpar:
 
         last_date_and_value_by_sensor[volume_sensor_name] = await self.find_last_date_and_value(volume_sensor_name)
         last_date_and_value_by_sensor[energy_sensor_name] = await self.find_last_date_and_value(energy_sensor_name)
-        last_date_and_value_by_sensor[consumption_cost_sensor_name] = await self.find_last_date_and_value(
-            consumption_cost_sensor_name
-        )
-        last_date_and_value_by_sensor[subscription_cost_sensor_name] = await self.find_last_date_and_value(
-            subscription_cost_sensor_name
-        )
-        last_date_and_value_by_sensor[transport_cost_sensor_name] = await self.find_last_date_and_value(
-            transport_cost_sensor_name
-        )
-        last_date_and_value_by_sensor[energy_taxes_cost_sensor_name] = await self.find_last_date_and_value(
-            energy_taxes_cost_sensor_name
-        )
         last_date_and_value_by_sensor[total_cost_sensor_name] = await self.find_last_date_and_value(
             total_cost_sensor_name
         )
+
+        # Get last date and value for all component cost sensors dynamically
+        for sensor_name in component_sensor_names.values():
+            last_date_and_value_by_sensor[sensor_name] = await self.find_last_date_and_value(sensor_name)
 
         # Compute the start date as the minimum of the last dates plus one day
         start_date = min(min(v[0] for v in last_date_and_value_by_sensor.values()) + timedelta(days=1), as_of_date)
@@ -163,32 +152,17 @@ class Gazpar:
         # Get all start dates
         energy_start_date = last_date_and_value_by_sensor[energy_sensor_name][0] + timedelta(days=1)
         volume_start_date = last_date_and_value_by_sensor[volume_sensor_name][0] + timedelta(days=1)
-        consumption_cost_start_date = last_date_and_value_by_sensor[consumption_cost_sensor_name][0] + timedelta(days=1)
-        subscription_cost_start_date = last_date_and_value_by_sensor[subscription_cost_sensor_name][0] + timedelta(
-            days=1
-        )
-        transport_cost_start_date = last_date_and_value_by_sensor[transport_cost_sensor_name][0] + timedelta(days=1)
-        energy_taxes_cost_start_date = last_date_and_value_by_sensor[energy_taxes_cost_sensor_name][0] + timedelta(
-            days=1
-        )
         total_cost_start_date = last_date_and_value_by_sensor[total_cost_sensor_name][0] + timedelta(days=1)
 
-        # Get the minimum cost start date
-        cost_start_date = min(
-            consumption_cost_start_date,
-            subscription_cost_start_date,
-            transport_cost_start_date,
-            energy_taxes_cost_start_date,
-            total_cost_start_date,
-        )
+        # Get the minimum cost start date from all component sensors
+        cost_start_dates = [total_cost_start_date]
+        for sensor_name in component_sensor_names.values():
+            cost_start_dates.append(last_date_and_value_by_sensor[sensor_name][0] + timedelta(days=1))
+        cost_start_date = min(cost_start_dates)
 
         Logger.debug(f"Min start date for all sensors: {start_date}")
         Logger.debug(f"Energy start date: {energy_start_date}")
         Logger.debug(f"Volume start date: {volume_start_date}")
-        Logger.debug(f"Consumption cost start date: {consumption_cost_start_date}")
-        Logger.debug(f"Subscription cost start date: {subscription_cost_start_date}")
-        Logger.debug(f"Transport cost start date: {transport_cost_start_date}")
-        Logger.debug(f"Energy taxes cost start date: {energy_taxes_cost_start_date}")
         Logger.debug(f"Total cost start date: {total_cost_start_date}")
         Logger.debug(f"Min cost start date: {cost_start_date}")
 
@@ -267,45 +241,20 @@ class Gazpar:
 
         # Publish the cost breakdown to Home Assistant
         if cost_breakdown is not None:
-            # Publish consumption cost
-            await self.publish_date_array(
-                consumption_cost_sensor_name,
-                "Gazpar2HAWS Consumption Cost",
-                None,
-                self._convert_euro_symbol_to_iso4217(cost_breakdown.consumption.value_unit),
-                cost_breakdown.consumption.value_array,
-                last_date_and_value_by_sensor[consumption_cost_sensor_name][1],
-            )
+            # Publish all component costs dynamically
+            component_costs = cost_breakdown.get_component_costs()
+            for component_name, component_cost in component_costs.items():
+                sensor_name = component_sensor_names[component_name]
+                friendly_name = self._generate_friendly_name(component_name)
 
-            # Publish subscription cost
-            await self.publish_date_array(
-                subscription_cost_sensor_name,
-                "Gazpar2HAWS Subscription Cost",
-                None,
-                self._convert_euro_symbol_to_iso4217(cost_breakdown.subscription.value_unit),
-                cost_breakdown.subscription.value_array,
-                last_date_and_value_by_sensor[subscription_cost_sensor_name][1],
-            )
-
-            # Publish transport cost
-            await self.publish_date_array(
-                transport_cost_sensor_name,
-                "Gazpar2HAWS Transport Cost",
-                None,
-                self._convert_euro_symbol_to_iso4217(cost_breakdown.transport.value_unit),
-                cost_breakdown.transport.value_array,
-                last_date_and_value_by_sensor[transport_cost_sensor_name][1],
-            )
-
-            # Publish energy taxes cost
-            await self.publish_date_array(
-                energy_taxes_cost_sensor_name,
-                "Gazpar2HAWS Energy Taxes Cost",
-                None,
-                self._convert_euro_symbol_to_iso4217(cost_breakdown.energy_taxes.value_unit),
-                cost_breakdown.energy_taxes.value_array,
-                last_date_and_value_by_sensor[energy_taxes_cost_sensor_name][1],
-            )
+                await self.publish_date_array(
+                    sensor_name,
+                    friendly_name,
+                    None,
+                    self._convert_euro_symbol_to_iso4217(component_cost.value_unit),
+                    component_cost.value_array,
+                    last_date_and_value_by_sensor[sensor_name][1],
+                )
 
             # Publish total cost
             await self.publish_date_array(
@@ -498,6 +447,57 @@ class Gazpar:
         return last_date, last_value
 
     # ---------------------------------
+    # Helper methods for dynamic sensor naming
+    @staticmethod
+    def _get_legacy_sensor_suffix(component_name: str) -> str:
+        """
+        Map component names to sensor suffixes for backward compatibility.
+
+        Legacy component names get their specific sensor suffixes to maintain
+        backward compatibility with existing Home Assistant sensors.
+        Custom component names get a '_cost' suffix.
+
+        Args:
+            component_name: The pricing component name
+
+        Returns:
+            The sensor suffix to use
+        """
+        legacy_map = {
+            "consumption_prices": "consumption_cost",
+            "subscription_prices": "subscription_cost",
+            "transport_prices": "transport_cost",
+            "energy_taxes": "energy_taxes_cost",
+        }
+        return legacy_map.get(component_name, f"{component_name}_cost")
+
+    @staticmethod
+    def _generate_friendly_name(component_name: str) -> str:
+        """
+        Convert component name to friendly sensor name for Home Assistant.
+
+        Legacy component names get their traditional friendly names.
+        Custom component names are converted from snake_case to Title Case.
+
+        Args:
+            component_name: The pricing component name
+
+        Returns:
+            The friendly name for the sensor
+        """
+        legacy_friendly = {
+            "consumption_prices": "Gazpar2HAWS Consumption Cost",
+            "subscription_prices": "Gazpar2HAWS Subscription Cost",
+            "transport_prices": "Gazpar2HAWS Transport Cost",
+            "energy_taxes": "Gazpar2HAWS Energy Taxes Cost",
+        }
+        if component_name in legacy_friendly:
+            return legacy_friendly[component_name]
+
+        # Custom names: convert snake_case to Title Case
+        words = component_name.replace("_", " ").title()
+        return f"Gazpar2HAWS {words} Cost"
+
     # Convert Euro symbol to ISO 4217 code (EUR)
     @staticmethod
     def _convert_euro_symbol_to_iso4217(currency_symbol: str) -> str:

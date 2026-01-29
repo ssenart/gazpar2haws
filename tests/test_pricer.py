@@ -552,6 +552,82 @@ class TestPricer:  # pylint: disable=R0904
         )
 
     # ----------------------------------
+    def test_example_8(self):
+        """Test flexible pricing with custom component names.
+
+        This test demonstrates the new flexible pricing feature where users can
+        define custom component names instead of being limited to 4 hardcoded names.
+        """
+
+        # Load configuration with custom component names
+        config = Configuration.load("tests/config/example_8.yaml", "tests/config/secrets.yaml")
+
+        # Verify custom components are loaded
+        components = config.pricing.get_components()
+        assert "base_energy_cost" in components
+        assert "peak_surcharge" in components
+        assert "monthly_subscription" in components
+        assert "network_distribution" in components
+        assert "network_transmission" in components
+        assert "carbon_tax" in components
+        assert "green_energy_levy" in components
+
+        # Build the pricer
+        pricer = Pricer(config.pricing)
+
+        # Test calculates cost for a SINGLE DAY with 1476.0 kWh consumption
+        #
+        # Quantity-based costs (€ per kWh):
+        # - base_energy_cost: 1476 * 0.06 * 1.20 (VAT) = 106.272 €
+        # - peak_surcharge: 1476 * 0.02 * 1.20 (VAT) = 35.424 €
+        # - network_distribution: 1476 * 0.015 * 1.055 (reduced VAT) = 23.3577 €
+        # - network_transmission: 1476 * 0.01 * 1.055 (reduced VAT) = 15.5718 €
+        # - carbon_tax: 1476 * 0.005 = 7.38 € (no VAT)
+        # - green_energy_levy: 1476 * 0.003 = 4.428 € (no VAT)
+        #
+        # Time-based cost (€ per month):
+        # - monthly_subscription: 8.50 * 1.20 = 10.20 € per month
+        #   The pricer prorates this to daily cost: 10.20 / 30 days (June) = 0.34 € per day
+        #
+        # Total cost for the single day = 192.7735 €
+
+        # At the date
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 6, 1), 1476.0, QuantityUnit.KWH), 192.7735, rel_tol=1e-6
+        )
+
+        # Before the date (prices apply retroactively)
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 4, 1), 1476.0, QuantityUnit.KWH), 192.7735, rel_tol=1e-6
+        )
+
+        # After the date but before base_energy_cost price change
+        assert math.isclose(
+            self._compute_cost(pricer, date(2023, 8, 1), 1476.0, QuantityUnit.KWH), 192.7735, rel_tol=1e-6
+        )
+
+        # After the base_energy_cost price change (2024-01-01: 0.065 instead of 0.06)
+        # New base_energy_cost: 1476 * 0.065 * 1.20 = 115.128
+        # Difference from old: 115.128 - 106.272 = 8.856
+        # New total: 192.7735 + 8.856 = 201.6295
+        assert math.isclose(
+            self._compute_cost(pricer, date(2024, 1, 1), 1476.0, QuantityUnit.KWH), 201.6295, rel_tol=1e-6
+        )
+
+        # Verify cost breakdown has custom components
+        quantities = self._create_quantities(date(2023, 6, 1), date(2023, 6, 1), 1476.0, QuantityUnit.KWH)
+        cost_breakdown = pricer.compute(quantities, PriceUnit.EURO)
+
+        component_costs = cost_breakdown.get_component_costs()
+        assert "base_energy_cost" in component_costs
+        assert "peak_surcharge" in component_costs
+        assert "monthly_subscription" in component_costs
+        assert "network_distribution" in component_costs
+        assert "network_transmission" in component_costs
+        assert "carbon_tax" in component_costs
+        assert "green_energy_levy" in component_costs
+
+    # ----------------------------------
     def test_get_composite_price_array(self):
         """Test the new get_composite_price_array method with both quantity and time components."""
 
