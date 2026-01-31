@@ -8,13 +8,17 @@ This document answers common questions about Gazpar2HAWS based on GitHub issues 
 
 - [General Questions](#general-questions)
 - [Installation & Setup](#installation--setup)
+  - [Entity naming requirements](#what-are-the-entity-naming-requirements)
 - [Configuration Issues](#configuration-issues)
 - [Data & Statistics](#data--statistics)
 - [Cost Calculation](#cost-calculation)
+  - [Common pricing mistakes](#common-mistake-confusing-time-based-and-quantity-based-pricing)
 - [Home Assistant Integration](#home-assistant-integration)
   - [Why doesn't Gazpar2HAWS create regular entities instead of statistics?](#why-doesnt-gazpar2haws-create-regular-entities-states-instead-of-just-statistics)
 - [Docker & Add-on](#docker--add-on)
 - [Troubleshooting](#troubleshooting)
+  - [Common Errors & Quick Fixes](#common-errors--quick-fixes)
+- [Version-Specific Issues](#version-specific-issues)
 - [Migration & Upgrades](#migration--upgrades)
   - [Automatic Sensor Migration](#what-happens-to-my-historical-cost-data-when-i-upgrade-to-v040)
 
@@ -60,6 +64,31 @@ No. Gazpar2HAWS is specifically designed to integrate with Home Assistant via th
 3. **Home Assistant add-on**: Install from the add-on store (requires Supervisor)
 
 See [README.md](README.md) for detailed installation instructions for each method.
+
+### What are the entity naming requirements?
+
+**Issue:** [#109](https://github.com/ssenart/gazpar2haws/issues/109), [#92](https://github.com/ssenart/gazpar2haws/issues/92)
+
+Home Assistant has strict naming requirements. Your device `name` configuration MUST follow these rules:
+
+- **Lowercase only** - No uppercase letters
+- **No spaces** - Use underscores (_) instead
+- **No accents or special characters** - Only: a-z, 0-9, and _
+- **No emojis or symbols**
+
+**Examples:**
+- ✅ Correct: `gazpar_maison`, `gaz_principale`, `compteur_1`
+- ❌ Wrong: `Gazpar Maison`, `Gaz-Principale`, `Compteur#1`, `gaz_été`
+
+**Error if wrong:** `Invalid statistic_id` or `Entity not defined`
+
+**How to fix:**
+```yaml
+grdf:
+  devices:
+    - name: "gazpar_maison"  # ✓ Valid name
+      pce_identifier: "0123456789"
+```
 
 ### What are the system requirements?
 
@@ -303,6 +332,57 @@ cost[€] = quantity[kWh] × (consumption_price[€/kWh] + energy_taxes[€/kWh]
 
 Each component can have different VAT rates and supports time-varying prices.
 
+### Common mistake: Confusing time-based and quantity-based pricing
+
+**Issue:** [#106](https://github.com/ssenart/gazpar2haws/issues/106)
+
+Many users confuse `time_value` with `quantity_value` when configuring transport or other prices.
+
+**Wrong - Using time_value for a per-kWh price:**
+```yaml
+transport_prices:
+  - start_date: "2024-01-01"
+    time_value: 0.00194    # ❌ This means €0.00194 per month (tiny fixed fee)
+    time_unit: "month"
+    price_unit: "€"
+```
+
+**Correct - Using quantity_value for a per-kWh price:**
+```yaml
+transport_prices:
+  - start_date: "2024-01-01"
+    quantity_value: 0.00194  # ✅ This means €0.00194 per kWh consumed
+    quantity_unit: "kWh"
+    price_unit: "€"
+```
+
+**Rule of thumb:**
+- If the price depends on **how much you consume** → use `quantity_value` + `quantity_unit`
+- If the price is **fixed per time period** (regardless of consumption) → use `time_value` + `time_unit`
+
+**More examples:**
+```yaml
+# Fixed monthly subscription fee
+subscription_prices:
+  - time_value: 19.83      # €19.83 every month
+    time_unit: "month"
+
+# Consumption-based energy price
+consumption_prices:
+  - quantity_value: 0.07790  # €0.07790 per kWh consumed
+    quantity_unit: "kWh"
+
+# Fixed annual transport fee
+transport_prices:
+  - time_value: 34.38      # €34.38 every year
+    time_unit: "year"
+
+# Variable transport fee based on consumption
+transport_prices:
+  - quantity_value: 0.00194  # €0.00194 per kWh consumed
+    quantity_unit: "kWh"
+```
+
 ---
 
 ## Home Assistant Integration
@@ -489,6 +569,87 @@ docker compose exec gazpar2haws cat /path/to/log/gazpar2haws.log
 
 ## Troubleshooting
 
+### Common Errors & Quick Fixes
+
+This section covers the most frequently reported errors from GitHub issues.
+
+#### Error: "Invalid statistic_id"
+
+**Issue:** [#109](https://github.com/ssenart/gazpar2haws/issues/109), [#92](https://github.com/ssenart/gazpar2haws/issues/92)
+
+**Error message:**
+```
+HomeAssistantWSException: Request failed: {'code': 'home_assistant_error', 'message': 'Invalid statistic_id'}
+```
+
+**Cause:** Your device `name` in the configuration doesn't follow Home Assistant naming conventions.
+
+**Solution:**
+1. Check your `grdf.devices[].name` configuration
+2. Ensure it follows the naming rules (see [What are the entity naming requirements?](#what-are-the-entity-naming-requirements))
+3. Common mistakes:
+   - Using uppercase: `Gazpar` → change to `gazpar`
+   - Using spaces: `mon compteur` → change to `mon_compteur`
+   - Using accents: `gaz_été` → change to `gaz_ete`
+   - Using hyphens: `gaz-principal` → change to `gaz_principal`
+
+**Example fix:**
+```yaml
+grdf:
+  devices:
+    - name: "Gaz_des_Nicapigi"  # ❌ Contains uppercase
+      # Change to:
+    - name: "gaz_des_nicapigi"  # ✅ All lowercase
+```
+
+#### Add-on crashes immediately with exit code 139
+
+**Issue:** [#105](https://github.com/ssenart/gazpar2haws/issues/105)
+
+**Error message:**
+```
+Segmentation fault (core dumped)
+[XX:XX:XX] WARNING: Halt add-on with exit code 139
+```
+
+**Cause:** This is a segmentation fault in Python, possibly related to specific system configurations or dependency conflicts. The issue is difficult to reproduce and appears to be environment-specific.
+
+**Possible solutions:**
+1. **Update Home Assistant** to the latest version (2026.1.3+)
+2. **Reinstall the add-on:**
+   - Uninstall Gazpar2HAWS completely
+   - Restart Home Assistant
+   - Reinstall Gazpar2HAWS
+3. **Try a fresh Home Assistant installation** (if problem persists)
+   - Some users ([#105](https://github.com/ssenart/gazpar2haws/issues/105)) resolved this by rebuilding their HA instance
+4. **Check your architecture** - Report your CPU architecture (x86, ARM, etc.) if issue persists
+
+**Note:** This issue is challenging to diagnose. If none of the above works, please report your complete system details (HA version, OS, CPU architecture, Python version) on GitHub.
+
+#### My data doesn't match what's shown on the GRDF website
+
+**Issue:** [#101](https://github.com/ssenart/gazpar2haws/issues/101)
+
+**Symptoms:** Values (m³ or kWh) shown in Home Assistant don't match the GRDF website, especially for specific months.
+
+**Possible causes:**
+1. **Timezone mismatch** - Verify `timezone: Europe/Paris` is set correctly in your configuration
+2. **Data delay from GRDF** - Sometimes GRDF updates data later; check again in 24-48 hours
+3. **Reset was used** - If you used `reset: true`, historical data is recalculated from scratch
+4. **Partial month** - Current month data may be incomplete on both sides
+5. **Conversion factor** - Check if GRDF shows m³ and HA shows kWh (conversion factor applied)
+
+**Debugging steps:**
+1. Enable debug logging:
+   ```yaml
+   logging:
+     level: debug
+   ```
+2. Check the logs for the actual data retrieved from GRDF
+3. Compare the timestamps in the logs with GRDF website
+4. Verify your conversion factor matches what GRDF uses in your region
+5. Check if all dates in the month have data (look for "Absence de Données" entries in logs)
+
 ### Application doesn't work - where do I start?
 
 1. **Check the logs** - This is the most important step:
@@ -571,6 +732,85 @@ After running once, set it back to `false`.
 2. Find your sensors (e.g., `sensor.gazpar2haws_volume`)
 3. Delete the statistics
 4. Restart Gazpar2HAWS
+
+---
+
+## Version-Specific Issues
+
+### I'm getting warnings about unit_class or mean_type
+
+**Issue:** [#95](https://github.com/ssenart/gazpar2haws/issues/95), [#97](https://github.com/ssenart/gazpar2haws/pull/97)
+
+**Warning message:**
+```
+Recorder: WS command recorder/import_statistics called without specifying unit_class in metadata,
+this is deprecated and will stop working in HA Core 2026.11
+
+Recorder: WS command recorder/import_statistics called without specifying mean_type in metadata,
+this is deprecated and will stop working in HA Core 2026.11
+```
+
+**Cause:** Older versions (prior to 0.5.0a2) didn't include required metadata fields for Home Assistant statistics.
+
+**Solution:** Update to version **0.5.0 or later**. The issue is fixed and the warnings will disappear.
+
+### Currency showing as € instead of EUR
+
+**Issue:** [#103](https://github.com/ssenart/gazpar2haws/issues/103)
+
+**Symptoms:** Cost sensors show currency symbol (€) instead of ISO 4217 currency code (EUR).
+
+**Cause:** Versions prior to 0.5.0 used currency symbols instead of standard ISO codes.
+
+**Solution:** Update to version **0.5.0 or later**. Home Assistant now properly recognizes EUR as the currency code, improving standards compliance and display consistency.
+
+**What changed:**
+- Old: `sensor.gazpar2haws_total_cost` shows unit as `€`
+- New: `sensor.gazpar2haws_total_cost` shows unit as `EUR`
+
+This ensures proper currency handling across Home Assistant interfaces and integrations.
+
+### I want to define custom pricing component names
+
+**Issue:** [#108](https://github.com/ssenart/gazpar2haws/issues/108)
+
+**Available since:** Version 0.5.0
+
+**What's new:** You can now define unlimited custom pricing components instead of being limited to 4 hardcoded names (consumption, subscription, transport, energy_taxes).
+
+**Example:**
+```yaml
+pricing:
+  vat:
+    - id: normal
+      start_date: "2023-06-01"
+      value: 0.20
+
+  # Custom component names
+  base_consumption:
+    - start_date: "2023-06-01"
+      quantity_value: 0.05
+      quantity_unit: "kWh"
+      price_unit: "€"
+
+  carbon_tax:
+    - start_date: "2023-06-01"
+      quantity_value: 0.01
+      quantity_unit: "kWh"
+      price_unit: "€"
+
+  peak_rate_surcharge:
+    - start_date: "2023-06-01"
+      quantity_value: 0.02
+      quantity_unit: "kWh"
+      price_unit: "€"
+```
+
+Each component automatically creates a Home Assistant sensor (e.g., `sensor.gazpar2haws_carbon_tax_cost`).
+
+**Note:** Legacy component names (consumption_prices, subscription_prices, transport_prices, energy_taxes_prices) still work for backward compatibility.
+
+See [docs/FLEXIBLE_PRICING_GUIDE.md](docs/FLEXIBLE_PRICING_GUIDE.md) for complete documentation.
 
 ---
 
@@ -709,7 +949,7 @@ Always use the latest version for best compatibility with GrDF.
 - **Issue Tracker**: https://github.com/ssenart/gazpar2haws/issues
 - **README**: Detailed installation and configuration guide
 - **CHANGELOG**: Complete version history with all changes
-- **CLAUDE.md**: Developer documentation and architecture
+- **docs/DEVELOPER_GUIDE.md**: Comprehensive developer guide with architecture and contributing guidelines
 - **TODO.md**: Planned improvements and test coverage tasks
 
 ---
@@ -725,6 +965,6 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ---
 
-**Last Updated:** 2025-10-30
-**Current Version:** 0.4.0
-**Next Review:** When v0.5.0 is released
+**Last Updated:** 2026-01-31
+**Current Version:** 0.5.0
+**Next Review:** When v0.6.0 is released or after 50+ new issues

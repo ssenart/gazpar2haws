@@ -10,6 +10,37 @@ It is a complement to the other available projects:
 - [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt): [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) alternative but using MQTT events (it reduce coupling with HA).
 - [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card): HA dashboard card compatible with [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) and [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt).
 
+---
+
+## 🎉 What's New in v0.5.0
+
+### Flexible Pricing Components
+
+Define **unlimited custom pricing component names** instead of being limited to 4 hardcoded names!
+
+```yaml
+pricing:
+  # Use any names that match your billing structure
+  base_energy_cost: [...]
+  peak_surcharge: [...]
+  carbon_tax: [...]
+  distribution_network: [...]
+  # Add as many as you need!
+```
+
+**Key Features:**
+- ✅ Unlimited components (not just 4)
+- ✅ Custom names (e.g., `carbon_tax`, `peak_rate`)
+- ✅ Automatic Home Assistant sensors
+- ✅ 100% backward compatible
+
+**Learn More:**
+- 📖 [Flexible Pricing Guide](docs/FLEXIBLE_PRICING_GUIDE.md) - Complete documentation
+- 📝 [Example 9](#example-9-flexible-pricing-with-custom-component-names-v050) - See it in action
+- 🔄 [CHANGELOG](CHANGELOG.md#050---2026-01-30) - Full release notes
+
+---
+
 ## Documentation
 
 ### User Documentation
@@ -24,11 +55,11 @@ It is a complement to the other available projects:
 
 ### Developer Documentation
 
-- **[CLAUDE.md](CLAUDE.md)** - Developer guide for working with the codebase
-  - Architecture overview
-  - Development commands (setup, testing, linting)
-  - Key implementation details
-  - Testing guidelines
+- **[docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Comprehensive developer guide
+  - Architecture overview and design patterns
+  - Development setup and workflow
+  - Testing strategies and code quality
+  - Contributing guidelines and release process
 - **[TODO.md](TODO.md)** - Planned improvements and test coverage tasks
   - Test coverage analysis
   - Missing tests by priority
@@ -38,7 +69,7 @@ It is a complement to the other available projects:
 ### Quick Links
 
 - 🐛 Found a bug? → Check [FAQ.md](FAQ.md) first, then open an [issue](https://github.com/ssenart/gazpar2haws/issues)
-- 📝 Want to contribute? → Read [CLAUDE.md](CLAUDE.md) and [TODO.md](TODO.md)
+- 📝 Want to contribute? → Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) and [TODO.md](TODO.md)
 - 🔄 Upgrading? → Check [CHANGELOG.md](CHANGELOG.md) for breaking changes
 - ❓ Have a question? → See [FAQ.md](FAQ.md) or ask in [discussions](https://github.com/ssenart/gazpar2haws/discussions)
 
@@ -503,6 +534,130 @@ pricing:
       quantity_value: 0.01637
 ```
 
+Example 9: Flexible Pricing with Custom Component Names (v0.5.0+)
+---
+
+Starting with version 0.5.0, you can define **custom pricing component names** instead of being limited to the four hardcoded names. This allows you to create a pricing structure that matches your actual billing.
+
+**Key benefits:**
+- ✅ Unlimited number of components (not just 4)
+- ✅ Meaningful names that reflect your billing structure
+- ✅ Mix quantity-based and time-based pricing
+- ✅ 100% backward compatible with existing configurations
+
+**Default units** (automatically applied if not specified):
+- `price_unit`: "€"
+- `quantity_unit`: "kWh"
+- `time_unit`: "month"
+
+```yaml
+pricing:
+  vat:
+    - id: standard_rate
+      start_date: "2023-06-01"
+      value: 0.20          # 20% VAT
+    - id: reduced_rate
+      start_date: "2023-06-01"
+      value: 0.055         # 5.5% reduced VAT
+
+  # Custom component names - use whatever makes sense for your billing
+  base_energy_cost:
+    - start_date: "2023-06-01"
+      quantity_value: 0.06
+      vat_id: "standard_rate"
+    - start_date: "2024-01-01"
+      quantity_value: 0.065    # Price increase in 2024
+
+  peak_surcharge:
+    - start_date: "2023-06-01"
+      quantity_value: 0.02
+      vat_id: "standard_rate"
+
+  monthly_subscription:
+    - start_date: "2023-06-01"
+      time_value: 8.50
+      time_unit: "month"
+      vat_id: "standard_rate"
+
+  network_distribution:
+    - start_date: "2023-06-01"
+      quantity_value: 0.015
+      vat_id: "reduced_rate"
+
+  network_transmission:
+    - start_date: "2023-06-01"
+      quantity_value: 0.01
+      vat_id: "reduced_rate"
+
+  carbon_tax:
+    - start_date: "2023-06-01"
+      quantity_value: 0.005    # No VAT on taxes
+
+  green_energy_levy:
+    - start_date: "2023-06-01"
+      quantity_value: 0.003    # No VAT
+```
+
+**Home Assistant sensors created:**
+- `sensor.gazpar_base_energy_cost_cost`
+- `sensor.gazpar_peak_surcharge_cost`
+- `sensor.gazpar_monthly_subscription_cost`
+- `sensor.gazpar_network_distribution_cost`
+- `sensor.gazpar_network_transmission_cost`
+- `sensor.gazpar_carbon_tax_cost`
+- `sensor.gazpar_green_energy_levy_cost`
+- `sensor.gazpar_total_cost` (sum of all components)
+
+**Example monthly cost breakdown** for 1476 kWh consumption per month:
+- Base energy cost: 1476 × 0.06 × 1.20 = 106.27 €
+- Peak surcharge: 1476 × 0.02 × 1.20 = 35.42 €
+- Monthly subscription: 8.50 × 1.20 = 10.20 €
+- Network distribution: 1476 × 0.015 × 1.055 = 23.36 €
+- Network transmission: 1476 × 0.01 × 1.055 = 15.57 €
+- Carbon tax: 1476 × 0.005 = 7.38 €
+- Green energy levy: 1476 × 0.003 = 4.43 €
+- **Total: 202.63 € per month**
+
+*Note: For billing purposes, the pricer calculates costs on a daily basis and automatically prorates the monthly subscription across the days in each month.*
+
+See [docs/FLEXIBLE_PRICING_GUIDE.md](docs/FLEXIBLE_PRICING_GUIDE.md) for more examples and migration guide.
+
+## What's New in v0.5.0
+
+### Flexible Pricing Components
+
+Starting from version 0.5.0, you can now **define custom pricing component names** instead of being limited to the four hardcoded names. This provides much more flexibility for complex pricing structures.
+
+**Key Features:**
+- **Unlimited components**: Define as many pricing components as needed (not just 4)
+- **Custom names**: Use meaningful names like `carbon_tax`, `distribution_cost`, `peak_rate`
+- **100% backward compatible**: Existing configurations continue to work without changes
+- **Automatic sensors**: Home Assistant sensors are created dynamically for each component
+
+**Example - Traditional format (still works):**
+```yaml
+pricing:
+  consumption_prices: [...]
+  subscription_prices: [...]
+  transport_prices: [...]
+  energy_taxes: [...]
+```
+
+**Example - New flexible format:**
+```yaml
+pricing:
+  my_consumption: [...]
+  my_subscription: [...]
+  distribution_cost: [...]
+  carbon_tax: [...]
+  renewable_energy_fee: [...]
+  # Add as many components as you need!
+```
+
+See [docs/FLEXIBLE_PRICING_GUIDE.md](docs/FLEXIBLE_PRICING_GUIDE.md) for detailed documentation and migration examples.
+
+---
+
 ## What's New in v0.4.0
 
 ### Enhanced Cost Breakdown
@@ -685,10 +840,11 @@ Pull requests are welcome! For any change proposal, please open an issue first t
 
 ### Before Contributing
 
-1. **Read [CLAUDE.md](CLAUDE.md)** - Developer guide with:
-   - Architecture overview
-   - Development commands (setup, testing, linting)
-   - Code structure and patterns
+1. **Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Comprehensive developer guide with:
+   - Architecture overview and design patterns
+   - Development setup and workflow
+   - Testing strategies and code quality
+   - Contributing guidelines and release process
    - Testing guidelines
 
 2. **Check [TODO.md](TODO.md)** - For planned improvements and test coverage gaps
