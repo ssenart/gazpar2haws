@@ -163,7 +163,7 @@ class TestTimestampMsToDate:
 class TestConvertStatisticsTimestamps:
     """Test convert_statistics_timestamps function."""
 
-    def test_convert_single_statistic_with_start_timestamp(self):
+    def test_convert_single_statistic_with_start_timestamp(self) -> None:
         """Test converting single statistic with start timestamp."""
         statistics: list[dict] = [{"start": 1608009600000, "state": 100.0, "sum": 100.0}]
         converted = convert_statistics_timestamps(statistics)
@@ -175,7 +175,7 @@ class TestConvertStatisticsTimestamps:
         assert converted[0]["state"] == 100.0
         assert converted[0]["sum"] == 100.0
 
-    def test_convert_multiple_statistics(self):
+    def test_convert_multiple_statistics(self) -> None:
         """Test converting multiple statistics."""
         statistics: list[dict] = [
             {"start": 1608009600000, "state": 100.0, "sum": 100.0},
@@ -190,7 +190,7 @@ class TestConvertStatisticsTimestamps:
             assert "T" in stat["start"]
             assert "+" in stat["start"] or "-" in stat["start"]
 
-    def test_convert_with_both_start_and_end(self):
+    def test_convert_with_both_start_and_end(self) -> None:
         """Test converting statistics with both start and end timestamps."""
         statistics: list[dict] = [
             {
@@ -208,7 +208,7 @@ class TestConvertStatisticsTimestamps:
         assert "T" in converted[0]["end"]
         assert "+" in converted[0]["end"] or "-" in converted[0]["end"]
 
-    def test_convert_with_timezone(self):
+    def test_convert_with_timezone(self) -> None:
         """Test converting statistics with specific timezone."""
         statistics: list[dict] = [{"start": 1734182400000, "state": 100.0, "sum": 100.0}]
         converted = convert_statistics_timestamps(statistics, "Europe/Paris")
@@ -263,7 +263,7 @@ class TestConvertStatisticsTimestamps:
 
         assert converted == []
 
-    def test_real_world_migration_scenario(self):
+    def test_real_world_migration_scenario(self) -> None:
         """Test real-world migration scenario with multiple entries."""
         # Simulating data returned by Home Assistant statistics_during_period
         old_statistics: list[dict] = [

@@ -4,7 +4,12 @@ from datetime import date
 
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.date_array import DateArray
-from gazpar2haws.model import ConsumptionQuantityArray, CostBreakdown, PriceUnit, QuantityUnit, TimeUnit
+from gazpar2haws.model import (
+    ConsumptionQuantityArray,
+    PriceUnit,
+    QuantityUnit,
+    TimeUnit,
+)
 from gazpar2haws.pricer import Pricer
 
 
@@ -50,7 +55,7 @@ class TestFlexiblePricing:
         assert "energy_taxes" in component_costs
 
         # Verify each component cost has correct structure
-        for component_name, cost_array in component_costs.items():
+        for _, cost_array in component_costs.items():
             assert cost_array.start_date == start_date
             assert cost_array.end_date == end_date
             assert cost_array.value_unit == "€"
@@ -84,14 +89,27 @@ class TestFlexiblePricing:
 
         # Verify these are the same as accessing via get_component_costs()
         component_costs = cost_breakdown.get_component_costs()
-        assert cost_breakdown.consumption.value_array[start_date] == component_costs["consumption_prices"].value_array[start_date]
-        assert cost_breakdown.subscription.value_array[start_date] == component_costs["subscription_prices"].value_array[start_date]
-        assert cost_breakdown.transport.value_array[start_date] == component_costs["transport_prices"].value_array[start_date]
-        assert cost_breakdown.energy_taxes.value_array[start_date] == component_costs["energy_taxes"].value_array[start_date]
+        assert (
+            cost_breakdown.consumption.value_array[start_date]
+            == component_costs["consumption_prices"].value_array[start_date]
+        )
+        assert (
+            cost_breakdown.subscription.value_array[start_date]
+            == component_costs["subscription_prices"].value_array[start_date]
+        )
+        assert (
+            cost_breakdown.transport.value_array[start_date]
+            == component_costs["transport_prices"].value_array[start_date]
+        )
+        assert (
+            cost_breakdown.energy_taxes.value_array[start_date]
+            == component_costs["energy_taxes"].value_array[start_date]
+        )
 
     def test_pricing_validation_requires_quantity_component(self):
         """Test that at least one quantity-based component is required."""
         from pydantic import ValidationError
+
         from gazpar2haws.model import Pricing
 
         # This should fail - no quantity-based component
@@ -111,6 +129,7 @@ class TestFlexiblePricing:
     def test_pricing_validation_requires_at_least_one_component(self):
         """Test that at least one pricing component is required."""
         from pydantic import ValidationError
+
         from gazpar2haws.model import Pricing
 
         # This should fail - no components

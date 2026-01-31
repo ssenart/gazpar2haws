@@ -235,7 +235,8 @@ class Pricing(BaseModel):
     All other fields are treated as pricing components (e.g., consumption_prices,
     subscription_prices, my_custom_tax, carbon_fee, etc.).
     """
-    model_config = ConfigDict(extra='allow')
+
+    model_config = ConfigDict(extra="allow")
 
     vat: Optional[list[VatRate]] = None
 
@@ -290,10 +291,7 @@ class Pricing(BaseModel):
             raise ValueError("At least one pricing component is required")
 
         # At least one quantity-based component required
-        has_quantity = any(
-            any(p.quantity_value is not None for p in prices)
-            for prices in components.values()
-        )
+        has_quantity = any(any(p.quantity_value is not None for p in prices) for prices in components.values())
         if not has_quantity:
             raise ValueError("At least one component must have quantity_value defined")
 
@@ -304,7 +302,7 @@ class Pricing(BaseModel):
         components = {}
 
         # Get extra fields (all fields except 'vat')
-        if hasattr(self, '__pydantic_extra__') and self.__pydantic_extra__:
+        if hasattr(self, "__pydantic_extra__") and self.__pydantic_extra__:
             for key, value in self.__pydantic_extra__.items():
                 if isinstance(value, list) and len(value) > 0:
                     components[key] = value
@@ -330,7 +328,8 @@ class CostBreakdown(BaseModel):
     All other fields are individual component costs (e.g., consumption_prices_cost,
     subscription_prices_cost, my_custom_tax_cost, etc.).
     """
-    model_config = ConfigDict(extra='allow')
+
+    model_config = ConfigDict(extra="allow")
 
     total: CostArray
 
@@ -339,7 +338,7 @@ class CostBreakdown(BaseModel):
         components = {}
 
         # Get extra fields (all fields except 'total')
-        if hasattr(self, '__pydantic_extra__') and self.__pydantic_extra__:
+        if hasattr(self, "__pydantic_extra__") and self.__pydantic_extra__:
             for key, value in self.__pydantic_extra__.items():
                 if isinstance(value, CostArray):
                     components[key] = value

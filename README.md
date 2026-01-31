@@ -55,11 +55,11 @@ pricing:
 
 ### Developer Documentation
 
-- **[CLAUDE.md](CLAUDE.md)** - Developer guide for working with the codebase
-  - Architecture overview
-  - Development commands (setup, testing, linting)
-  - Key implementation details
-  - Testing guidelines
+- **[docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Comprehensive developer guide
+  - Architecture overview and design patterns
+  - Development setup and workflow
+  - Testing strategies and code quality
+  - Contributing guidelines and release process
 - **[TODO.md](TODO.md)** - Planned improvements and test coverage tasks
   - Test coverage analysis
   - Missing tests by priority
@@ -69,7 +69,7 @@ pricing:
 ### Quick Links
 
 - 🐛 Found a bug? → Check [FAQ.md](FAQ.md) first, then open an [issue](https://github.com/ssenart/gazpar2haws/issues)
-- 📝 Want to contribute? → Read [CLAUDE.md](CLAUDE.md) and [TODO.md](TODO.md)
+- 📝 Want to contribute? → Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) and [TODO.md](TODO.md)
 - 🔄 Upgrading? → Check [CHANGELOG.md](CHANGELOG.md) for breaking changes
 - ❓ Have a question? → See [FAQ.md](FAQ.md) or ask in [discussions](https://github.com/ssenart/gazpar2haws/discussions)
 
@@ -840,10 +840,11 @@ Pull requests are welcome! For any change proposal, please open an issue first t
 
 ### Before Contributing
 
-1. **Read [CLAUDE.md](CLAUDE.md)** - Developer guide with:
-   - Architecture overview
-   - Development commands (setup, testing, linting)
-   - Code structure and patterns
+1. **Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Comprehensive developer guide with:
+   - Architecture overview and design patterns
+   - Development setup and workflow
+   - Testing strategies and code quality
+   - Contributing guidelines and release process
    - Testing guidelines
 
 2. **Check [TODO.md](TODO.md)** - For planned improvements and test coverage gaps
