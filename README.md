@@ -10,6 +10,37 @@ It is a complement to the other available projects:
 - [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt): [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) alternative but using MQTT events (it reduce coupling with HA).
 - [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card): HA dashboard card compatible with [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) and [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt).
 
+---
+
+## 🎉 What's New in v0.5.0
+
+### Flexible Pricing Components
+
+Define **unlimited custom pricing component names** instead of being limited to 4 hardcoded names!
+
+```yaml
+pricing:
+  # Use any names that match your billing structure
+  base_energy_cost: [...]
+  peak_surcharge: [...]
+  carbon_tax: [...]
+  distribution_network: [...]
+  # Add as many as you need!
+```
+
+**Key Features:**
+- ✅ Unlimited components (not just 4)
+- ✅ Custom names (e.g., `carbon_tax`, `peak_rate`)
+- ✅ Automatic Home Assistant sensors
+- ✅ 100% backward compatible
+
+**Learn More:**
+- 📖 [Flexible Pricing Guide](docs/FLEXIBLE_PRICING_GUIDE.md) - Complete documentation
+- 📝 [Example 9](#example-9-flexible-pricing-with-custom-component-names-v050) - See it in action
+- 🔄 [CHANGELOG](CHANGELOG.md#050---2026-01-30) - Full release notes
+
+---
+
 ## Documentation
 
 ### User Documentation

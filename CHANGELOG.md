@@ -7,9 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-01-30
+
+### Added
+
+- [#108](https://github.com/ssenart/gazpar2haws/issues/108): **Flexible pricing components** - Define unlimited custom pricing component names instead of being limited to 4 hardcoded names
+  - Unlimited number of components (not just 4: consumption, subscription, transport, taxes)
+  - Custom component names that reflect your actual billing structure (e.g., `carbon_tax`, `distribution_cost`, `peak_rate`)
+  - Flat YAML structure - no nested `components` dict, just add components directly under `pricing:`
+  - Automatic Home Assistant sensor creation for each component
+  - 100% backward compatible - existing configurations continue to work without changes
+  - Legacy sensor names preserved (e.g., `consumption_prices` → `sensor.name_consumption_cost`)
+  - Comprehensive documentation in [docs/FLEXIBLE_PRICING_GUIDE.md](docs/FLEXIBLE_PRICING_GUIDE.md)
+  - Example configuration with 7 custom components in [tests/config/example_8.yaml](tests/config/example_8.yaml)
+- Dynamic component cost start date logging for better debugging
+- pytest-asyncio configuration for async test support
+
 ### Changed
 
 - [#103](https://github.com/ssenart/gazpar2haws/issues/103): Cost statistics now use ISO 4217 currency codes (EUR) instead of symbols (€) for Home Assistant integration. This improves standards compliance and ensures proper currency display across Home Assistant interfaces. The domain model continues to use currency symbols internally, maintaining clean separation between business logic and integration layers.
+- Pricing model now uses flat structure with `vat` as special field and all other fields as pricing components
+- CostBreakdown model updated to support dynamic components with backward-compatible property access
+- Pricer refactored to process components dynamically instead of hardcoded logic
+- Home Assistant integration generates sensors dynamically based on component names
 
 ### Fixed
 
