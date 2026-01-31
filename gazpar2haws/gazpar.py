@@ -164,6 +164,12 @@ class Gazpar:
         Logger.debug(f"Energy start date: {energy_start_date}")
         Logger.debug(f"Volume start date: {volume_start_date}")
         Logger.debug(f"Total cost start date: {total_cost_start_date}")
+
+        # Log each component cost start date
+        for component_name, sensor_name in component_sensor_names.items():
+            component_start_date = last_date_and_value_by_sensor[sensor_name][0] + timedelta(days=1)
+            Logger.debug(f"{component_name} cost start date: {component_start_date}")
+
         Logger.debug(f"Min cost start date: {cost_start_date}")
 
         # Fetch the data from GrDF and publish it to Home Assistant
