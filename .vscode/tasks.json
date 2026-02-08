@@ -16,9 +16,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Start Addon",
+      "label": "Start App",
       "type": "shell",
-      "command": "ha addons stop \"local_${input:addonName}\"; ha addons start \"local_${input:addonName}\"; docker logs --follow \"addon_local_${input:addonName}\"",
+      "command": "ha app stop \"local_${input:addonName}\"; ha app start \"local_${input:addonName}\"; docker logs --follow \"addon_local_${input:addonName}\"",
       "group": {
         "kind": "test",
         "isDefault": false
@@ -33,9 +33,9 @@
       }
     },
     {
-      "label": "Rebuild and Start Addon",
+      "label": "Rebuild and Start App",
       "type": "shell",
-      "command": "ha addons rebuild --force \"local_${input:addonName}\"; ha addons start \"local_${input:addonName}\"; docker logs --follow \"addon_local_${input:addonName}\"",
+      "command": "ha app rebuild --force \"local_${input:addonName}\"; ha app start \"local_${input:addonName}\"; docker logs --follow \"addon_local_${input:addonName}\"",
       "group": {
         "kind": "test",
         "isDefault": false
