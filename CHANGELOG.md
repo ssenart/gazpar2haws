@@ -5,16 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
 ## [0.5.0] - 2026-02-08
 
 ### Fixed
 
-- **[#105](https://github.com/ssenart/gazpar2haws/issues/105): Fixed segmentation fault (exit code 139)** by upgrading to Alpine 3.23 with manual Python installation
+- [#105](https://github.com/ssenart/gazpar2haws/issues/105): Fixed segmentation fault (exit code 139)** by upgrading to Alpine 3.23 with manual Python installation
   - Switched from pre-installed Python base images to Alpine base images without Python
   - Manually install latest Python 3.x available in Alpine 3.23 (currently 3.12.x)
   - Improved stability on ARM architectures (aarch64)
+
 - [#97](https://github.com/ssenart/gazpar2haws/issues/97): Specify `unit_class` and `mean_type` in statistics metadata to ensure proper sensor classification and display in Home Assistant
 
 ### Added
@@ -36,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Combined chmod commands into single RUN layer
   - Added comprehensive comments explaining each package
 - **DevContainer**: Updated to `ghcr.io/home-assistant/devcontainer:2-addons` with improved configuration
+
 - [#103](https://github.com/ssenart/gazpar2haws/issues/103): Cost statistics now use ISO 4217 currency codes (EUR) instead of symbols (€) for Home Assistant integration. This improves standards compliance and ensures proper currency display across Home Assistant interfaces. The domain model continues to use currency symbols internally, maintaining clean separation between business logic and integration layers.
 
 ### Technical Details
