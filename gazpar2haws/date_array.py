@@ -61,7 +61,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
     @overload
     def __getitem__(self, date_slice: slice) -> DateArray: ...
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> float | DateArray:
         if self.array is None:
             raise ValueError("Array is not initialized")
         if isinstance(key, int):
@@ -98,7 +98,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
     @overload
     def __setitem__(self, date_slice: slice, value: DateArray): ...
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         if self.array is None:
             raise ValueError("Array is not initialized")
         if isinstance(key, int):

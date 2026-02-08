@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Generic, Optional, TypeVar
 
-from pydantic import BaseModel, EmailStr, SecretStr, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, SecretStr, model_validator
 from pydantic_extra_types.timezone_name import TimeZoneName
 
 from gazpar2haws.date_array import DateArray
@@ -229,15 +229,21 @@ class CompositePriceArray(Period):  # pylint: disable=too-few-public-methods
 
 # ----------------------------------
 class Pricing(BaseModel):
+    """Pricing configuration with flexible component names.
+
+    The 'vat' field is reserved for VAT rates.
+    All other fields are treated as pricing components (e.g., consumption_prices,
+    subscription_prices, my_custom_tax, carbon_fee, etc.).
+    """
+
+    model_config = ConfigDict(extra="allow")
+
     vat: Optional[list[VatRate]] = None
-    consumption_prices: list[CompositePriceValue]
-    subscription_prices: Optional[list[CompositePriceValue]] = None
-    transport_prices: Optional[list[CompositePriceValue]] = None
-    energy_taxes: Optional[list[CompositePriceValue]] = None
 
     @model_validator(mode="before")
     @classmethod
     def propagates_properties(cls, values):
+        """Propagate properties through all pricing component lists."""
         # Default units for all price types
         default_units = {
             "price_unit": "€",
@@ -245,19 +251,16 @@ class Pricing(BaseModel):
             "time_unit": "month",
         }
 
-        for price_list in [
-            "consumption_prices",
-            "subscription_prices",
-            "transport_prices",
-            "energy_taxes",
-        ]:
-            prices = values.get(price_list, [])
+        # Process all fields except 'vat'
+        for component_name, prices in list(values.items()):
+            if component_name == "vat":
+                continue
 
-            if len(prices) == 0:
+            if not isinstance(prices, list) or len(prices) == 0:
                 continue
 
             if "start_date" not in prices[0]:
-                raise ValueError(f"Missing start_date in first element of {price_list}")
+                raise ValueError(f"Missing start_date in first element of {component_name}")
 
             # Apply defaults to first entry
             for key, default_value in default_units.items():
@@ -274,7 +277,37 @@ class Pricing(BaseModel):
                 if "vat_id" not in prices[i + 1] and "vat_id" in prices[i]:
                     prices[i + 1]["vat_id"] = prices[i]["vat_id"]
 
+            # Convert to CompositePriceValue objects
+            values[component_name] = [CompositePriceValue(**p) if isinstance(p, dict) else p for p in prices]
+
         return values
+
+    @model_validator(mode="after")
+    def validate_components(self):
+        """Validate that at least one pricing component exists with quantity_value."""
+        components = self.get_components()
+
+        if not components:
+            raise ValueError("At least one pricing component is required")
+
+        # At least one quantity-based component required
+        has_quantity = any(any(p.quantity_value is not None for p in prices) for prices in components.values())
+        if not has_quantity:
+            raise ValueError("At least one component must have quantity_value defined")
+
+        return self
+
+    def get_components(self) -> dict[str, list[CompositePriceValue]]:
+        """Get all pricing components (all fields except 'vat')."""
+        components = {}
+
+        # Get extra fields (all fields except 'vat')
+        if hasattr(self, "__pydantic_extra__") and self.__pydantic_extra__:
+            for key, value in self.__pydantic_extra__.items():
+                if isinstance(value, list) and len(value) > 0:
+                    components[key] = value
+
+        return components
 
 
 # ----------------------------------
@@ -289,10 +322,53 @@ class CostArray(Unit[PriceUnit, TimeUnit], ValueArray):
 
 # ----------------------------------
 class CostBreakdown(BaseModel):
-    """Detailed breakdown of costs with individual components and total."""
+    """Detailed breakdown of costs with individual components and total.
 
-    consumption: CostArray
-    subscription: CostArray
-    transport: CostArray
-    energy_taxes: CostArray
+    The 'total' field contains the sum of all component costs.
+    All other fields are individual component costs (e.g., consumption_prices_cost,
+    subscription_prices_cost, my_custom_tax_cost, etc.).
+    """
+
+    model_config = ConfigDict(extra="allow")
+
     total: CostArray
+
+    def get_component_costs(self) -> dict[str, CostArray]:
+        """Get all component cost arrays (all fields except 'total')."""
+        components = {}
+
+        # Get extra fields (all fields except 'total')
+        if hasattr(self, "__pydantic_extra__") and self.__pydantic_extra__:
+            for key, value in self.__pydantic_extra__.items():
+                if isinstance(value, CostArray):
+                    components[key] = value
+
+        return components
+
+    def __getattr__(self, name: str) -> CostArray:
+        """Provide backward compatibility for legacy attribute access.
+
+        Maps legacy names (consumption, subscription, transport, energy_taxes)
+        to their corresponding component names (consumption_prices, etc.).
+        """
+        # Legacy name mapping
+        legacy_map = {
+            "consumption": "consumption_prices",
+            "subscription": "subscription_prices",
+            "transport": "transport_prices",
+        }
+
+        # Try legacy mapping first
+        if name in legacy_map:
+            component_name = legacy_map[name]
+            components = self.get_component_costs()
+            if component_name in components:
+                return components[component_name]
+
+        # Try direct component name (e.g., energy_taxes)
+        components = self.get_component_costs()
+        if name in components:
+            return components[name]
+
+        # If not found, raise AttributeError
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")

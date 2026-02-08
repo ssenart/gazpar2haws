@@ -439,7 +439,7 @@ If you encounter issues:
 
 1. Check this README's [Troubleshooting](#troubleshooting) section
 2. Review `/docs/DEVELOPER_GUIDE.md`
-3. Check project [FAQ.md](/FAQ.md)
+3. Check project [FAQ.md](/docs/FAQ.md)
 4. Open an issue: https://github.com/ssenart/gazpar2haws/issues
 
 ---

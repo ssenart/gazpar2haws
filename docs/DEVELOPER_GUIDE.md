@@ -1,1127 +1,1774 @@
-# Developer Guide
+# Gazpar2HAWS Developer Guide
 
-This file provides comprehensive guidance for developers working with the Gazpar2HAWS codebase.
+This guide provides comprehensive information for developers working on the Gazpar2HAWS project.
+
+---
 
 ## Table of Contents
 
+- [Standards & Specifications](#standards--specifications)
 - [Project Overview](#project-overview)
-- [Home Assistant Add-on Development References](#home-assistant-add-on-development-references)
-- [Getting Started & Development Setup](#getting-started--development-setup)
-  - [Setup and Installation](#setup-and-installation)
-  - [Linting and Formatting](#linting-and-formatting)
-- [Deployment Methods](#deployment-methods)
-  - [Running the Application Locally](#running-the-application-locally)
-  - [Docker Compose (Standalone)](#docker-compose-standalone)
-  - [Home Assistant Add-on (DevContainer)](#home-assistant-add-on-devcontainer)
-- [Testing](#testing)
-  - [Test Container Prerequisites](#test-container-prerequisites)
-  - [Unit Tests](#unit-tests)
-  - [Integration Tests](#integration-tests)
-  - [Add-on Testing with DevContainer](#add-on-testing-with-devcontainer)
-  - [When to Use Which Testing Approach](#when-to-use-which-testing-approach)
 - [Architecture](#architecture)
-  - [Core Components](#core-components)
-  - [Data Flow](#data-flow)
-  - [Pricing System](#pricing-system)
-  - [Data Model](#data-model)
-  - [Configuration System](#configuration-system)
-- [Implementation Details](#implementation-details)
-  - [Statistics Publishing](#statistics-publishing)
-  - [Timezone Handling](#timezone-handling)
-  - [Statistics Reset Mechanism](#statistics-reset-mechanism)
-  - [Data Sources](#data-sources)
-  - [PCE Identifier Gotcha](#pce-identifier-gotcha)
-  - [Pricing Configuration Format (v0.4.0)](#pricing-configuration-format-v040)
-- [CI/CD Pipelines](#cicd-pipelines)
-  - [Pipeline Overview](#pipeline-overview)
-  - [CI Pipeline](#ci-pipeline)
-  - [Create Release Pipeline](#create-release-pipeline)
-  - [Publish to DockerHub Pipeline](#publish-to-dockerhub-pipeline)
-  - [Version Management with GitVersion](#version-management-with-gitversion)
-  - [Reusable Actions](#reusable-actions)
-  - [Running Pipelines Manually](#running-pipelines-manually)
-- [Maintenance & Release](#maintenance--release)
-  - [Configuration Files](#configuration-files)
-  - [Documentation Files](#documentation-files)
-  - [Version Update Checklist](#version-update-checklist)
-  - [Property Naming Conventions](#property-naming-conventions)
-  - [Breaking Changes Protocol](#breaking-changes-protocol)
-  - [Cross-Reference Validation](#cross-reference-validation)
-  - [Common Maintenance Scenarios](#common-maintenance-scenarios)
-  - [File Location Quick Reference](#file-location-quick-reference)
+- [Development Setup](#development-setup)
+- [Code Structure](#code-structure)
+- [Development Workflow](#development-workflow)
+- [Testing](#testing)
+- [Code Quality](#code-quality)
+- [Contributing](#contributing)
+- [Build & Release](#build--release)
+- [Troubleshooting](#troubleshooting)
 
-## Project Overview
+---
 
-Gazpar2HAWS is a gateway that reads gas meter data from GrDF (French gas provider) and sends it to Home Assistant using WebSocket interface. It enables uploading historical data and keeping it updated with the latest readings, compatible with Home Assistant Energy Dashboard.
+## Standards & Specifications
 
-## Home Assistant Add-on Development References
+This project follows industry-standard specifications and best practices. All contributors should be familiar with these standards.
 
-This section contains official Home Assistant documentation and examples used for developing and maintaining this add-on.
+### Version Control & Commits
 
-### Official Documentation
-- [Home Assistant Apps Documentation](https://developers.home-assistant.io/docs/apps/) - Main documentation for HA apps (formerly add-ons)
-- [Home Assistant Apps Tutorial](https://developers.home-assistant.io/docs/apps/tutorial/) - Step-by-step tutorial for creating apps
-- [Home Assistant Apps Configuration](https://developers.home-assistant.io/docs/apps/configuration) - Complete configuration options reference
-- [Home Assistant Add-on Security](https://developers.home-assistant.io/docs/add-ons/security) - Security best practices including AppArmor
-- [Home Assistant Internationalization](https://developers.home-assistant.io/docs/api/supervisor/endpoints/#addonsaddon-translations) - i18n support for add-ons
+#### 📋 [Conventional Commits](https://www.conventionalcommits.org/) v1.0.0
+Specification for structured commit messages that enable automatic changelog generation and semantic versioning.
 
-### Example Repositories
-- [Home Assistant Addons Example](https://github.com/home-assistant/addons-example) - Official example add-on (blueprint)
+**Format**: `<type>[optional scope]: <description>`
+
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`, `revert`
+
+**Why**: Enables automatic changelog generation, semantic versioning, and clear project history.
+
+#### 🏷️ [Semantic Versioning](https://semver.org/) (SemVer) v2.0.0
+Versioning scheme using `MAJOR.MINOR.PATCH` format.
+
+- **MAJOR**: Incompatible API changes (breaking changes)
+- **MINOR**: Backward-compatible new features
+- **PATCH**: Backward-compatible bug fixes
+
+**Why**: Provides predictable version numbers that communicate the nature of changes.
+
+#### 📝 [Keep a Changelog](https://keepachangelog.com/) v1.1.0
+Standard format for maintaining CHANGELOG.md files.
+
+**Sections**: Added, Changed, Deprecated, Removed, Fixed, Security
+
+**Why**: Human-readable changelog that clearly communicates changes to users.
+
+### Python Standards
+
+#### 🐍 [PEP 8](https://peps.python.org/pep-0008/) – Style Guide for Python Code
+Official Python style guide covering naming conventions, code layout, and best practices.
+
+**Key Points**:
+- 4 spaces for indentation (not tabs)
+- Max line length: 120 characters (configured in `pyproject.toml`)
+- Snake_case for functions and variables
+- PascalCase for classes
+- UPPER_CASE for constants
+
+**Why**: Consistent, readable Python code across the project.
+
+#### 📖 [PEP 257](https://peps.python.org/pep-0257/) – Docstring Conventions
+Standard for writing Python docstrings.
+
+**Format**:
+```python
+def function(arg1: str, arg2: int) -> bool:
+    """
+    Brief description on one line.
+
+    More detailed description if needed. Explain parameters,
+    return values, and any exceptions raised.
+
+    Args:
+        arg1: Description of arg1
+        arg2: Description of arg2
+
+    Returns:
+        Description of return value
+
+    Raises:
+        ValueError: When something is invalid
+    """
+```
+
+**Why**: Self-documenting code and automatic documentation generation.
+
+#### 🔤 [PEP 484](https://peps.python.org/pep-0484/) – Type Hints
+Standard for type annotations in Python.
+
+**Example**:
+```python
+from typing import Optional, List, Dict
+
+def process_data(items: List[str], config: Optional[Dict[str, Any]] = None) -> int:
+    """Process items and return count."""
+    return len(items)
+```
+
+**Why**: Better IDE support, early error detection with mypy, and self-documenting code.
+
+### Testing Standards
+
+#### ✅ [pytest](https://docs.pytest.org/) – Testing Framework
+Modern Python testing framework with rich plugin ecosystem.
+
+**Conventions**:
+- Test files: `test_*.py` or `*_test.py`
+- Test functions: `def test_*():`
+- Test classes: `class Test*:`
+- Use fixtures for setup/teardown
+- Use `pytest.mark.asyncio` for async tests
+
+**Why**: Simple, powerful testing with excellent fixture support.
+
+### Documentation Standards
+
+#### 📄 [CommonMark](https://commonmark.org/) – Markdown Specification
+Standard Markdown syntax for all documentation files.
+
+**Files**: `README.md`, `CHANGELOG.md`, `FAQ.md`, `docs/*.md`
+
+**Why**: Consistent, portable documentation that renders correctly everywhere.
+
+### Code Quality Standards
+
+#### 🎨 [Black](https://black.readthedocs.io/) – Code Formatter
+Opinionated Python code formatter ("The Uncompromising Code Formatter").
+
+**Configuration**: `pyproject.toml` → `[tool.black]`
+
+**Why**: Zero-debate formatting, consistent code style, faster code reviews.
+
+#### 🔍 [mypy](https://mypy.readthedocs.io/) – Static Type Checker
+Static type checker for Python using PEP 484 type hints.
+
+**Configuration**: `pyproject.toml` → `[tool.mypy]`
+
+**Why**: Catch type errors before runtime, better IDE support.
+
+### Project-Specific Standards
+
+#### 🏠 [Home Assistant Developer Docs](https://developers.home-assistant.io/)
+Guidelines for integrating with Home Assistant.
+
+**Key Topics**:
+- [WebSocket API](https://developers.home-assistant.io/docs/api/websocket/)
+- [Statistics](https://developers.home-assistant.io/docs/core/entity/sensor/#long-term-statistics)
+- [Add-on Development](https://developers.home-assistant.io/docs/add-ons/)
+- [Add-on Testing](https://developers.home-assistant.io/docs/apps/testing/)
+- [Add-on Security](https://developers.home-assistant.io/docs/add-ons/security/)
+- [Add-on Configuration](https://developers.home-assistant.io/docs/apps/configuration)
+- [Internationalization](https://developers.home-assistant.io/docs/api/supervisor/endpoints/#addonsaddon-translations)
+- [Supervisor API](https://developers.home-assistant.io/docs/api/supervisor/)
+- [Entity Naming](https://developers.home-assistant.io/docs/core/entity/#entity-naming)
+
+**Example Repositories**:
+- [Official Example Add-on](https://github.com/home-assistant/addons-example) - Blueprint for add-on development
   - [Example Dockerfile](https://github.com/home-assistant/addons-example/blob/main/example/Dockerfile)
   - [Example build.yaml](https://github.com/home-assistant/addons-example/blob/main/example/build.yaml)
   - [Example config.yaml](https://github.com/home-assistant/addons-example/blob/main/example/config.yaml)
   - [Example AppArmor profile](https://github.com/home-assistant/addons-example/blob/main/example/apparmor.txt)
   - [Example translations](https://github.com/home-assistant/addons-example/tree/main/example/translations)
 
-### Docker Base Images
-- [Home Assistant Docker Base Repository](https://github.com/home-assistant/docker-base) - Official base images for add-ons
-  - Provides Alpine, Debian, and Ubuntu base images
+**Docker Base Images**:
+- [HA Docker Base Repository](https://github.com/home-assistant/docker-base) - Official base images
+  - Current project uses: `ghcr.io/home-assistant/{arch}-base:3.23` (Alpine 3.23)
   - Includes s6-overlay, Bashio, and TempIO
-  - Python images available for Alpine (3.12, 3.13, 3.14)
-- [hassio-addons Debian Base](https://community.home-assistant.io/t/how-do-i-make-an-addon-based-on-debian/424330) - Community Debian base images
-  - Alternative to Alpine for glibc compatibility
-  - Available at `ghcr.io/hassio-addons/debian-base/{arch}:stable`
+- [hassio-addons Debian Base](https://github.com/hassio-addons/debian-base) - Community Debian images
+  - Alternative for glibc compatibility: `ghcr.io/hassio-addons/debian-base/{arch}:stable`
 
-### Community Resources
-- [Python 3.13 backport for Debian Bookworm](https://community.home-assistant.io/t/python-3-13-backport-for-debian-12-bookworm/842333) - Required for HA 2026.1+
-- [Creating Debian-based Add-ons](https://community.home-assistant.io/t/how-do-i-make-an-addon-based-on-debian/424330) - Guide for Debian add-ons
+**Community Resources**:
+- [DevContainer Documentation](https://code.visualstudio.com/docs/devcontainers/containers) - VS Code DevContainer setup
+- [s6-overlay](https://github.com/just-containers/s6-overlay) - Process supervisor used in HA add-ons
+- [Bashio](https://github.com/hassio-addons/bashio) - Bash function library for HA add-ons
 
-### Related Issues
-- [Issue #105: Segmentation fault (exit code 139)](https://github.com/ssenart/gazpar2haws/issues/105) - Alpine + pydantic-core compatibility issue resolved by upgrading to Alpine 3.23 with manual Python installation
+**Related Project Issues**:
+- [Issue #105](https://github.com/ssenart/gazpar2haws/issues/105) - Segmentation fault resolved by Alpine 3.23 upgrade
 
-## Getting Started & Development Setup
+**Why**: Ensures proper integration with Home Assistant ecosystem and provides reference for add-on development.
 
-### Setup and Installation
+### Security Standards
 
-```bash
-# Install dependencies using Poetry
-poetry install
+#### 🔒 Security Best Practices
+- Never commit secrets (passwords, tokens, API keys) to repository
+- Use environment variables or `secrets.yaml` for sensitive data
+- Follow [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- Report security vulnerabilities privately via GitHub Security Advisories
 
-# Activate Poetry virtual environment
-poetry shell
-```
+### License
 
-### Linting and Formatting
+#### 📜 Project License
+This project uses the license specified in the [LICENSE](../LICENSE) file. All contributions must comply with this license.
 
-**Before committing code, run ALL of these linting and formatting tools to ensure code quality:**
+---
 
-```bash
-# Run all linters individually
-poetry run pylint gazpar2haws
-poetry run flake8 gazpar2haws
-poetry run mypy gazpar2haws
-poetry run ruff check gazpar2haws
+## Project Overview
 
-# Format code
-poetry run black gazpar2haws
-poetry run isort gazpar2haws
+### What is Gazpar2HAWS?
 
-# Or run all tests to verify everything passes
-poetry run pytest tests/ -v
-```
+Gazpar2HAWS is a gateway application that:
+- Fetches gas consumption data from GrDF (French gas provider) via PyGazpar
+- Publishes historical statistics to Home Assistant via WebSocket API
+- Calculates detailed energy costs with flexible pricing components
+- Supports Home Assistant Energy Dashboard integration
 
-**Quality Assurance Checklist Before Committing:**
-- ✓ Run `poetry run pylint gazpar2haws` - Must achieve 10.00/10 score
-- ✓ Run `poetry run flake8 gazpar2haws` - Must have no errors
-- ✓ Run `poetry run mypy gazpar2haws` - Must have no type errors
-- ✓ Run `poetry run black gazpar2haws` - Code must be formatted correctly
-- ✓ Run `poetry run isort gazpar2haws` - Imports must be sorted correctly
-- ✓ Run `poetry run ruff check gazpar2haws` - All checks must pass
-- ✓ Run `poetry run pytest tests/ -v` - All tests must pass
+### Key Features
 
-## Deployment Methods
+- **Historical data import**: Retrieve up to 3 years of gas consumption history
+- **Exact timestamping**: Data is timestamped to actual meter reading dates, not retrieval dates
+- **Cost calculation**: Flexible pricing with unlimited custom components (consumption, subscription, transport, taxes, etc.)
+- **WebSocket integration**: Direct integration with Home Assistant Recorder via WebSocket
+- **Multiple deployment options**: Standalone Python, Docker, or Home Assistant add-on
 
-This section covers different ways to run the Gazpar2HAWS application depending on your use case.
+### Technology Stack
 
-### Running the Application Locally
+- **Language**: Python 3.10+
+- **Key Dependencies**:
+  - `pygazpar`: GrDF API client
+  - `websockets`: Home Assistant WebSocket communication
+  - `pydantic`: Configuration validation and data models
+  - `pyyaml`: Configuration file parsing
+- **Development Tools**:
+  - `pytest`: Testing framework
+  - `black`, `isort`, `ruff`: Code formatting
+  - `pylint`, `flake8`, `mypy`: Linting and type checking
+  - `poetry`: Dependency management
 
-To run the application directly on your machine:
-
-```bash
-# Run with default configuration files
-python -m gazpar2haws
-
-# Run with custom configuration and secrets files
-python -m gazpar2haws --config /path/to/configuration.yaml --secrets /path/to/secrets.yaml
-```
-
-### Docker Compose (Standalone)
-
-To run the application in a Docker container for standalone deployment:
-
-```bash
-# Build Docker image
-docker compose -f docker/docker-compose.yaml build
-
-# Run container
-docker compose -f docker/docker-compose.yaml up -d
-```
-
-### Home Assistant Add-on (DevContainer)
-
-The project includes a DevContainer configuration for testing the Home Assistant add-on in a complete Home Assistant environment. This is the recommended approach for add-on development and testing.
-
-**Location**: `.devcontainer/devcontainer.json`
-
-**📖 For detailed step-by-step instructions, see [.devcontainer/README.md](../.devcontainer/README.md)**
-
-**Prerequisites:**
-- Docker Desktop installed and running
-- Visual Studio Code with "Remote - Containers" extension installed
-- The devcontainer must be launched from VS Code (not command line)
-
-**Setup and Usage:**
-
-1. **Open in DevContainer**:
-   - Open the project folder in VS Code
-   - When prompted (or via Command Palette: "Dev Containers: Reopen in Container"), click "Reopen in Container"
-   - First launch will take several minutes to build the container
-
-2. **Start Home Assistant**:
-   - Once inside the container, open the VS Code integrated terminal
-   - Run the task: `Terminal → Run Task → Start Home Assistant`
-   - Alternatively, run from terminal: `supervisor_run`
-   - This launches Home Assistant with Supervisor, bootstrapping the environment
-
-3. **Access Home Assistant**:
-   - Web UI: http://localhost:7123
-   - The add-on will be automatically detected as a local add-on in the `/addons` directory
-   - Configure and test the add-on through Home Assistant UI or via CLI
-
-4. **CLI Commands Inside DevContainer**:
-   - `supervisor_run` - Starts Home Assistant with Supervisor
-   - `ha` - Home Assistant CLI (requires Supervisor running first)
-   - `ha addon logs gazpar2haws` - View add-on logs
-   - `ha addon restart gazpar2haws` - Restart the add-on
-   - `ha addon config gazpar2haws` - View add-on configuration
-
-5. **Port Mappings**:
-   - Home Assistant Web UI: `7123:8123`
-   - Supervisor API: `7357:4357`
-   - These are configured in `devcontainer.json`
-
-**Testing the Add-on:**
-
-1. Configure the add-on through Home Assistant UI:
-   - Add-ons → Gazpar2HAWS → Configuration
-   - Fill in GrDF credentials and pricing configuration
-   - Click Save
-
-2. Start the add-on:
-   - Add-ons → Gazpar2HAWS → Start
-   - View logs to monitor execution
-
-3. Verify functionality:
-   - Check that entities are created: `sensor.gazpar2haws_volume`, `sensor.gazpar2haws_energy`, etc.
-   - Verify statistics appear in Home Assistant Energy Dashboard
-   - Check logs for errors: `ha addon logs gazpar2haws`
-
-4. Develop and iterate:
-   - Modify code locally
-   - Restart the add-on to test changes
-   - View logs in real-time from the VS Code terminal
-
-**DevContainer Configuration Details:**
-
-- **Base Image**: `ghcr.io/home-assistant/devcontainer:2-addons` - Includes Supervisor and Home Assistant (updated 2026)
-- **Workspace**: Mounted at `/mnt/supervisor/addons/local/` for proper add-on detection
-- **Bootstrap Command**: Runs `devcontainer_bootstrap` after container starts
-- **Privileged Mode**: Required for Docker operations inside container
-- **Volume Mounts**:
-  - `/var/lib/docker` for Docker-in-Docker support
-  - `/mnt/supervisor` for Supervisor integration
-- **VSCode Extensions**: ShellCheck and Prettier pre-installed
-- **Default Shell**: bash (`/bin/bash`)
-- **Environment**: `WORKSPACE_DIRECTORY` points to `${containerWorkspaceFolder}`
-
-**Note**: As of Home Assistant 2026.2, "add-ons" have been officially renamed to "apps" in the UI, though the development infrastructure still uses "addons" terminology.
-
-**Troubleshooting:**
-
-- If Home Assistant fails to start, check logs: `docker logs homeassistant`
-- If the add-on doesn't appear, ensure it's in the correct directory structure
-- To rebuild the container: `Dev Containers: Rebuild Container`
-- To start fresh: `Dev Containers: Rebuild Container` then `Dev Containers: Reopen in Container`
-
-**Cleanup:**
-
-When done testing:
-- Exit the container: `Dev Containers: Reopen Folder Locally`
-- Stop the container via Docker Desktop or: `docker compose -f .devcontainer/docker-compose.yaml down`
-
-## Testing
-
-This section covers the different testing approaches available in the project. Understanding when to use each approach is important for effective development.
-
-### Test Container Prerequisites
-
-Before running integration tests, you must launch the Home Assistant test container. This provides a local Home Assistant instance with WebSocket interface for integration testing.
-
-```bash
-# Start the Home Assistant test container
-cd tests/containers
-docker compose up -d
-
-# Verify the container is running and healthy
-docker compose ps
-
-# View logs if needed
-docker compose logs -f
-
-# Stop the container when done
-docker compose down
-```
-
-The test container:
-- Runs Home Assistant on port **6123** (mapped from internal 8123)
-- Uses configuration from `tests/containers/config/`
-- Provides a WebSocket interface at `ws://localhost:6123/api/websocket`
-- Includes a health check that verifies Home Assistant is ready
-- Persists data in `tests/containers/config/home-assistant_v2.db`
-
-**Access URLs:**
-- Web UI: http://localhost:6123
-- WebSocket API: ws://localhost:6123/api/websocket
-
-### Unit Tests
-
-Unit tests validate individual components without external dependencies.
-
-```bash
-# Run all unit tests (no container needed)
-pytest
-
-# Run a specific test file
-pytest tests/test_pricer.py
-
-# Run a specific test
-pytest tests/test_pricer.py::TestPricer::test_get_composite_price_array
-
-# Run tests with verbose output
-pytest -v
-```
-
-**Unit test categories:**
-- Pricer calculations and cost breakdown
-- Model validation and data structures
-- Date array operations
-- Configuration parsing
-
-### Integration Tests
-
-Integration tests interact with Home Assistant via WebSocket API and require the test container to be running.
-
-```bash
-# Start test container first
-cd tests/containers && docker compose up -d
-
-# Run integration tests
-pytest tests/test_haws.py
-
-# Run all tests including integration tests
-pytest -v
-```
-
-**Integration test categories:**
-- WebSocket communication with Home Assistant
-- Statistics import and export
-- `clear_statistics()` functionality
-- `get_last_statistic()` retrieval
-- Configuration file handling
-
-### Add-on Testing with DevContainer
-
-Testing the add-on in a full Home Assistant environment provides the most realistic testing scenario. See the [Home Assistant Add-on (DevContainer)](#home-assistant-add-on-devcontainer) section under Deployment Methods for complete instructions.
-
-### When to Use Which Testing Approach
-
-**Use Unit Tests when:**
-- Developing core business logic (pricer, models, utilities)
-- Testing edge cases and error handling
-- You want fast feedback (no container startup needed)
-- Making changes to configuration parsing
-- You don't need to test Home Assistant integration
-
-**Use Integration Tests when:**
-- Testing WebSocket communication
-- Verifying statistics are correctly imported/exported to Home Assistant
-- Testing the reset mechanism
-- Ensuring the application can connect to and query Home Assistant
-
-**Use DevContainer Add-on Testing when:**
-- Testing the complete add-on deployment
-- Verifying add-on appears in Home Assistant UI
-- Testing add-on configuration through Home Assistant UI
-- Validating entities and statistics in Home Assistant
-- End-to-end testing with real Home Assistant instance
-- Debugging issues with add-on lifecycle
-
-**Example workflow:**
-1. Develop locally with unit tests
-2. When you need HA integration, run integration tests with test container
-3. Before publishing, test the complete add-on with DevContainer
+---
 
 ## Architecture
 
-### Core Components
+### High-Level Architecture
 
-The application follows a layered architecture with three main components:
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Gazpar2HAWS                            │
+│                                                             │
+│  ┌──────────┐    ┌──────────┐    ┌────────────────────┐   │
+│  │  Bridge  │───▶│  Gazpar  │───▶│ HomeAssistantWS    │───┼──▶ Home Assistant
+│  └──────────┘    └──────────┘    └────────────────────┘   │    (WebSocket)
+│       │               │                                     │
+│       │               ▼                                     │
+│       │          ┌─────────┐                               │
+│       │          │ Pricer  │                               │
+│       │          └─────────┘                               │
+│       │               │                                     │
+│       ▼               ▼                                     │
+│  ┌──────────────────────────┐                              │
+│  │   Configuration Model    │                              │
+│  └──────────────────────────┘                              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+        ▲
+        │
+   ┌────┴────┐
+   │ PyGazpar │ ──▶ GrDF API
+   └─────────┘
+```
 
-1. **Bridge** ([bridge.py](gazpar2haws/bridge.py)) - Main orchestrator that coordinates the data flow
-   - Manages the periodic scan loop (controlled by `scan_interval`)
-   - Handles WebSocket connection lifecycle to Home Assistant
-   - Processes SIGINT/SIGTERM for graceful shutdown
-   - Supports multiple GrDF devices (each with its own Gazpar instance)
+### Component Overview
 
-2. **Gazpar** ([gazpar.py](gazpar2haws/gazpar.py)) - Data retrieval and processing layer
-   - Fetches gas consumption data from GrDF using PyGazpar library
-   - Extracts volume (m³) and energy (kWh) from meter readings
-   - Computes costs using the Pricer when pricing configuration is provided
-   - Manages incremental updates by querying HA for last statistics
-   - Publishes data as cumulative statistics to Home Assistant:
-     - `sensor.${name}_volume` - Volume in m³
-     - `sensor.${name}_energy` - Energy in kWh
-     - `sensor.${name}_consumption_cost` - Consumption cost breakdown
-     - `sensor.${name}_subscription_cost` - Subscription cost breakdown
-     - `sensor.${name}_transport_cost` - Transport cost breakdown
-     - `sensor.${name}_energy_taxes_cost` - Energy taxes cost breakdown
-     - `sensor.${name}_total_cost` - Total cost (sum of all cost components)
+#### 1. **Entry Point** (`__main__.py`)
+- Parses command-line arguments
+- Loads configuration files (`configuration.yaml`, `secrets.yaml`)
+- Sets up logging
+- Initializes and runs the Bridge
 
-3. **HomeAssistantWS** ([haws.py](gazpar2haws/haws.py)) - WebSocket client for Home Assistant
-   - Implements Home Assistant WebSocket API protocol
-   - Handles authentication with Bearer token
-   - Imports statistics using `recorder/import_statistics`
-   - Queries existing statistics using `recorder/statistics_during_period`
+#### 2. **Bridge** (`bridge.py`)
+- **Orchestrator** for the entire application
+- Manages the scan interval loop
+- Coordinates between Gazpar instances and Home Assistant
+- Handles graceful shutdown (SIGINT, SIGTERM)
+- Responsibilities:
+  - Connect to Home Assistant WebSocket
+  - Iterate through configured devices
+  - Call `gazpar.publish()` for each device
+  - Disconnect and wait for next scan interval
+
+#### 3. **Gazpar** (`gazpar.py`)
+- **Core business logic** for data retrieval and publishing
+- One instance per configured device (PCE identifier)
+- Responsibilities:
+  - Fetch gas consumption data from GrDF via PyGazpar
+  - Extract volume and energy data from GrDF response
+  - Calculate costs using Pricer
+  - Publish statistics to Home Assistant (volume, energy, costs)
+  - Handle sensor migration (v0.3.x → v0.4.0+)
+  - Manage `reset` flag for clearing historical data
+
+#### 4. **Pricer** (`pricer.py`)
+- **Cost calculation engine**
+- Supports flexible pricing components with dual pricing models:
+  - **Quantity-based** pricing: `quantity_value` (e.g., €/kWh)
+  - **Time-based** pricing: `time_value` (e.g., €/month, €/year)
+- Handles VAT rates and time-varying prices
+- Returns `CostBreakdown` with separate cost components
+- Key methods:
+  - `get_composite_price_array()`: Build composite price arrays with quantity and time components
+  - `compute()`: Calculate costs from quantities and prices
+
+#### 5. **HomeAssistantWS** (`haws.py`)
+- **Home Assistant WebSocket client**
+- Manages WebSocket connection lifecycle
+- Sends statistics to Home Assistant Recorder
+- Key methods:
+  - `connect()`: Establish WebSocket connection and authenticate
+  - `import_statistics()`: Send statistics to Recorder
+  - `get_last_statistic()`: Query last recorded statistic
+  - `clear_statistics()`: Clear statistics for sensor (used with `reset: true`)
+  - `disconnect()`: Close WebSocket connection
+
+#### 6. **Configuration** (`configuration.py`, `config_utils.py`, `model.py`)
+- **Configuration management** and validation
+- `Configuration`: Main configuration class (Pydantic model)
+- `config_utils`: YAML loading, secrets resolution, environment variable substitution
+- `model.py`: Pydantic models for all configuration structures
+  - `Device`: GrDF device configuration
+  - `Pricing`: Flexible pricing components (VAT, custom components)
+  - `CompositePriceValue`: Dual-component pricing (quantity + time)
+  - `CostBreakdown`: Cost calculation result
+
+#### 7. **Utilities**
+- `date_array.py`: Date-indexed array operations (slicing, cumsum, interpolation)
+- `datetime_utils.py`: Timezone and date handling utilities
+- `version.py`: Version information
 
 ### Data Flow
 
-1. Bridge initiates periodic scan
-2. For each device, Gazpar:
-   - Queries HA for last known statistics (date and cumulative value) for all 7 entities
-   - Fetches missing data from GrDF via PyGazpar
-   - Extracts volume and energy readings
-   - If pricing config exists, computes cost breakdown using Pricer (5 components)
-   - Publishes cumulative statistics to HA (not incremental values):
-     - Volume and energy entities (always published)
-     - Cost breakdown entities (if pricing configured): consumption, subscription, transport, energy_taxes, total
-3. Bridge disconnects from HA and waits for next scan interval
-
-### Pricing System
-
-The Pricer ([pricer.py](gazpar2haws/pricer.py)) implements a sophisticated cost calculation system:
-
-- **CompositePriceValue**: Represents prices with both quantity and time components (e.g., €/kWh + €/month)
-- **CompositePriceArray**: Vectorized form holding both quantity_value_array and time_value_array
-- **CostBreakdown**: Result structure with separate consumption, subscription, transport, energy_taxes, and total cost arrays
-- **VAT support**: Multiple VAT rates (reduced, normal) applied to different price components
-- **Time-varying prices**: Prices change over time, with automatic interpolation
-- **Unit conversion**: Automatic conversion between price units (€, ¢), quantity units (Wh, kWh, MWh), and time units (day, week, month, year)
-- **Formula**: `cost = quantity × (consumption_price + energy_taxes) + subscription_price + transport_price` (all with VAT applied)
-
-### Data Model
-
-The model ([model.py](gazpar2haws/model.py)) uses Pydantic for configuration validation and defines:
-
-- **DateArray**: Sparse array indexed by date for efficient time-series operations
-- **ValueArray**: Base class for all time-series data with unit conversion
-- **CompositePriceValue**: Input model with optional quantity_value/quantity_unit and time_value/time_unit fields
-- **CompositePriceArray**: Output model with quantity_value_array and time_value_array DateArrays
-- **CostBreakdown**: Output model with consumption, subscription, transport, energy_taxes, and total CostArrays
-- **Configuration**: Device, Grdf, HomeAssistant, Logging, Pricing
-
-### Configuration System
+1. **Configuration Loading**:
+   ```
+   configuration.yaml + secrets.yaml
+         ↓
+   config_utils.load_config() + resolve_secrets()
+         ↓
+   Configuration (Pydantic validation)
+   ```
+
+2. **Data Retrieval**:
+   ```
+   PyGazpar.login() → PyGazpar.get_data()
+         ↓
+   GrDF JSON response
+         ↓
+   Gazpar.extract_property_from_daily_gazpar_history()
+         ↓
+   Volume & Energy DateArrays
+   ```
+
+3. **Cost Calculation**:
+   ```
+   Pricing configuration
+         ↓
+   Pricer.get_composite_price_array()
+         ↓
+   CompositePriceArray (quantity + time components)
+         ↓
+   Pricer.compute()
+         ↓
+   CostBreakdown (component1_cost, component2_cost, ..., total_cost)
+   ```
+
+4. **Publishing to Home Assistant**:
+   ```
+   Volume, Energy, Costs (DateArrays)
+         ↓
+   Gazpar.publish_date_array()
+         ↓
+   HomeAssistantWS.import_statistics()
+         ↓
+   Home Assistant Recorder
+   ```
+
+### Design Patterns
+
+#### 1. **Pydantic Models**
+All configuration and data structures use Pydantic for:
+- Automatic validation
+- Type safety
+- Field defaults and constraints
+- Secret handling (e.g., `SecretStr` for passwords)
+
+#### 2. **DateArray Abstraction**
+`DateArray` class provides:
+- Date-indexed data storage
+- Slicing by date ranges
+- Cumulative sum operations
+- Interpolation for missing dates
+- Used for volume, energy, and cost time series
+
+#### 3. **Async/Await**
+WebSocket communication and I/O operations use async patterns:
+- `asyncio` for event loop
+- `async def` for coroutines
+- `await` for I/O operations
+
+#### 4. **Factory Pattern**
+Configuration loading uses factories:
+- `Configuration.load()` creates validated configuration from YAML files
+- Handles secrets resolution and environment variable substitution
+
+---
+
+## Development Setup
+
+### Prerequisites
+
+- **Python**: 3.10 or higher
+- **Poetry**: 2.0 or higher
+- **Git**: For version control
+- **Home Assistant**: Running instance for integration testing (optional)
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/ssenart/gazpar2haws.git
+   cd gazpar2haws
+   ```
+
+2. **Install Poetry** (if not already installed):
+   ```bash
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   poetry install
+   ```
+
+4. **Activate virtual environment**:
+   ```bash
+   poetry shell
+   ```
+
+### Configuration for Development
+
+1. **Create configuration files**:
+   ```bash
+   mkdir -p config
+   cp tests/config/example_1.yaml config/configuration.yaml
+   cp tests/config/secrets_example.yaml config/secrets.yaml
+   ```
+
+2. **Edit secrets** with your credentials:
+   ```yaml
+   # config/secrets.yaml
+   grdf.username: "your-email@example.com"
+   grdf.password: "your-password"
+   homeassistant.host: "localhost"
+   homeassistant.port: "8123"
+   homeassistant.token: "your-long-lived-access-token"
+   ```
+
+3. **Update PCE identifier** in `config/configuration.yaml`:
+   ```yaml
+   grdf:
+     devices:
+       - pce_identifier: "your-pce-number"
+   ```
+
+### Running the Application
 
-Configuration uses YAML with secret interpolation:
-
-- `configuration.yaml`: Main config with `!secret` references
-- `secrets.yaml`: Sensitive values with `${ENV_VAR}` placeholders
-- Loaded via ConfigLoader ([config_utils.py](gazpar2haws/config_utils.py))
-
-## Implementation Details
-
-### Statistics Publishing
-
-Home Assistant statistics are published as **cumulative sums**, not deltas:
-- Query last known cumulative value from HA for each entity
-- Add new incremental readings to create new cumulative values
-- Publish cumulative statistics with exact timestamp of reading date
-
-**Published Entities:**
-
-Always published:
-- `sensor.${name}_volume` (m³)
-- `sensor.${name}_energy` (kWh)
-
-Published when pricing configuration is provided:
-- `sensor.${name}_consumption_cost` (EUR) - Variable cost from gas consumption
-- `sensor.${name}_subscription_cost` (EUR) - Fixed subscription fees
-- `sensor.${name}_transport_cost` (EUR) - Transport fees (fixed or variable)
-- `sensor.${name}_energy_taxes_cost` (EUR) - Energy taxes
-- `sensor.${name}_total_cost` (EUR) - Sum of all cost components
-
-Where `${name}` is the device name from configuration (default: `gazpar2haws`)
-
-**Note on Currency Units:** While the domain model and configuration use € symbols, statistics published to Home Assistant use ISO 4217 currency codes (EUR) for standards compliance. This conversion happens in the integration layer (gazpar.py) to maintain clean separation between business logic and external system requirements.
-
-**Note on Statistics vs Entities:** Gazpar2HAWS intentionally publishes cumulative statistics rather than regular state entities. This design choice is optimal for:
-- Historical energy/gas data tracking
-- Home Assistant Energy Dashboard integration
-- Efficient database storage of time-series data
-- Accurate cost calculations with precise timestamps
-
-If you need Home Assistant entities (states) for automations or dashboards, see the [SQL Workaround](#creating-entities-from-statistics-workaround) section in the add-on documentation (`addons/gazpar2haws/DOCS.md`).
-
-### Timezone Handling
-
-All timestamps are localized to the configured timezone (default: `Europe/Paris`) before publishing to Home Assistant.
-
-### Statistics Reset Mechanism
-
-The application provides a mechanism to reset all statistics to zero and clear historical data from Home Assistant. This is controlled by the `reset` configuration flag in the device configuration.
-
-**Implementation Location:**
-- Configuration flag: [gazpar.py:67](gazpar2haws/gazpar.py#L67) - `self._reset = device_config.reset`
-- Reset logic: [gazpar.py:100-116](gazpar2haws/gazpar.py#L100-L116) - In `Gazpar.publish()` method
-- WebSocket API: [haws.py:215-227](gazpar2haws/haws.py#L215-L227) - `HomeAssistantWS.clear_statistics()`
-
-**How It Works:**
-
-1. **Configuration**: Set `reset: true` in the device configuration under `devices` section
-2. **Execution**: On the next scan cycle, before fetching new data:
-   - All 7 entity statistics are cleared from Home Assistant using `recorder/clear_statistics` API
-   - Entities cleared:
-     - `sensor.{name}_volume`
-     - `sensor.{name}_energy`
-     - `sensor.{name}_consumption_cost`
-     - `sensor.{name}_subscription_cost`
-     - `sensor.{name}_transport_cost`
-     - `sensor.{name}_energy_taxes_cost`
-     - `sensor.{name}_total_cost`
-3. **Counter Reset**: After clearing, `find_last_date_and_value()` returns `last_value = 0` for all entities
-4. **Data Republishing**: New data is fetched from GrDF and published with cumulative values starting from zero
-
-**Usage Notes:**
-- This is a **one-time operation** - the reset flag should be removed after the first successful run
-- Clears **all historical statistics** from Home Assistant for the specified device
-- Useful for:
-  - Fixing data corruption or incorrect historical imports
-  - Starting fresh with new pricing configurations
-  - Correcting meter reading offsets
-- If reset fails, an exception is raised and logged
-
-**WebSocket API Call:**
-```python
-{
-    "type": "recorder/clear_statistics",
-    "statistic_ids": [list of entity IDs]
-}
-```
-
-### Data Sources
-
-PyGazpar supports multiple data sources:
-- `JsonWebDataSource` (default): Fetches data from GrDF web API
-- `ExcelWebDataSource`: Downloads Excel files from GrDF
-- `TestDataSource`: For testing
-
-### PCE Identifier Gotcha
-
-PCE identifiers must be quoted in YAML to preserve leading zeros. Unquoted values like `0123456789` are interpreted as numbers and lose the leading zero.
-
-### Pricing Configuration Format (v0.4.0)
-
-The pricing configuration uses the composite price model:
-
-**YAML Properties:**
-- `quantity_value`: Numeric value for quantity-based pricing (e.g., 0.07790 for €/kWh)
-- `quantity_unit`: Energy unit (Wh, kWh, MWh) - default: kWh
-- `time_value`: Numeric value for time-based pricing (e.g., 19.83 for €/month)
-- `time_unit`: Time unit (day, week, month, year) - default: month
-- `price_unit`: Monetary unit (€, ¢) - default: €
-- `vat_id`: Reference to VAT rate ID
-
-**Price Type Guidelines:**
-- **consumption_prices**: Use `quantity_value` + `quantity_unit` (kWh)
-- **subscription_prices**: Use `time_value` + `time_unit` (month/year)
-- **transport_prices**: Use either `time_value` (fixed fee) OR `quantity_value` (per kWh)
-- **energy_taxes**: Use `quantity_value` + `quantity_unit` (kWh)
-
-**Deprecated (v0.3.x):**
-- `value` → replaced by `quantity_value` or `time_value`
-- `value_unit` → replaced by `price_unit`
-- `base_unit` → replaced by `quantity_unit` or `time_unit`
-
-## CI/CD Pipelines
-
-This project uses GitHub Actions for continuous integration, testing, building, and release automation. The pipelines are defined in `.github/workflows/` and use reusable composite actions for modularity.
-
-### Pipeline Overview
-
-The project has three main workflows:
-
-1. **CI Pipeline** (`.github/workflows/ci.yaml`) - Automated testing on every push and PR
-2. **Create Release Pipeline** (`.github/workflows/create-release.yaml`) - Creates releases and publishes packages
-3. **Publish to DockerHub Pipeline** (`.github/workflows/publish-to-dockerhub.yaml`) - Publishes Docker images
-
-**Trigger Branches:**
-- `main` - Production releases
-- `develop` - Development releases and pre-releases
-- `release/*` - Release candidates
-- `feature/*` - Feature development
-- Pull requests - Always run CI
-
-### CI Pipeline
-
-**Location:** `.github/workflows/ci.yaml`
-
-**Triggered on:**
-- Push to `main`, `develop`, `release/*`, `feature/*`
-- All pull requests
-- Manual workflow dispatch (with options to skip lint/tests)
-
-**Jobs:**
-
-1. **Prepare** (`prepare`)
-   - Computes package version using GitVersion
-   - Outputs: `package-version`, `target_python_versions`, `default_python_version`
-   - Tests: Python 3.10, 3.11, 3.12, 3.13
-
-2. **Lint** (`lint`)
-   - Runs Python linting on default Python version (3.13)
-   - Uses action: `./.github/workflows/python-lint`
-   - Runs: PyLint, Flake8, Black, Isort, Mypy, Ruff
-   - Skippable via input: `skip-lint`
-
-3. **Test** (`test`)
-   - Runs pytest against all target Python versions
-   - Uses action: `./.github/workflows/python-test`
-   - Starts HA test container
-   - Waits for healthy status (30 attempts, 5s intervals)
-   - Runs: `pytest tests/`
-   - Skippable via input: `skip-tests`
-
-**Conditional Execution:**
-```yaml
-if: ${{ !github.event.inputs.skip-lint }}  # Lint job
-if: ${{ !github.event.inputs.skip-tests }}  # Test job
-```
-
-**To run CI manually:**
-1. Go to GitHub Actions → CI
-2. Click "Run workflow"
-3. Select branch and optional inputs
-4. Click green "Run workflow" button
-
-### Create Release Pipeline
-
-**Location:** `.github/workflows/create-release.yaml`
-
-**Triggered on:** Manual workflow dispatch only
-
-**Purpose:** Creates a new release, bumps versions, and publishes packages to PyPI and DockerHub
-
-**Inputs:**
-- `package-version` (optional) - Specific version to release (auto-computed if empty)
-- `is_final` (optional, default: true) - Whether this is a final release (affects pre-release flag)
-
-**Jobs:**
-
-1. **Prepare** (`prepare`)
-   - Computes version using GitVersion (if not provided)
-   - Selects version from input or computed value
-   - Outputs: `package-version`, `default_python_version`
-
-2. **Build** (`build`)
-   - Bumps version in:
-     - `pyproject.toml` (Poetry)
-     - `addons/gazpar2haws/config.yaml` (Add-on version)
-     - `addons/gazpar2haws/build.yaml` (Add-on build version)
-   - Commits and pushes version bumps
-   - Creates Git tag with version number
-   - Builds package with Poetry: `poetry build`
-   - Uploads artifact: `dist/`
-
-3. **Publish to PyPI** (`publish-to-pypi`)
-   - Runs only on `main`, `develop`, or `release/*` branches
-   - Uses trusted publishing (no explicit tokens needed)
-   - Publishes to official PyPI: https://pypi.org/p/gazpar2haws
-   - Downloads build artifact and publishes
-
-4. **Publish to TestPyPI** (`publish-to-testpypi`)
-   - Runs on any other branches (feature branches)
-   - Publishes to test PyPI: https://test.pypi.org/p/gazpar2haws
-   - Used for testing releases before production
-
-5. **Publish to DockerHub** (`publish-to-dockerhub`)
-   - Checks out the tag created in Build job
-   - Publishes Docker image: `ssenart/gazpar2haws`
-   - Tags: version number and optionally `latest`
-   - Builds for multiple platforms: `linux/amd64`, `linux/arm64`
-
-**How to create a release:**
-1. Go to GitHub → Actions → Create Release
-2. Click "Run workflow"
-3. Select branch (usually `main` or `develop`)
-4. Enter optional version (leave blank for auto-compute)
-5. Toggle `is_final` if needed (true = production, false = pre-release)
-6. Click green "Run workflow"
-7. Monitor job execution in Actions tab
-8. Pipeline automatically:
-   - Bumps version numbers
-   - Creates Git tag
-   - Builds Python package
-   - Publishes to PyPI (or TestPyPI)
-   - Builds and publishes Docker images
-
-### Publish to DockerHub Pipeline
-
-**Location:** `.github/workflows/publish-to-dockerhub.yaml`
-
-**Triggered on:** Manual workflow dispatch only
-
-**Purpose:** Allows publishing specific versions to DockerHub without full release process
-
-**Inputs:**
-- `package-version` (optional) - Specific version to publish (auto-computed if empty)
-- `is_latest` (optional, default: true) - Whether to tag as `latest`
-
-**Jobs:**
-
-1. **Prepare** (`prepare`)
-   - Computes version using GitVersion (if not provided)
-   - Selects version from input or computed value
-
-2. **Publish to DockerHub** (`publish-to-dockerhub`)
-   - Logs in to DockerHub with credentials
-   - Extracts metadata and creates tags
-   - Sets up QEMU for multi-platform builds
-   - Builds and pushes Docker image
-   - Platforms: `linux/amd64`, `linux/arm64`
-   - Tags: `<version>`, optionally `latest`
-
-**Credentials Required:**
-- `DOCKERHUB_USERNAME` - GitHub secret
-- `DOCKERHUB_PASSWORD` - GitHub secret (use token, not password)
-
-### Version Management with GitVersion
-
-**Configuration:** `gitversion.yaml`
-
-**How it works:**
-- Uses GitVersion tool to compute semantic version based on branch
-- Converts to PEP440 format for Python
-- Supports pre-release versions with labels
-
-**Version Format by Branch:**
-```
-main (master):           X.Y.Z                    (final release)
-develop:                 X.Y.Za<commits>         (alpha pre-release)
-release/<name>:          X.Y.Zb<commits>         (beta pre-release)
-feature/<name>:          X.Y.Z.dev<commits>      (development version)
-```
-
-**Examples:**
-- `main` branch, 3 commits after tag 1.0.0 → `1.0.0`
-- `develop` branch, 5 commits after tag → `1.1.0a5`
-- `release/1.1.0` → `1.1.0b0`
-- `feature/new-feature`, 10 commits → `1.1.0.dev10`
-
-**Configuration Details:**
-- Assembly format: `{MajorMinorPatch}{PreReleaseLabel}{CommitsSinceVersionSource}`
-- Pre-release labels:
-  - `develop`: `a` (alpha)
-  - `release/*`: `b` (beta)
-  - `feature/*`: `.dev` (development)
-  - `main`: `` (empty = final)
-
-### Reusable Actions
-
-The project uses composite GitHub Actions for modularity:
-
-**1. compute-version** (`.github/workflows/compute-version/action.yaml`)
-- Purpose: Compute semantic version using GitVersion
-- Output: `pep440-version` - Python-formatted version
-- Used by: CI, Create Release, Publish to DockerHub pipelines
-
-**2. python-lint** (`.github/workflows/python-lint/action.yaml`)
-- Purpose: Run all Python linters
-- Inputs: `python-version`
-- Tools: PyLint, Flake8, Black, Isort, Mypy, Ruff
-- Used by: CI pipeline
-
-**3. python-test** (`.github/workflows/python-test/action.yaml`)
-- Purpose: Run pytest with HA test container
-- Inputs: `python-version`
-- Steps:
-  1. Set up Python
-  2. Install Poetry and project
-  3. Start HA test container
-  4. Wait for healthy status
-  5. Run pytest
-- Used by: CI pipeline
-
-**4. git-tag** (`.github/workflows/git-tag/action.yaml`)
-- Purpose: Create and push Git tag
-- Inputs: `tag-name`
-- Steps:
-  1. Delete existing local tag (if any)
-  2. Delete existing remote tag (if any)
-  3. Create new local tag
-  4. Push to remote
-- Used by: Create Release pipeline
-
-**5. publish-to-dockerhub** (`.github/workflows/publish-to-dockerhub/action.yaml`)
-- Purpose: Build and push Docker image to DockerHub
-- Inputs: `image`, `version`, `is_latest`, `username`, `password`
-- Steps:
-  1. Set up Docker with buildx
-  2. Extract metadata and tags
-  3. Log in to DockerHub
-  4. Set up QEMU (multi-platform)
-  5. Build and push image
-  6. Platforms: `linux/amd64`, `linux/arm64`
-- Used by: Create Release, Publish to DockerHub pipelines
-
-### Running Pipelines Manually
-
-**Via GitHub Web UI:**
-1. Go to GitHub repository
-2. Click Actions tab
-3. Select workflow (CI, Create Release, or Publish to DockerHub)
-4. Click "Run workflow" button
-5. Select branch
-6. Fill in optional inputs
-7. Click green "Run workflow" button
-8. Monitor execution in Actions tab
-
-**Via GitHub CLI:**
 ```bash
-# List available workflows
-gh workflow list
+# Run with default config paths
+poetry run python -m gazpar2haws
 
-# Run specific workflow
-gh workflow run ci.yaml --ref main
+# Run with custom config paths
+poetry run python -m gazpar2haws --config /path/to/config.yaml --secrets /path/to/secrets.yaml
 
-# Run workflow with inputs
-gh workflow run create-release.yaml --ref main \
-  -f package-version=1.2.3 \
-  -f is_final=true
-
-# View workflow runs
-gh run list
-
-# View specific run
-gh run view <run-id>
-
-# View run logs
-gh run view <run-id> --log
+# Run with debug logging
+# (Edit config/configuration.yaml: logging.level: debug)
+poetry run python -m gazpar2haws
 ```
 
-**Workflow Constraints:**
-- CI pipeline: Runs automatically on push/PR, or manually
-- Create Release: Manual workflow only (controlled release process)
-- Publish to DockerHub: Manual workflow only
-- All workflows are read-only except Create Release (which has write permissions for commits/tags)
+---
 
-### Pipeline Secrets Configuration
+## Code Structure
 
-**Required Secrets:**
-- `DOCKERHUB_USERNAME` - DockerHub account username
-- `DOCKERHUB_PASSWORD` - DockerHub account token (not password)
-
-**To set up secrets:**
-1. Go to GitHub Settings → Secrets and variables → Actions
-2. Click "New repository secret"
-3. Add `DOCKERHUB_USERNAME` and `DOCKERHUB_PASSWORD`
-4. Save
-
-**PyPI Publishing:**
-- Uses trusted publishing with OIDC
-- No secrets needed for official PyPI
-- TestPyPI also uses trusted publishing
-
-## Maintenance & Release
-
-When making changes to the pricing model, configuration format, or published entities, multiple files across the repository need to be updated to maintain consistency. This section documents all locations that require maintenance.
-
-**Key documentation to update:**
-- Keep **README.md** updated with any user-facing changes
-- Keep **CLAUDE.md** (this file) updated with architecture, implementation, and development changes
-- Always update **CHANGELOG.md** with a new version entry documenting Added/Changed/Fixed/Removed items
-
-### Configuration Files
-
-Configuration files exist in multiple locations for different deployment scenarios:
-
-#### 1. Main Configuration (Standalone/Docker)
-
-**Location**: `config/`
-
-Files to update:
-- **`config/configuration.yaml`** - Example configuration with real pricing data
-- **`config/configuration.template.yaml`** - Template with placeholders for Docker deployments
-- **`config/secrets.template.yaml`** - Template for sensitive values (rarely needs updates)
-
-**When to update**: Any pricing model changes, new configuration options, or default value changes.
-
-**Example changes needed**:
-- Property name changes (e.g., `value` → `quantity_value`)
-- New configuration sections
-- Updated examples reflecting current pricing structure
-
-#### 2. Add-on Configuration (Home Assistant Add-on)
-
-**Location**: `addons/gazpar2haws/`
-
-Files to update:
-- **`addons/gazpar2haws/config.yaml`** - Add-on configuration and schema
-  - Version number (line 3)
-  - Options section with example pricing (lines 31-64)
-  - Schema section defining allowed properties (lines 80-115)
-- **`addons/gazpar2haws/DOCS.md`** - Comprehensive pricing examples and documentation
-  - All pricing examples (Examples 1-8+)
-  - Transport price description
-  - "What's New" section for new versions
-- **`addons/gazpar2haws/README.md`** - Brief description (rarely needs updates)
-- **`addons/gazpar2haws/rootfs/app/config/configuration.template.yaml`** - Uses env vars, usually no changes needed
-
-**When to update**: Version releases, pricing model changes, new features affecting configuration.
-
-**Critical**: The add-on config.yaml contains BOTH example configuration AND JSON schema definitions. Both must be updated together.
-
-#### 3. Test Configuration
-
-**Location**: `tests/config/`
-
-Files to update:
-- **`tests/config/example_1.yaml`** through **`tests/config/example_6bis.yaml`** - Test configurations for different pricing scenarios
-- **`tests/XLPricer.xlsx`** - Excel spreadsheet with expected pricing calculations
-
-**When to update**: Any changes to pricing formulas, new price types, or unit conversions.
-
-### Documentation Files
-
-#### 1. User Documentation
-
-**`README.md`** - Main project documentation
-- Installation instructions
-- Configuration examples
-- Entity descriptions (7 entities in v0.4.0)
-- Pricing section with all price types
-- Migration guides
-- FAQ section structure
-- Links to other documentation files
-
-**`FAQ.md`** - Frequently Asked Questions
-- Common configuration issues
-- Migration questions
-- Troubleshooting steps
-- References to specific GitHub issues
-
-**`CHANGELOG.md`** - Version history
-- Added/Changed/Fixed/Removed sections
-- Breaking changes clearly marked
-- Issue references with [#XX] format
-- Migration notes for breaking changes
-
-#### 2. Developer Documentation
-
-**`CLAUDE.md`** (this file) - Developer guidance
-- Architecture overview
-- Data flow descriptions
-- Pricing system details
-- Configuration format specifications
-- Testing guidelines
-- Maintenance procedures
-
-**`TODO.md`** - Planned improvements
-- Test coverage gaps
-- Priority-based task organization
-- Specific test cases needed
-- Implementation schedule
-
-#### 3. Add-on Documentation
-
-**`addons/gazpar2haws/DOCS.md`** - Add-on user guide
-- Detailed pricing examples (8+ examples)
-- Configuration parameter descriptions
-- Formulas showing cost calculations
-- "What's New" sections for version updates
-
-### Version Update Checklist
-
-When releasing a new version, ensure ALL of the following are updated:
-
-1. **Version Numbers**:
-   - `pyproject.toml` - Python package version
-   - `addons/gazpar2haws/config.yaml` - Add-on version (line 3)
-   - `CHANGELOG.md` - Add new version entry at top
-
-2. **Configuration Examples** (if pricing format changed):
-   - `config/configuration.yaml` - Update example pricing
-   - `config/configuration.template.yaml` - Update template
-   - `addons/gazpar2haws/config.yaml` - Options section (lines 31-64)
-   - All `tests/config/example_*.yaml` files
-
-3. **Schema Definitions** (if pricing format changed):
-   - `addons/gazpar2haws/config.yaml` - Schema section (lines 80-115)
-
-4. **Documentation Examples** (if pricing format changed):
-   - `README.md` - Pricing section examples
-   - `addons/gazpar2haws/DOCS.md` - All 8+ examples
-   - `FAQ.md` - Add migration questions if breaking changes
-
-5. **Architecture Documentation** (if entities or data flow changed):
-   - `README.md` - Entity list, architecture section
-   - `CLAUDE.md` - Published entities, data flow, architecture
-   - `addons/gazpar2haws/DOCS.md` - "What's New" section
-
-6. **Test Data** (if pricing formulas changed):
-   - `tests/XLPricer.xlsx` - Update expected calculations
-   - `tests/config/example_*.yaml` - Add new test scenarios
-
-### Property Naming Conventions
-
-When adding new configuration properties:
-
-- Use **snake_case** for all YAML properties
-- Use descriptive names that indicate the property's purpose
-- Group related properties with common prefixes:
-  - `quantity_*` for energy/volume-based values
-  - `time_*` for duration-based values
-  - `price_*` for monetary units
-  - `*_unit` for unit specifications
-  - `*_id` for references to other sections
-
-### Breaking Changes Protocol
-
-When introducing breaking changes to configuration:
-
-**Core Documentation Updates:**
-1. **MIGRATIONS.md**: Add comprehensive migration guide with:
-   - Before/after configuration examples
-   - Step-by-step migration instructions
-   - Validation checklist
-   - Troubleshooting section
-
-2. **CHANGELOG.md**: Mark "Migration" section and reference MIGRATIONS.md
-
-3. **README.md**: Add brief "What's New" section and warning banner linking to MIGRATIONS.md
-
-4. **FAQ.md**: Add Q&A about the migration, linking to MIGRATIONS.md for details
-
-**Add-on Documentation Updates (MUST NOT FORGET):**
-5. **addons/gazpar2haws/README.md**: Update migration guide link if needed
-6. **addons/gazpar2haws/DOCS.md**:
-   - Update all configuration examples to new format
-   - Add "Migration from vX.X.x" section with reference to MIGRATIONS.md
-   - Update pricing examples showing new property names
-7. **addons/gazpar2haws/config.yaml**: Update:
-   - Version number (line 3)
-   - Options section with example pricing (new format)
-   - Schema section with new property definitions
-
-**Code & Configuration Updates:**
-8. **Model validation**: Consider adding deprecation warnings before full removal
-9. **Version bump**: Use semantic versioning (breaking change = major version bump)
-
-### Cross-Reference Validation
-
-After making changes, verify consistency across:
-
-- Entity names match in README.md, CLAUDE.md, DOCS.md, and gazpar.py
-- Property names match in all configuration examples and schema definitions
-- Formulas match between DOCS.md examples and Pricer implementation
-- Version numbers match across all files
-- Migration guides reference the correct property mappings
-- **ADD-ON DOCUMENTATION**: Always check `addons/gazpar2haws/` folder for:
-  - `README.md` - Links to migration guides and documentation
-  - `DOCS.md` - Configuration examples and explanations
-  - `config.yaml` - Options section (examples) and schema section (validation)
-
-### Add-on Documentation Maintenance Reminder
-
-**⚠️ CRITICAL: Do NOT forget add-on documentation when making changes!**
-
-The `addons/gazpar2haws/` folder must be kept in sync with main documentation:
-
-1. **README.md** - Links to MIGRATIONS.md, FAQ.md, etc.
-2. **DOCS.md** - Configuration examples MUST match main documentation format
-3. **config.yaml** - Schema definitions MUST match configuration requirements
-4. **DOCS.md migration sections** - MUST reference MIGRATIONS.md for detailed steps
-
-**Checklist before releasing:**
-- [ ] Main README.md updated with new content
-- [ ] MIGRATIONS.md created/updated if breaking changes
-- [ ] FAQ.md updated with Q&A if needed
-- [ ] `addons/gazpar2haws/README.md` checked and updated
-- [ ] `addons/gazpar2haws/DOCS.md` examples match new format
-- [ ] `addons/gazpar2haws/config.yaml` options and schema match
-- [ ] Version number updated in `addons/gazpar2haws/config.yaml` line 3
-- [ ] All links verified (no broken references between docs)
-
-### Common Maintenance Scenarios
-
-**Scenario 1: Adding a new price type**
-1. Update `model.py` - Add Pydantic model
-2. Update `pricer.py` - Add calculation logic
-3. Update `gazpar.py` - Add entity and publishing logic
-4. Update all config files (config/, addons/, tests/)
-5. Update schema in `addons/gazpar2haws/config.yaml`
-6. Add example in `addons/gazpar2haws/DOCS.md`
-7. Update entity lists in README.md, CLAUDE.md
-8. Add test case in `tests/XLPricer.xlsx`
-
-**Scenario 2: Renaming configuration properties**
-1. Update `model.py` - Change property names
-2. Update all config files with new property names:
-   - `config/configuration.yaml`
-   - `config/configuration.template.yaml`
-   - `addons/gazpar2haws/config.yaml` (options AND schema sections)
-3. Update schema definitions in `addons/gazpar2haws/config.yaml`
-4. Update all documentation examples:
-   - `README.md`
-   - `addons/gazpar2haws/DOCS.md` (all pricing examples)
-5. Create/update migration guide in MIGRATIONS.md
-6. Add brief "What's New" to README.md with link to MIGRATIONS.md
-7. Update `addons/gazpar2haws/README.md` migration guide section
-8. Update `addons/gazpar2haws/DOCS.md` with migration section
-9. Add deprecation warnings if possible
-10. Update CHANGELOG.md with breaking change notice
-11. Add FAQ entry about migration
-
-**Scenario 3: Changing published entities**
-1. Update `gazpar.py` - Sensor name definitions and publishing logic
-2. Update entity lists in:
-   - `README.md` (Configuration section, "What's New" section)
-   - `CLAUDE.md` (Architecture section)
-   - `addons/gazpar2haws/DOCS.md` (entity descriptions)
-3. Update "What's New" section in both:
-   - `README.md`
-   - `addons/gazpar2haws/DOCS.md`
-4. Update CHANGELOG.md with entity changes
-5. Consider impact on existing Home Assistant installations
-6. If entity names changed: Add migration note to MIGRATIONS.md and `addons/gazpar2haws/DOCS.md`
-
-### File Location Quick Reference
+### Directory Layout
 
 ```
-Configuration Files:
-├── config/configuration.yaml              # Main example config
-├── config/configuration.template.yaml     # Docker template
-├── config/secrets.template.yaml           # Secrets template
-├── addons/gazpar2haws/config.yaml        # Add-on config + schema
-└── tests/config/example_*.yaml           # Test configurations
-
-Documentation Files:
-├── README.md                              # Main user docs (overview, features, quick links)
-├── MIGRATIONS.md                          # Version upgrade guides (breaking changes, step-by-step)
-├── FAQ.md                                 # User questions (links to MIGRATIONS.md for upgrades)
-├── CHANGELOG.md                           # Version history (links to MIGRATIONS.md for breaking changes)
-├── CLAUDE.md                              # Developer guide
-├── TODO.md                                # Planned improvements
-└── addons/gazpar2haws/DOCS.md            # Add-on user guide (links to MIGRATIONS.md)
-
-Test Data:
-└── tests/XLPricer.xlsx                   # Expected pricing calculations
+gazpar2haws/
+├── gazpar2haws/           # Source code
+│   ├── __init__.py
+│   ├── __main__.py        # Entry point
+│   ├── bridge.py          # Orchestrator
+│   ├── gazpar.py          # Business logic
+│   ├── haws.py            # Home Assistant WebSocket client
+│   ├── pricer.py          # Cost calculation
+│   ├── configuration.py   # Configuration model
+│   ├── config_utils.py    # Config loading utilities
+│   ├── model.py           # Pydantic models
+│   ├── date_array.py      # Date-indexed array
+│   ├── datetime_utils.py  # Date/time utilities
+│   └── version.py         # Version info
+├── tests/                 # Test suite
+│   ├── config/            # Test configurations
+│   ├── test_*.py          # Test modules
+│   └── conftest.py        # Pytest fixtures
+├── docker/                # Docker configuration
+├── addons/                # Home Assistant add-on
+├── docs/                  # Documentation
+├── pyproject.toml         # Project configuration
+├── README.md              # User documentation
+├── FAQ.md                 # Frequently asked questions
+├── CHANGELOG.md           # Version history
+├── MIGRATIONS.md          # Migration guides
+└── TODO.md                # Test coverage TODO
 ```
+
+### Module Descriptions
+
+| Module | Purpose | Key Classes/Functions |
+|--------|---------|----------------------|
+| `__main__.py` | Application entry point | `main()` |
+| `bridge.py` | Application orchestrator | `Bridge` |
+| `gazpar.py` | GrDF data retrieval & publishing | `Gazpar` |
+| `haws.py` | Home Assistant WebSocket client | `HomeAssistantWS` |
+| `pricer.py` | Cost calculation engine | `Pricer` |
+| `configuration.py` | Configuration model | `Configuration` |
+| `config_utils.py` | Config loading utilities | `load_config()`, `resolve_secrets()` |
+| `model.py` | Data models | `Device`, `Pricing`, `CompositePriceValue`, `CostBreakdown` |
+| `date_array.py` | Date-indexed arrays | `DateArray` |
+| `datetime_utils.py` | Date/time utilities | Various date functions |
+
+### Key Files
+
+- **`pyproject.toml`**: Project metadata, dependencies, tool configurations
+- **`poetry.lock`**: Locked dependency versions
+- **`.github/workflows/`**: CI/CD workflows (build, test, publish)
+- **`Dockerfile`**: Docker image build configuration
+- **`tests/config/example_*.yaml`**: Example configurations for testing
+
+---
+
+## Development Workflow
+
+### Git Conventions
+
+This project follows **[Conventional Commits](https://www.conventionalcommits.org/)** and **[Semantic Versioning](https://semver.org/)** specifications.
+
+#### Git Branching Strategy (Gitflow)
+
+This project uses the **[Gitflow](https://nvie.com/posts/a-successful-git-branching-model/)** branching model for managing releases and development.
+
+**Main Branches** (permanent):
+- `main` – Production-ready code. Every commit represents a released version.
+- `develop` – Integration branch for features. Contains the latest development changes for the next release.
+
+**Supporting Branches** (temporary):
+- `feature/*` – New features (branch from `develop`, merge back to `develop`)
+- `release/*` – Release preparation (branch from `develop`, merge to `main` and `develop`)
+- `hotfix/*` – Urgent production fixes (branch from `main`, merge to `main` and `develop`)
+- `bugfix/*` – Bug fixes (branch from `develop`, merge back to `develop`)
+
+**Workflow Diagram**:
+
+```
+main        ──●────────────●────────●────────▶
+              │  hotfix/   │        │ release
+              │            │        │
+develop  ─────●────●───●───●────●───●────────▶
+                   │   │        │
+feature/          ●───●        ●────●
+                 feature/    feature/
+```
+
+**Detailed Workflow**:
+
+1. **Feature Development**:
+   ```bash
+   # Create feature branch from develop
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/123-my_new_feature
+
+   # Work on feature...
+   git add .
+   git commit -m "feat: add new feature (#123)"
+
+   # Merge back to develop when complete
+   git checkout develop
+   git merge --no-ff feature/123-my_new_feature
+   git push origin develop
+   git branch -d feature/123-my_new_feature
+   ```
+
+2. **Release Preparation**:
+   ```bash
+   # Create release branch from develop
+   git checkout develop
+   git checkout -b release/0.6.0
+
+   # Bump version in pyproject.toml
+   # Update CHANGELOG.md
+   # Perform final testing and bug fixes
+   git commit -m "chore: prepare release 0.6.0"
+
+   # Merge to main
+   git checkout main
+   git merge --no-ff release/0.6.0
+   git tag -a v0.6.0 -m "Release version 0.6.0"
+   git push origin main --tags
+
+   # Merge back to develop
+   git checkout develop
+   git merge --no-ff release/0.6.0
+   git push origin develop
+
+   # Delete release branch
+   git branch -d release/0.6.0
+   ```
+
+3. **Hotfix for Production**:
+   ```bash
+   # Create hotfix branch from main
+   git checkout main
+   git checkout -b hotfix/0.6.1-critical_fix
+
+   # Fix the issue
+   git add .
+   git commit -m "fix: resolve critical security issue (#456)"
+
+   # Bump version to 0.6.1
+   # Update CHANGELOG.md
+   git commit -m "chore: bump version to 0.6.1"
+
+   # Merge to main
+   git checkout main
+   git merge --no-ff hotfix/0.6.1-critical_fix
+   git tag -a v0.6.1 -m "Hotfix version 0.6.1"
+   git push origin main --tags
+
+   # Merge back to develop
+   git checkout develop
+   git merge --no-ff hotfix/0.6.1-critical_fix
+   git push origin develop
+
+   # Delete hotfix branch
+   git branch -d hotfix/0.6.1-critical_fix
+   ```
+
+4. **Bug Fixes** (non-urgent):
+   ```bash
+   # Create bugfix branch from develop
+   git checkout develop
+   git checkout -b bugfix/789-fix_validation_error
+
+   # Fix the bug
+   git commit -m "fix: correct validation logic (#789)"
+
+   # Merge back to develop
+   git checkout develop
+   git merge --no-ff bugfix/789-fix_validation_error
+   git push origin develop
+   git branch -d bugfix/789-fix_validation_error
+   ```
+
+**Branch Lifetime**:
+- `main` and `develop` – Permanent (never deleted)
+- `feature/*`, `bugfix/*` – Exist until merged to `develop`, then deleted
+- `release/*` – Exist until merged to `main` and `develop`, then deleted
+- `hotfix/*` – Exist until merged to `main` and `develop`, then deleted
+
+**Key Principles**:
+- Never commit directly to `main` or `develop` (except emergency hotfixes)
+- Use `--no-ff` (no fast-forward) for merges to preserve branch history
+- Always tag releases on `main` with version number
+- Keep `develop` up-to-date with `main` after releases/hotfixes
+
+**Why Gitflow?**
+✅ Clear separation between production and development code
+✅ Structured release process
+✅ Parallel development of features
+✅ Support for emergency hotfixes
+✅ Clean and traceable history
+
+**Reference**: [A successful Git branching model](https://nvie.com/posts/a-successful-git-branching-model/) by Vincent Driessen
+
+#### Branch Naming
+
+**Format**: `<type>/<issue-id>-<brief_description>`
+
+Use underscores (`_`) to separate words in the description (consistent with Python snake_case convention).
+
+**Branch Types**:
+- `feature/` – New features
+- `fix/` or `bugfix/` – Bug fixes
+- `docs/` – Documentation only changes
+- `refactor/` – Code refactoring (no functional changes)
+- `test/` – Adding or updating tests
+- `chore/` – Maintenance tasks (dependencies, tooling)
+- `hotfix/` – Urgent production fixes
+- `release/` – Release preparation
+
+**Examples**:
+```bash
+feature/108-flexible_pricing_components
+fix/109-invalid_statistic_id_error
+docs/110-update_developer_guide
+refactor/111-simplify_pricer_logic
+test/112-add_config_utils_tests
+chore/113-update_dependencies
+hotfix/114-critical_security_patch
+release/0.5.0
+```
+
+#### Commit Messages
+
+**Format**:
+```
+<type>[optional scope]: <description> (#<issue-id>)
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Commit Types**:
+- `feat` – New feature
+- `fix` – Bug fix
+- `docs` – Documentation changes
+- `style` – Code style (formatting, no logic change)
+- `refactor` – Code refactoring
+- `perf` – Performance improvements
+- `test` – Adding or updating tests
+- `build` – Build system changes
+- `ci` – CI/CD changes
+- `chore` – Maintenance tasks
+- `revert` – Revert previous commit
+
+**Scope** (optional): Component being changed
+```bash
+feat(pricer): add composite price support
+fix(haws): resolve WebSocket connection timeout
+docs(readme): update installation instructions
+```
+
+**Description Rules**:
+- Use imperative mood: "add" not "added" or "adds"
+- Don't capitalize first letter
+- No period at the end
+- Keep under 72 characters
+- Include `(#123)` for issue reference
+
+**Body** (optional):
+- Explain what and why, not how
+- Wrap at 72 characters per line
+- Separated from description by blank line
+
+**Footer** (optional):
+- `Closes #123` – Auto-closes issue on merge
+- `Fixes #123` – Auto-closes bug issue on merge
+- `Resolves #123` – Auto-closes issue on merge
+- `Refs #123` – References issue without closing
+- `BREAKING CHANGE:` – Describes breaking changes
+
+**Examples**:
+
+```bash
+# Simple commit
+feat: add flexible pricing components (#108)
+
+# With scope
+feat(pricer): add flexible pricing components (#108)
+
+# With body
+feat: add flexible pricing components (#108)
+
+Implements unlimited custom pricing component names instead of being
+limited to 4 hardcoded names. Users can now define components like
+carbon_tax, distribution_cost, peak_rate, etc.
+
+# With footer (auto-closes issue on merge)
+feat: add flexible pricing components (#108)
+
+Implements unlimited custom pricing component names instead of being
+limited to 4 hardcoded names.
+
+Closes #108
+
+# Breaking change
+feat!: change pricing configuration format (#83)
+
+BREAKING CHANGE: Pricing configuration format has changed.
+- Renamed `value` to `quantity_value`/`time_value`
+- Renamed `value_unit` to `price_unit`
+- Renamed `base_unit` to `quantity_unit`/`time_unit`
+
+See MIGRATIONS.md for upgrade instructions.
+
+Closes #83
+
+# Multiple issues
+fix: resolve entity naming and validation issues (#109, #92)
+
+- Ensure entity names follow HA conventions
+- Add validation for uppercase/special characters
+- Update documentation with naming rules
+
+Fixes #109, #92
+```
+
+**GitHub Auto-linking & Auto-closing**:
+- Any `#123` in commit message creates clickable link to issue
+- Keywords `Closes`, `Fixes`, `Resolves` in body/footer auto-close issues on merge to main
+- Use `(#123)` in description for visibility in `git log --oneline`
+- Use `Closes #123` in footer to auto-close issue
+
+#### Quick Reference
+
+```bash
+# Create branch
+git checkout -b feature/123-brief_description
+
+# Commit during development
+git commit -m "feat: add validation logic (#123)"
+git commit -m "feat: add unit tests (#123)"
+git commit -m "feat: update documentation (#123)"
+
+# Final commit when merging (squash commits if needed)
+git commit -m "feat: add flexible pricing components (#123)
+
+Detailed explanation of the feature.
+
+Closes #123"
+```
+
+### Making Changes
+
+Follow this workflow for feature development (using Gitflow):
+
+1. **Ensure you have the latest develop branch**:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   ```
+
+2. **Create a feature branch from develop**:
+   ```bash
+   git checkout -b feature/123-my_feature
+   ```
+
+3. **Make your changes**:
+   - Write code
+   - Add tests
+   - Update documentation
+
+4. **Run code quality checks**:
+   ```bash
+   # Format code
+   poetry run black gazpar2haws
+   poetry run isort gazpar2haws
+
+   # Lint code
+   poetry run pylint gazpar2haws
+   poetry run flake8 gazpar2haws
+   poetry run ruff check gazpar2haws
+
+   # Type check
+   poetry run mypy gazpar2haws
+   ```
+
+5. **Run tests**:
+   ```bash
+   poetry run pytest
+   ```
+
+6. **Commit your changes**:
+   ```bash
+   git add .
+   git commit -m "feat: add new feature (#123)"
+   ```
+
+7. **Push your feature branch**:
+   ```bash
+   git push origin feature/123-my_feature
+   ```
+
+8. **Create a pull request**:
+   - Target: `develop` branch (not `main`)
+   - Title: Use conventional commit format
+   - Description: Reference the issue, describe changes, testing done
+   - Request review from maintainers
+
+9. **After PR approval and merge**:
+   ```bash
+   # Update your local develop branch
+   git checkout develop
+   git pull origin develop
+
+   # Delete the feature branch
+   git branch -d feature/123-my_feature
+   ```
+
+**Note**: For urgent production **hotfixes**, branch from `main` instead of `develop` and merge to both `main` and `develop`.
+
+---
+
+## Testing
+
+### Testing Strategy Overview
+
+This project uses multiple testing approaches for comprehensive coverage:
+
+| Testing Type | Tool/Method | Location | Use Case |
+|--------------|-------------|----------|----------|
+| **Unit Tests** | pytest | `tests/test_*.py` | Fast feedback for core logic |
+| **Integration Tests** | pytest + HA container | `tests/test_haws.py` | WebSocket API validation |
+| **Add-on E2E Testing** | DevContainer + HA | [.devcontainer/README.md](../.devcontainer/README.md) | Full add-on deployment testing |
+| **Multi-arch Builds** | Docker buildx | CI/CD pipeline | Architecture compatibility |
+
+**For complete add-on testing guide with step-by-step instructions, see [.devcontainer/README.md](../.devcontainer/README.md)**
+
+### Test Structure
+
+Tests are organized in the `tests/` directory:
+
+```
+tests/
+├── conftest.py              # Pytest fixtures
+├── test_bridge.py           # Bridge tests
+├── test_gazpar.py           # Gazpar tests
+├── test_haws.py             # Home Assistant WS tests
+├── test_pricer.py           # Pricer tests
+├── test_date_array.py       # DateArray tests
+├── test_configuration.py    # Configuration tests
+└── config/                  # Test configuration files
+    ├── example_1.yaml       # Basic configuration
+    ├── example_2.yaml       # With pricing
+    └── secrets_example.yaml # Secrets template
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+poetry run pytest
+
+# Run with coverage
+poetry run pytest --cov=gazpar2haws --cov-report=html
+
+# Run specific test file
+poetry run pytest tests/test_pricer.py
+
+# Run specific test
+poetry run pytest tests/test_pricer.py::test_compute_cost
+
+# Run with verbose output
+poetry run pytest -v
+
+# Run with debug output
+poetry run pytest -s
+```
+
+### Writing Tests
+
+#### Unit Test Example
+
+```python
+import pytest
+from gazpar2haws.pricer import Pricer
+from gazpar2haws.model import Pricing
+
+def test_compute_cost_basic():
+    """Test basic cost computation with quantity-based pricing"""
+    # Arrange
+    pricing = Pricing(
+        vat=[{"id": "normal", "start_date": "2023-01-01", "value": 0.20}],
+        consumption_prices=[
+            {
+                "start_date": "2023-01-01",
+                "quantity_value": 0.10,
+                "quantity_unit": "kWh",
+                "price_unit": "€",
+                "vat_id": "normal"
+            }
+        ]
+    )
+    pricer = Pricer(pricing)
+
+    # Act
+    result = pricer.compute(quantities=[100], start_date="2023-01-01")
+
+    # Assert
+    assert result.consumption_cost == pytest.approx(12.0)  # 100 * 0.10 * 1.20
+```
+
+#### Async Test Example
+
+```python
+import pytest
+from gazpar2haws.haws import HomeAssistantWS
+
+@pytest.mark.asyncio
+async def test_connect_success(mock_websocket):
+    """Test successful WebSocket connection"""
+    # Arrange
+    haws = HomeAssistantWS("localhost", 8123, "/api/websocket", "token")
+
+    # Act
+    await haws.connect()
+
+    # Assert
+    assert haws.is_connected()
+```
+
+### Test Coverage
+
+Current test coverage goals (see [TODO.md](TODO.md) for details):
+
+| Module | Current | Target |
+|--------|---------|--------|
+| config_utils.py | 0% | 90%+ |
+| model.py | 10% | 80%+ |
+| bridge.py | 20% | 80%+ |
+| gazpar.py | 60% | 85%+ |
+| pricer.py | 75% | 90%+ |
+| haws.py | 85% | 90%+ |
+| date_array.py | 80% | 90%+ |
+
+**View coverage report**:
+```bash
+poetry run pytest --cov=gazpar2haws --cov-report=html
+open htmlcov/index.html  # macOS
+xdg-open htmlcov/index.html  # Linux
+start htmlcov/index.html  # Windows
+```
+
+### Mocking
+
+Tests use `unittest.mock` or `pytest-mock` for mocking external dependencies:
+
+```python
+from unittest.mock import Mock, patch
+
+@patch('gazpar2haws.gazpar.Client')
+def test_gazpar_fetch_data(mock_client):
+    """Test GrDF data fetching"""
+    # Arrange
+    mock_client.return_value.get_data.return_value = {"data": [...]}
+
+    # Act & Assert
+    # ... test code
+```
+
+---
+
+## Code Quality
+
+### Code Formatting
+
+**Black** is used for code formatting:
+```bash
+# Format all code
+poetry run black gazpar2haws tests
+
+# Check formatting without changes
+poetry run black --check gazpar2haws tests
+```
+
+**isort** is used for import sorting:
+```bash
+# Sort imports
+poetry run isort gazpar2haws tests
+
+# Check import order
+poetry run isort --check gazpar2haws tests
+```
+
+### Linting
+
+Multiple linters are used:
+
+```bash
+# Pylint
+poetry run pylint gazpar2haws
+
+# Flake8
+poetry run flake8 gazpar2haws
+
+# Ruff (fast linter)
+poetry run ruff check gazpar2haws
+```
+
+### Type Checking
+
+**mypy** is used for static type checking:
+```bash
+poetry run mypy gazpar2haws
+```
+
+### Configuration
+
+Tool configurations are in `pyproject.toml`:
+
+```toml
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = "C,W1203,R0902,R0913,R0914,R0917,R0801"
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203", "W503"]
+```
+
+### Pre-commit Checks
+
+Before committing, run:
+```bash
+# Format code
+poetry run black gazpar2haws tests
+poetry run isort gazpar2haws tests
+
+# Lint
+poetry run pylint gazpar2haws
+poetry run ruff check gazpar2haws
+
+# Test
+poetry run pytest
+```
+
+---
+
+## Contributing
+
+### Guidelines
+
+1. **Read existing documentation**: FAQ, README, CHANGELOG
+2. **Check open issues**: Avoid duplicate work
+3. **Create an issue first**: For significant changes, discuss in an issue
+4. **Write tests**: All new features must have tests
+5. **Update documentation**: Update relevant docs (README, FAQ, etc.)
+6. **Follow code style**: Use black, isort, and pass linters
+7. **Write clear commit messages**: Follow conventional commits
+
+### Pull Request Process
+
+1. **Fork the repository** and create a feature branch
+2. **Make your changes** with tests and documentation
+3. **Run all quality checks** (formatting, linting, tests)
+4. **Create a pull request** with:
+   - Clear title and description
+   - Reference to related issues
+   - Screenshots/examples if applicable
+5. **Address review feedback** promptly
+6. **Squash commits** if requested
+
+### Code Review Checklist
+
+- [ ] Code follows project style guidelines
+- [ ] Tests are added and passing
+- [ ] Documentation is updated
+- [ ] No breaking changes (or properly documented)
+- [ ] Commit messages are clear
+- [ ] No sensitive data in commits
+
+---
+
+## Build & Release
+
+### CI/CD Pipeline
+
+This project uses **GitHub Actions** for automated Continuous Integration and Continuous Deployment.
+
+#### 🔄 CI Workflow (Automated)
+
+**File**: `.github/workflows/ci.yaml`
+
+**Triggered on**:
+- Push to `main`, `develop`, `release/*`, `feature/*` branches
+- All pull requests
+- Manual trigger via GitHub UI (with options to skip lint/tests)
+
+**Jobs**:
+1. **Prepare** – Compute version and environment info
+2. **Lint** – Run code quality checks:
+   - `black --check` (formatting)
+   - `isort --check` (import sorting)
+   - `pylint` (static analysis)
+   - `flake8` (style guide enforcement)
+   - `ruff` (fast linting)
+   - `mypy` (type checking)
+3. **Test** – Run test suite on multiple Python versions:
+   - Python 3.10, 3.11, 3.12, 3.13
+   - Full pytest suite with coverage
+
+**How to view CI results**:
+- Go to the GitHub repository → "Actions" tab
+- View logs and results for each workflow run
+- Failed checks block PR merges
+
+**Manual trigger**:
+```bash
+# Via GitHub UI:
+# 1. Go to Actions → CI
+# 2. Click "Run workflow"
+# 3. Select branch
+# 4. Optionally skip lint/tests for quick runs
+```
+
+#### 🚀 Create Release Workflow (Manual)
+
+**File**: `.github/workflows/create-release.yaml`
+
+**Purpose**: Full release pipeline for production releases
+
+**Triggered**: Manually via GitHub Actions UI only
+
+**Process**:
+1. **Prepare** – Compute or use specified version
+2. **Build**:
+   - Bump version in `pyproject.toml`, `addons/gazpar2haws/config.yaml`, `addons/gazpar2haws/build.yaml`
+   - Commit changes
+   - Create Git tag
+   - Build Python wheel and source distribution
+3. **Publish to PyPI**:
+   - If branch is `main`, `develop`, or `release/*` → Publish to **PyPI**
+   - Otherwise → Publish to **TestPyPI** (for testing)
+4. **Publish Docker Image**:
+   - Build Docker image
+   - Push to DockerHub (`ssenart/gazpar2haws`)
+   - Tag with version number
+   - Optionally tag as `latest` (if final release)
+
+**How to trigger**:
+1. Go to GitHub repository → "Actions" tab
+2. Select "Create Release" workflow
+3. Click "Run workflow"
+4. Fill in parameters:
+   - **Package version** (optional, auto-computed if empty)
+   - **Is final release** (checkbox for tagging as `latest`)
+5. Click "Run workflow"
+
+**Parameters**:
+- `package-version` (optional): Override version (e.g., `0.5.0`, `0.6.0a1`)
+- `is_final` (boolean): If true, Docker image is tagged as `latest`
+
+**Example usage**:
+```yaml
+# Alpha release (development)
+Package version: 0.6.0a1
+Is final: false (unchecked)
+# → Publishes as 0.6.0a1, no 'latest' tag
+
+# Beta release (pre-release)
+Package version: 0.6.0b1
+Is final: false (unchecked)
+# → Publishes as 0.6.0b1, no 'latest' tag
+
+# Final release (production)
+Package version: 0.6.0
+Is final: true (checked)
+# → Publishes as 0.6.0 AND tags as 'latest'
+```
+
+#### 🐳 Publish to DockerHub Workflow (Manual)
+
+**File**: `.github/workflows/publish-to-dockerhub.yaml`
+
+**Purpose**: Republish Docker image (without creating release)
+
+**Triggered**: Manually via GitHub Actions UI only
+
+**Use cases**:
+- Rebuild Docker image for existing version
+- Update `latest` tag without new release
+- Test Docker build process
+
+**How to trigger**:
+1. Go to GitHub repository → "Actions" tab
+2. Select "Publish to DockerHub" workflow
+3. Click "Run workflow"
+4. Fill in parameters:
+   - **Package version** (optional)
+   - **Update 'latest' tag** (boolean)
+5. Click "Run workflow"
+
+---
+
+### Version Management
+
+#### Semantic Versioning
+
+This project follows **[Semantic Versioning](https://semver.org/)** (SemVer):
+
+**Format**: `MAJOR.MINOR.PATCH[-prerelease][+build]`
+
+**Version increments**:
+- **MAJOR** (1.0.0 → 2.0.0) – Breaking changes, incompatible API changes
+- **MINOR** (0.5.0 → 0.6.0) – New features, backward-compatible
+- **PATCH** (0.5.0 → 0.5.1) – Bug fixes, backward-compatible
+
+**Pre-release versions**:
+- **Alpha** (`0.6.0a1`, `0.6.0a2`) – Early development, unstable
+- **Beta** (`0.6.0b1`, `0.6.0b2`) – Feature complete, testing
+- **Release Candidate** (`0.6.0rc1`) – Final testing before release
+
+**Examples**:
+```
+0.5.0       → Stable release
+0.6.0a1     → Alpha (early development)
+0.6.0a2     → Alpha 2 (fixes/updates)
+0.6.0b1     → Beta (feature-complete)
+0.6.0rc1    → Release candidate
+0.6.0       → Final release
+0.6.1       → Patch/bugfix
+```
+
+#### Version Storage
+
+Version is stored in multiple files:
+
+**`pyproject.toml`** (source of truth):
+```toml
+[project]
+version = "0.5.0"
+```
+
+**`addons/gazpar2haws/config.yaml`** (Home Assistant add-on):
+```yaml
+version: "0.5.0"
+```
+
+**`addons/gazpar2haws/build.yaml`** (Docker build):
+```yaml
+args:
+  GAZPAR2HAWS_VERSION: "0.5.0"
+```
+
+**Note**: The CI/CD pipeline automatically updates all three files when creating a release.
+
+---
+
+### Release Process (Gitflow)
+
+#### 1. Development Phase
+
+**Work on features in `develop` branch**:
+```bash
+git checkout develop
+git checkout -b feature/123-new_feature
+# ... develop feature ...
+git checkout develop
+git merge --no-ff feature/123-new_feature
+git push origin develop
+```
+
+#### 2. Release Preparation
+
+**Create release branch from `develop`**:
+```bash
+git checkout develop
+git checkout -b release/0.6.0
+```
+
+**Update CHANGELOG.md**:
+```markdown
+## [0.6.0] - 2026-02-15
+
+### Added
+- New feature X (#123)
+- New feature Y (#456)
+
+### Fixed
+- Bug fix Z (#789)
+
+### Changed
+- Updated dependency A to v2.0
+```
+
+**Commit and push**:
+```bash
+git add CHANGELOG.md
+git commit -m "docs: update CHANGELOG for v0.6.0"
+git push origin release/0.6.0
+```
+
+**Test the release branch** – Run final integration tests, QA
+
+#### 3. Trigger Release via GitHub Actions
+
+**Go to GitHub Actions** → "Create Release" workflow:
+- **Package version**: `0.6.0`
+- **Is final release**: ✅ (checked)
+
+**What happens automatically**:
+1. Bumps version in all files
+2. Commits changes to current branch
+3. Creates Git tag `0.6.0`
+4. Builds Python package
+5. Publishes to PyPI
+6. Builds and publishes Docker image (tagged `0.6.0` and `latest`)
+
+#### 4. Merge Release to Main
+
+**After successful release**:
+```bash
+# Merge release to main
+git checkout main
+git merge --no-ff release/0.6.0
+git push origin main
+
+# Merge release back to develop
+git checkout develop
+git merge --no-ff release/0.6.0
+git push origin develop
+
+# Delete release branch
+git branch -d release/0.6.0
+git push origin --delete release/0.6.0
+```
+
+#### 5. Create GitHub Release (Optional)
+
+Go to GitHub → Releases → Create new release:
+- **Tag**: Select `0.6.0`
+- **Release title**: `v0.6.0`
+- **Description**: Copy from CHANGELOG.md
+- **Attach binaries** (optional): Add wheel/tar.gz from artifacts
+
+---
+
+### Hotfix Process
+
+For urgent production fixes:
+
+#### 1. Create Hotfix Branch from Main
+
+```bash
+git checkout main
+git checkout -b hotfix/0.5.1-critical_security_fix
+```
+
+#### 2. Make the Fix
+
+```bash
+# Fix the issue
+git add .
+git commit -m "fix: resolve critical security vulnerability (#999)"
+```
+
+#### 3. Update CHANGELOG
+
+```markdown
+## [0.5.1] - 2026-02-01
+
+### Fixed
+- Critical security vulnerability in authentication (#999)
+```
+
+```bash
+git add CHANGELOG.md
+git commit -m "docs: update CHANGELOG for v0.5.1"
+git push origin hotfix/0.5.1-critical_security_fix
+```
+
+#### 4. Trigger Release
+
+**GitHub Actions** → "Create Release":
+- **Package version**: `0.5.1`
+- **Is final release**: ✅ (checked)
+
+#### 5. Merge Hotfix
+
+```bash
+# Merge to main
+git checkout main
+git merge --no-ff hotfix/0.5.1-critical_security_fix
+git push origin main
+
+# Merge to develop
+git checkout develop
+git merge --no-ff hotfix/0.5.1-critical_security_fix
+git push origin develop
+
+# Delete hotfix branch
+git branch -d hotfix/0.5.1-critical_security_fix
+```
+
+---
+
+### Pre-release Process (Alpha/Beta)
+
+For testing releases before final:
+
+#### Alpha Release (Early Development)
+
+```bash
+# In develop branch
+git checkout develop
+
+# GitHub Actions → "Create Release"
+# Package version: 0.6.0a1
+# Is final: ❌ (unchecked)
+```
+
+**Published to**:
+- PyPI as `0.6.0a1`
+- DockerHub as `0.6.0a1` (NOT `latest`)
+- TestPyPI (if not from main/develop)
+
+#### Beta Release (Feature Complete)
+
+```bash
+# In release branch
+git checkout release/0.6.0
+
+# GitHub Actions → "Create Release"
+# Package version: 0.6.0b1
+# Is final: ❌ (unchecked)
+```
+
+#### Release Candidate
+
+```bash
+# In release branch
+git checkout release/0.6.0
+
+# GitHub Actions → "Create Release"
+# Package version: 0.6.0rc1
+# Is final: ❌ (unchecked)
+```
+
+---
+
+### Local Build & Testing
+
+#### Build Python Package Locally
+
+```bash
+# Install build dependencies
+poetry install
+
+# Build wheel and source distribution
+poetry build
+
+# Output in dist/
+ls dist/
+# gazpar2haws-0.5.0-py3-none-any.whl
+# gazpar2haws-0.5.0.tar.gz
+```
+
+#### Build Docker Image Locally
+
+```bash
+# Build image
+cd docker
+docker build -t gazpar2haws:dev .
+
+# Test image
+docker run --rm gazpar2haws:dev --version
+```
+
+#### Test PyPI Package Locally
+
+```bash
+# Install from local build
+pip install dist/gazpar2haws-0.5.0-py3-none-any.whl
+
+# Or install in editable mode for development
+poetry install
+```
+
+---
+
+### CI/CD Secrets Configuration
+
+Required GitHub Secrets (configured in repository settings):
+
+**Docker**:
+- `DOCKERHUB_USERNAME` – DockerHub username
+- `DOCKERHUB_PASSWORD` – DockerHub access token
+
+**PyPI** (uses Trusted Publishing, no tokens needed):
+- Configured in PyPI project settings
+- GitHub Actions OIDC authentication
+
+**How to configure secrets**:
+1. Go to GitHub repository → Settings → Secrets and variables → Actions
+2. Add repository secrets
+3. Never commit secrets to code!
+
+---
+
+### Monitoring CI/CD
+
+#### View Workflow Runs
+
+**GitHub UI**:
+- Repository → Actions tab
+- Filter by workflow name
+- View logs, artifacts, and status
+
+#### Check Build Status
+
+**Badges** (add to README.md):
+```markdown
+![CI](https://github.com/ssenart/gazpar2haws/workflows/CI/badge.svg)
+```
+
+#### Download Artifacts
+
+**After workflow completion**:
+1. Go to workflow run
+2. Scroll to "Artifacts" section
+3. Download built packages
+
+---
+
+### Troubleshooting CI/CD
+
+#### CI Fails on Lint
+
+**Problem**: Code doesn't pass linting checks
+
+**Solution**:
+```bash
+# Run locally before pushing
+poetry run black gazpar2haws tests
+poetry run isort gazpar2haws tests
+poetry run pylint gazpar2haws
+poetry run mypy gazpar2haws tests
+```
+
+#### CI Fails on Tests
+
+**Problem**: Tests fail in CI but pass locally
+
+**Solution**:
+- Check Python version compatibility (CI tests 3.10-3.13)
+- Check for environment-specific dependencies
+- Review CI logs for specific failure
+
+#### Release Workflow Fails
+
+**Common issues**:
+- Invalid version format (must follow SemVer)
+- Git tag already exists
+- PyPI version already published
+- Missing DockerHub credentials
+
+**Solution**: Check workflow logs for specific error message
+
+---
+
+### Summary: Release Checklist
+
+**For Standard Release**:
+- [ ] Create `release/X.Y.Z` branch from `develop`
+- [ ] Update CHANGELOG.md
+- [ ] Test the release branch
+- [ ] Trigger "Create Release" workflow (version `X.Y.Z`, final=true)
+- [ ] Verify PyPI publication: https://pypi.org/project/gazpar2haws/
+- [ ] Verify DockerHub: https://hub.docker.com/r/ssenart/gazpar2haws
+- [ ] Merge release to `main`
+- [ ] Merge release back to `develop`
+- [ ] Delete release branch
+- [ ] Create GitHub Release (optional)
+
+**For Hotfix**:
+- [ ] Create `hotfix/X.Y.Z-description` from `main`
+- [ ] Fix the issue and update CHANGELOG
+- [ ] Trigger "Create Release" workflow (version `X.Y.Z`, final=true)
+- [ ] Merge hotfix to `main`
+- [ ] Merge hotfix to `develop`
+- [ ] Delete hotfix branch
+
+**For Pre-release** (Alpha/Beta):
+- [ ] Trigger "Create Release" workflow (version `X.Y.Za1/b1`, final=false)
+- [ ] Test the pre-release
+- [ ] Gather feedback
+- [ ] Iterate or proceed to final release
+
+---
+
+## Troubleshooting
+
+### Common Development Issues
+
+#### Issue: Poetry lock file conflicts
+
+**Solution**:
+```bash
+poetry lock --no-update
+git add poetry.lock
+```
+
+#### Issue: Tests fail with "Connection refused"
+
+**Solution**: Ensure you're not trying to connect to a real Home Assistant instance in unit tests. Use mocks:
+```python
+@patch('gazpar2haws.haws.websockets.connect')
+def test_my_function(mock_connect):
+    # ... test code
+```
+
+#### Issue: Import errors in tests
+
+**Solution**: Install the package in development mode:
+```bash
+poetry install
+```
+
+#### Issue: Coverage report not generated
+
+**Solution**: Install coverage plugin:
+```bash
+poetry add --group dev pytest-cov
+```
+
+### Debugging
+
+#### Enable debug logging
+
+In your test configuration:
+```yaml
+logging:
+  level: debug
+  console: true
+```
+
+#### Debug with pytest
+
+```bash
+# Run with verbose output
+poetry run pytest -v -s
+
+# Debug specific test
+poetry run pytest tests/test_file.py::test_name -v -s
+
+# Drop into debugger on failure
+poetry run pytest --pdb
+```
+
+#### Debug in IDE
+
+Most IDEs (PyCharm, VSCode) support debugging pytest tests directly. Set breakpoints and run tests in debug mode.
+
+### Getting Help
+
+- **GitHub Issues**: https://github.com/ssenart/gazpar2haws/issues
+- **GitHub Discussions**: https://github.com/ssenart/gazpar2haws/discussions
+- **FAQ**: [FAQ.md](FAQ.md)
+
+---
+
+## Additional Resources
+
+- **User Documentation**: [README.md](../README.md)
+- **Migration Guides**: [MIGRATIONS_GUIDE.md](MIGRATIONS_GUIDE.md)
+- **Frequently Asked Questions**: [FAQ.md](FAQ.md)
+- **Version History**: [CHANGELOG.md](../CHANGELOG.md)
+- **Test Coverage TODO**: [TODO.md](TODO.md)
+- **Flexible Pricing Guide**: [FLEXIBLE_PRICING_GUIDE.md](FLEXIBLE_PRICING_GUIDE.md)
+
+---
+
+**Last Updated**: 2026-01-31
+**Version**: 0.5.0
+**Maintainer**: Stéphane Senart

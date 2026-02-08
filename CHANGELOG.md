@@ -18,12 +18,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- [#108](https://github.com/ssenart/gazpar2haws/issues/108): **Flexible pricing components** - Define unlimited custom pricing component names instead of being limited to 4 hardcoded names
+  - Unlimited number of components (not just 4: consumption, subscription, transport, taxes)
+  - Custom component names that reflect your actual billing structure (e.g., `carbon_tax`, `distribution_cost`, `peak_rate`)
+  - Flat YAML structure - no nested `components` dict, just add components directly under `pricing:`
+  - Automatic Home Assistant sensor creation for each component
+  - 100% backward compatible - existing configurations continue to work without changes
+  - Legacy sensor names preserved (e.g., `consumption_prices` → `sensor.name_consumption_cost`)
+  - Comprehensive documentation in [docs/FLEXIBLE_PRICING_GUIDE.md](docs/FLEXIBLE_PRICING_GUIDE.md)
+  - Example configuration with 7 custom components in [tests/config/example_8.yaml](tests/config/example_8.yaml)
+- Dynamic component cost start date logging for better debugging
+- pytest-asyncio configuration for async test support
+- Pricing model now uses flat structure with `vat` as special field and all other fields as pricing components
+- CostBreakdown model updated to support dynamic components with backward-compatible property access
+- Pricer refactored to process components dynamically instead of hardcoded logic
+- Home Assistant integration generates sensors dynamically based on component names
+
 - Home Assistant add-on development reference links in developer guide
   - Official HA documentation links (Apps, Tutorial, Configuration, Security, i18n)
   - Example repository references
   - Docker base image documentation
   - Community resources and related issues
 - Comprehensive implementation plan documentation
+
 
 ### Changed
 
@@ -44,8 +61,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Python version**: Latest available in Alpine 3.23 (currently 3.12.x, manually installed)
 - **Pattern**: Aligned with official Home Assistant example add-on approach
 - **Issue resolution**: Manual Python installation provides better compatibility than pre-installed Python images
-
-## [0.4.0] - 2025-10-30
 
 ## [0.4.0] - 2025-10-30
 

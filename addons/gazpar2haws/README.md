@@ -26,7 +26,7 @@ Gazpar2HAWS is a Home Assistant add-on that reads gas consumption data history f
 - **[📖 Full Documentation](https://github.com/ssenart/gazpar2haws/blob/main/addons/gazpar2haws/DOCS.md)** - Complete configuration guide and pricing examples
 - **[⚙️ Installation Guide](https://github.com/ssenart/gazpar2haws/blob/main/README.md#installation)** - How to install and configure the add-on
 - **[🔄 Migration Guide](https://github.com/ssenart/gazpar2haws/blob/main/MIGRATIONS.md)** - If upgrading from v0.3.x (breaking changes in v0.4.0)
-- **[❓ FAQ](https://github.com/ssenart/gazpar2haws/blob/main/FAQ.md)** - Common questions and troubleshooting
+- **[❓ FAQ](https://github.com/ssenart/gazpar2haws/blob/main/docs/FAQ.md)** - Common questions and troubleshooting
 
 ## Quick Start
 

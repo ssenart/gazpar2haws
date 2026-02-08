@@ -1,0 +1,75 @@
+logging:
+  file: log/gazpar2haws.log
+  console: true
+  level: debug
+  format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
+
+grdf:
+  scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  devices:
+  - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+    data_source: "test" # Data source to use: "json" | "excel" | "test". Default is "json". "test" is a static data source for testing purposes.
+    as_of_date: "2021-04-20" # Date of the data to retrieve. Format is "YYYY-MM-DD". Used only if data_source is "test".
+    timezone: Europe/Paris
+    last_days: 365 # Number of days of data to retrieve.
+    reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
+
+homeassistant:
+  host: "!secret homeassistant.host"
+  port: "!secret homeassistant.port"
+  token: "!secret homeassistant.token"
+
+# Example 8: Flexible pricing with custom component names
+# This demonstrates the new flexible pricing feature where you can define
+# any component names you want instead of being limited to the 4 hardcoded names.
+#
+# Default units (automatically applied if not specified):
+# - price_unit: "€"
+# - quantity_unit: "kWh"
+# - time_unit: "month"
+#
+# Units from the first entry in each component are propagated to subsequent entries.
+pricing:
+  vat:
+    - id: standard_rate
+      start_date: "2023-06-01"
+      value: 0.20
+    - id: reduced_rate
+      start_date: "2023-06-01"
+      value: 0.055
+
+  # Custom component names - use whatever makes sense for your billing structure
+  base_energy_cost:
+    - start_date: "2023-06-01"
+      quantity_value: 0.06
+      vat_id: "standard_rate"
+    - start_date: "2024-01-01"
+      quantity_value: 0.065
+
+  peak_surcharge:
+    - start_date: "2023-06-01"
+      quantity_value: 0.02
+      vat_id: "standard_rate"
+
+  monthly_subscription:
+    - start_date: "2023-06-01"
+      time_value: 8.50
+      vat_id: "standard_rate"
+
+  network_distribution:
+    - start_date: "2023-06-01"
+      quantity_value: 0.015
+      vat_id: "reduced_rate"
+
+  network_transmission:
+    - start_date: "2023-06-01"
+      quantity_value: 0.01
+      vat_id: "reduced_rate"
+
+  carbon_tax:
+    - start_date: "2023-06-01"
+      quantity_value: 0.005
+
+  green_energy_levy:
+    - start_date: "2023-06-01"
+      quantity_value: 0.003

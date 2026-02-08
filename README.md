@@ -10,12 +10,43 @@ It is a complement to the other available projects:
 - [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt): [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) alternative but using MQTT events (it reduce coupling with HA).
 - [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card): HA dashboard card compatible with [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) and [gazpar2mqtt](https://github.com/ssenart/gazpar2mqtt).
 
+---
+
+## 🎉 What's New in v0.5.0
+
+### Flexible Pricing Components
+
+Define **unlimited custom pricing component names** instead of being limited to 4 hardcoded names!
+
+```yaml
+pricing:
+  # Use any names that match your billing structure
+  base_energy_cost: [...]
+  peak_surcharge: [...]
+  carbon_tax: [...]
+  distribution_network: [...]
+  # Add as many as you need!
+```
+
+**Key Features:**
+- ✅ Unlimited components (not just 4)
+- ✅ Custom names (e.g., `carbon_tax`, `peak_rate`)
+- ✅ Automatic Home Assistant sensors
+- ✅ 100% backward compatible
+
+**Learn More:**
+- 📖 [Flexible Pricing Guide](docs/FLEXIBLE_PRICING_GUIDE.md) - Complete documentation
+- 📝 [Example 9](#example-9-flexible-pricing-with-custom-component-names-v050) - See it in action
+- 🔄 [CHANGELOG](CHANGELOG.md#050---2026-01-30) - Full release notes
+
+---
+
 ## Documentation
 
 ### User Documentation
 
 - **[README.md](README.md)** (this file) - Complete installation, configuration, and usage guide
-- **[FAQ.md](FAQ.md)** - Frequently Asked Questions based on GitHub issues and user feedback
+- **[docs/FAQ.md](docs/FAQ.md)** - Frequently Asked Questions based on GitHub issues and user feedback
   - Common configuration issues
   - Troubleshooting steps
   - Migration guides
@@ -24,12 +55,12 @@ It is a complement to the other available projects:
 
 ### Developer Documentation
 
-- **[docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Developer guide for working with the codebase
-  - Architecture overview
-  - Development commands (setup, testing, linting)
-  - Key implementation details
-  - Testing guidelines
-- **[TODO.md](TODO.md)** - Planned improvements and test coverage tasks
+- **[docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Comprehensive developer guide
+  - Architecture overview and design patterns
+  - Development setup and workflow
+  - Testing strategies and code quality
+  - Contributing guidelines and release process
+- **[docs/TODO.md](docs/TODO.md)** - Planned improvements and test coverage tasks
   - Test coverage analysis
   - Missing tests by priority
   - Implementation schedule
@@ -37,10 +68,10 @@ It is a complement to the other available projects:
 
 ### Quick Links
 
-- 🐛 Found a bug? → Check [FAQ.md](FAQ.md) first, then open an [issue](https://github.com/ssenart/gazpar2haws/issues)
-- 📝 Want to contribute? → Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) and [TODO.md](TODO.md)
+- 🐛 Found a bug? → Check [docs/FAQ.md](docs/FAQ.md) first, then open an [issue](https://github.com/ssenart/gazpar2haws/issues)
+- 📝 Want to contribute? → Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) and [docs/TODO.md](docs/TODO.md)
 - 🔄 Upgrading? → Check [CHANGELOG.md](CHANGELOG.md) for breaking changes
-- ❓ Have a question? → See [FAQ.md](FAQ.md) or ask in [discussions](https://github.com/ssenart/gazpar2haws/discussions)
+- ❓ Have a question? → See [docs/FAQ.md](docs/FAQ.md) or ask in [discussions](https://github.com/ssenart/gazpar2haws/discussions)
 
 ## Installation
 
@@ -503,32 +534,6 @@ pricing:
       quantity_value: 0.01637
 ```
 
-## What's New in v0.5.0
-
-### Fixed Segmentation Fault Issue (#105)
-
-Version 0.5.0 resolves the segmentation fault (exit code 139) that affected some users, particularly on ARM architectures. This was fixed by upgrading to Alpine 3.23 with manual Python installation:
-
-- **Base images**: Switched from `{arch}-base-python:3.12-alpine3.20` to `{arch}-base:3.23` (Alpine base without Python pre-installed)
-- **Python installation**: Now manually installed via `apk add python3 py3-pip` in Dockerfile
-- **Improved stability**: Fresh Python installation provides better compatibility
-
-### Architecture Support Update
-
-Starting from v0.5.0, the add-on supports only modern 64-bit architectures:
-- ✅ **aarch64** - ARM 64-bit (Raspberry Pi 4/5, modern ARM devices)
-- ✅ **amd64** - x86 64-bit (Intel/AMD processors)
-
-Legacy 32-bit architectures (armhf, armv7, i386) are no longer supported as they have been deprecated by Home Assistant.
-
-### Developer Documentation Improvements
-
-- Added comprehensive Home Assistant add-on development reference links in the developer guide
-- Updated DevContainer to use the latest `ghcr.io/home-assistant/devcontainer:2-addons` image
-- Reorganized documentation files under `docs/` directory for better structure
-
-See [CHANGELOG.md](CHANGELOG.md) for complete details of all changes in v0.5.0.
-
 ## What's New in v0.4.0
 
 ### Enhanced Cost Breakdown
@@ -589,7 +594,7 @@ You can setup them directly in a docker-compose.yaml file (environment section) 
 
 ## FAQ
 
-For a comprehensive list of frequently asked questions, see **[FAQ.md](FAQ.md)** which includes:
+For a comprehensive list of frequently asked questions, see **[docs/FAQ.md](docs/FAQ.md)** which includes:
 
 - 📖 **General questions** - What is Gazpar2HAWS, differences from other solutions
 - ⚙️ **Configuration issues** - PCE identifier, reset parameter, environment variables
@@ -625,11 +630,11 @@ pce_identifier: "0123456789"
 pce_identifier: 0123456789
 ```
 
-See [FAQ.md](FAQ.md) for more questions and detailed answers.
+See [docs/FAQ.md](docs/FAQ.md) for more questions and detailed answers.
 
 ## Troubleshooting
 
-For comprehensive troubleshooting guidance, see **[FAQ.md](FAQ.md#troubleshooting)** which includes:
+For comprehensive troubleshooting guidance, see **[docs/FAQ.md](docs/FAQ.md#troubleshooting)** which includes:
 
 - Common log messages and their meanings
 - Step-by-step debugging procedures
@@ -645,7 +650,7 @@ Sometimes, for any reason, the application does not work as expected. No entitie
 1. **Check the log file** - This is the most valuable troubleshooting tool
 2. **Enable debug logging** - Set `logging.level: debug` in your configuration
 3. **Verify configuration syntax** - Use a YAML validator
-4. **Check [FAQ.md](FAQ.md)** - Many common issues are already documented
+4. **Check [docs/FAQ.md](docs/FAQ.md)** - Many common issues are already documented
 
 If your configuration is correct, you may have spotted a bug.
 
@@ -711,21 +716,21 @@ Pull requests are welcome! For any change proposal, please open an issue first t
 
 ### Before Contributing
 
-1. **Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Developer guide with:
+1. **Read [CLAUDE.md](CLAUDE.md)** - Developer guide with:
    - Architecture overview
    - Development commands (setup, testing, linting)
    - Code structure and patterns
    - Testing guidelines
 
-2. **Check [TODO.md](TODO.md)** - For planned improvements and test coverage gaps
+2. **Check [docs/TODO.md](docs/TODO.md)** - For planned improvements and test coverage gaps
 
 3. **Review [CHANGELOG.md](CHANGELOG.md)** - To understand recent changes and version history
 
 ### Contribution Guidelines
 
-- Write tests for new features (see [TODO.md](TODO.md) for test coverage goals)
+- Write tests for new features (see [docs/TODO.md](docs/TODO.md) for test coverage goals)
 - Follow existing code style and patterns
-- Update documentation (README.md, FAQ.md) as appropriate
+- Update documentation (README.md, docs/FAQ.md) as appropriate
 - Add entries to CHANGELOG.md for your changes
 - Ensure all tests pass: `poetry run pytest`
 - Run linters: `poetry run pylint gazpar2haws`

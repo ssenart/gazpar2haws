@@ -70,130 +70,45 @@ class Pricer:
         else:
             vat_rate_array_by_id = dict[str, VatRateArray]()
 
-        # Use get_composite_price_array for all price types (conversion happens inside)
-        consumption_composite = self.get_composite_price_array(
-            start_date=start_date,
-            end_date=end_date,
-            composite_prices=self._pricing.consumption_prices,
-            vat_rate_array_by_id=vat_rate_array_by_id,
-            target_price_unit=price_unit,
-            target_quantity_unit=quantities.value_unit,
-            target_time_unit=quantities.base_unit,
-        )
+        # Process all pricing components dynamically
+        components = self._pricing.get_components()
+        component_costs = {}
+        total_cost_array = None
 
-        # Subscription price is optional.
-        if self._pricing.subscription_prices is not None and len(self._pricing.subscription_prices) > 0:
-            subscription_composite = self.get_composite_price_array(
+        for component_name, composite_prices in components.items():
+            # Get composite price array for this component
+            composite_array = self.get_composite_price_array(
                 start_date=start_date,
                 end_date=end_date,
-                composite_prices=self._pricing.subscription_prices,
+                composite_prices=composite_prices,
                 vat_rate_array_by_id=vat_rate_array_by_id,
                 target_price_unit=price_unit,
                 target_quantity_unit=quantities.value_unit,
                 target_time_unit=quantities.base_unit,
             )
-        else:
-            subscription_composite = CompositePriceArray(
-                name="subscription_prices",
+
+            # Calculate cost for this component
+            component_cost = CostArray(
+                name=f"{component_name}_cost",
                 start_date=start_date,
                 end_date=end_date,
-                price_unit=price_unit,
-                quantity_unit=quantities.value_unit,
-                time_unit=quantities.base_unit,
+                value_unit=price_unit,
+                base_unit=quantities.base_unit,
+            )
+            component_cost.value_array = (
+                quantity_array * composite_array.quantity_value_array  # type: ignore
+                + composite_array.time_value_array  # type: ignore
             )
 
-        # Transport price is optional.
-        if self._pricing.transport_prices is not None and len(self._pricing.transport_prices) > 0:
-            transport_composite = self.get_composite_price_array(
-                start_date=start_date,
-                end_date=end_date,
-                composite_prices=self._pricing.transport_prices,
-                vat_rate_array_by_id=vat_rate_array_by_id,
-                target_price_unit=price_unit,
-                target_quantity_unit=quantities.value_unit,
-                target_time_unit=quantities.base_unit,
-            )
-        else:
-            transport_composite = CompositePriceArray(
-                name="transport_prices",
-                start_date=start_date,
-                end_date=end_date,
-                price_unit=price_unit,
-                quantity_unit=quantities.value_unit,
-                time_unit=quantities.base_unit,
-            )
+            component_costs[component_name] = component_cost
 
-        # Energy taxes are optional.
-        if self._pricing.energy_taxes is not None and len(self._pricing.energy_taxes) > 0:
-            energy_taxes_composite = self.get_composite_price_array(
-                start_date=start_date,
-                end_date=end_date,
-                composite_prices=self._pricing.energy_taxes,
-                vat_rate_array_by_id=vat_rate_array_by_id,
-                target_price_unit=price_unit,
-                target_quantity_unit=quantities.value_unit,
-                target_time_unit=quantities.base_unit,
-            )
-        else:
-            energy_taxes_composite = CompositePriceArray(
-                name="energy_taxes",
-                start_date=start_date,
-                end_date=end_date,
-                price_unit=price_unit,
-                quantity_unit=quantities.value_unit,
-                time_unit=quantities.base_unit,
-            )
+            # Accumulate to total
+            if total_cost_array is None:
+                total_cost_array = component_cost.value_array.copy()  # type: ignore
+            else:
+                total_cost_array = total_cost_array + component_cost.value_array  # type: ignore
 
-        # Create individual cost arrays for each component
-        consumption_cost = CostArray(
-            name="consumption_cost",
-            start_date=start_date,
-            end_date=end_date,
-            value_unit=price_unit,
-            base_unit=quantities.base_unit,
-        )
-        consumption_cost.value_array = (
-            quantity_array * consumption_composite.quantity_value_array  # type: ignore
-            + consumption_composite.time_value_array  # type: ignore
-        )
-
-        subscription_cost = CostArray(
-            name="subscription_cost",
-            start_date=start_date,
-            end_date=end_date,
-            value_unit=price_unit,
-            base_unit=quantities.base_unit,
-        )
-        subscription_cost.value_array = (
-            quantity_array * subscription_composite.quantity_value_array  # type: ignore
-            + subscription_composite.time_value_array  # type: ignore
-        )
-
-        transport_cost = CostArray(
-            name="transport_cost",
-            start_date=start_date,
-            end_date=end_date,
-            value_unit=price_unit,
-            base_unit=quantities.base_unit,
-        )
-        transport_cost.value_array = (
-            quantity_array * transport_composite.quantity_value_array  # type: ignore
-            + transport_composite.time_value_array  # type: ignore
-        )
-
-        energy_taxes_cost = CostArray(
-            name="energy_taxes_cost",
-            start_date=start_date,
-            end_date=end_date,
-            value_unit=price_unit,
-            base_unit=quantities.base_unit,
-        )
-        energy_taxes_cost.value_array = (
-            quantity_array * energy_taxes_composite.quantity_value_array  # type: ignore
-            + energy_taxes_composite.time_value_array  # type: ignore
-        )
-
-        # Calculate total cost
+        # Create total cost array
         total_cost = CostArray(
             name="total_cost",
             start_date=start_date,
@@ -201,21 +116,10 @@ class Pricer:
             value_unit=price_unit,
             base_unit=quantities.base_unit,
         )
-        total_cost.value_array = (
-            consumption_cost.value_array  # type: ignore
-            + subscription_cost.value_array  # type: ignore
-            + transport_cost.value_array  # type: ignore
-            + energy_taxes_cost.value_array  # type: ignore
-        )
+        total_cost.value_array = total_cost_array
 
-        # Return detailed breakdown
-        return CostBreakdown(
-            consumption=consumption_cost,
-            subscription=subscription_cost,
-            transport=transport_cost,
-            energy_taxes=energy_taxes_cost,
-            total=total_cost,
-        )
+        # Return detailed breakdown with total and all component costs as extra fields
+        return CostBreakdown(total=total_cost, **component_costs)
 
     # ----------------------------------
     @classmethod
