@@ -1,19 +1,60 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-      {
-        "label": "Start Home Assistant",
-        "type": "shell",
-        "command": "supervisor_run",
-        "group": {
-          "kind": "test",
-          "isDefault": true
-        },
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
-        },
-        "problemMatcher": []
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Home Assistant",
+      "type": "shell",
+      "command": "supervisor_run",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start App",
+      "type": "shell",
+      "command": "ha app stop \"local_${input:addonName}\"; ha app start \"local_${input:addonName}\"; docker logs --follow \"addon_local_${input:addonName}\"",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "runOptions": {
+        "reevaluateOnRerun": false
       }
-    ]
-  }
+    },
+    {
+      "label": "Rebuild and Start App",
+      "type": "shell",
+      "command": "ha app rebuild --force \"local_${input:addonName}\"; ha app start \"local_${input:addonName}\"; docker logs --follow \"addon_local_${input:addonName}\"",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "addonName",
+      "type": "pickString",
+      "description": "Name of addon (to add your addon to this list, please edit .vscode/tasks.json)",
+      "options": [
+        "gazpar2haws",
+      ]
+    }
+  ]
+}

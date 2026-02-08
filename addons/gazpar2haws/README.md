@@ -2,15 +2,11 @@
 
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]
-![Supports armhf Architecture][armhf-shield]
-![Supports armv7 Architecture][armv7-shield]
-![Supports i386 Architecture][i386-shield]
 
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
-[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
-[i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
+
+**Supported Architectures**: This add-on supports modern 64-bit architectures (aarch64, amd64) as required by current Home Assistant versions. Legacy 32-bit architectures (armhf, armv7, i386) are no longer supported by Home Assistant.
 
 ## About
 
@@ -30,7 +26,7 @@ Gazpar2HAWS is a Home Assistant add-on that reads gas consumption data history f
 - **[📖 Full Documentation](https://github.com/ssenart/gazpar2haws/blob/main/addons/gazpar2haws/DOCS.md)** - Complete configuration guide and pricing examples
 - **[⚙️ Installation Guide](https://github.com/ssenart/gazpar2haws/blob/main/README.md#installation)** - How to install and configure the add-on
 - **[🔄 Migration Guide](https://github.com/ssenart/gazpar2haws/blob/main/MIGRATIONS.md)** - If upgrading from v0.3.x (breaking changes in v0.4.0)
-- **[❓ FAQ](https://github.com/ssenart/gazpar2haws/blob/main/FAQ.md)** - Common questions and troubleshooting
+- **[❓ FAQ](https://github.com/ssenart/gazpar2haws/blob/main/docs/FAQ.md)** - Common questions and troubleshooting
 
 ## Quick Start
 

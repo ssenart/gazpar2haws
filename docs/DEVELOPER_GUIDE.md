@@ -153,9 +153,37 @@ Guidelines for integrating with Home Assistant.
 - [WebSocket API](https://developers.home-assistant.io/docs/api/websocket/)
 - [Statistics](https://developers.home-assistant.io/docs/core/entity/sensor/#long-term-statistics)
 - [Add-on Development](https://developers.home-assistant.io/docs/add-ons/)
+- [Add-on Testing](https://developers.home-assistant.io/docs/apps/testing/)
+- [Add-on Security](https://developers.home-assistant.io/docs/add-ons/security/)
+- [Add-on Configuration](https://developers.home-assistant.io/docs/apps/configuration)
+- [Internationalization](https://developers.home-assistant.io/docs/api/supervisor/endpoints/#addonsaddon-translations)
+- [Supervisor API](https://developers.home-assistant.io/docs/api/supervisor/)
 - [Entity Naming](https://developers.home-assistant.io/docs/core/entity/#entity-naming)
 
-**Why**: Ensures proper integration with Home Assistant ecosystem.
+**Example Repositories**:
+- [Official Example Add-on](https://github.com/home-assistant/addons-example) - Blueprint for add-on development
+  - [Example Dockerfile](https://github.com/home-assistant/addons-example/blob/main/example/Dockerfile)
+  - [Example build.yaml](https://github.com/home-assistant/addons-example/blob/main/example/build.yaml)
+  - [Example config.yaml](https://github.com/home-assistant/addons-example/blob/main/example/config.yaml)
+  - [Example AppArmor profile](https://github.com/home-assistant/addons-example/blob/main/example/apparmor.txt)
+  - [Example translations](https://github.com/home-assistant/addons-example/tree/main/example/translations)
+
+**Docker Base Images**:
+- [HA Docker Base Repository](https://github.com/home-assistant/docker-base) - Official base images
+  - Current project uses: `ghcr.io/home-assistant/{arch}-base:3.23` (Alpine 3.23)
+  - Includes s6-overlay, Bashio, and TempIO
+- [hassio-addons Debian Base](https://github.com/hassio-addons/debian-base) - Community Debian images
+  - Alternative for glibc compatibility: `ghcr.io/hassio-addons/debian-base/{arch}:stable`
+
+**Community Resources**:
+- [DevContainer Documentation](https://code.visualstudio.com/docs/devcontainers/containers) - VS Code DevContainer setup
+- [s6-overlay](https://github.com/just-containers/s6-overlay) - Process supervisor used in HA add-ons
+- [Bashio](https://github.com/hassio-addons/bashio) - Bash function library for HA add-ons
+
+**Related Project Issues**:
+- [Issue #105](https://github.com/ssenart/gazpar2haws/issues/105) - Segmentation fault resolved by Alpine 3.23 upgrade
+
+**Why**: Ensures proper integration with Home Assistant ecosystem and provides reference for add-on development.
 
 ### Security Standards
 
@@ -878,6 +906,19 @@ Follow this workflow for feature development (using Gitflow):
 
 ## Testing
 
+### Testing Strategy Overview
+
+This project uses multiple testing approaches for comprehensive coverage:
+
+| Testing Type | Tool/Method | Location | Use Case |
+|--------------|-------------|----------|----------|
+| **Unit Tests** | pytest | `tests/test_*.py` | Fast feedback for core logic |
+| **Integration Tests** | pytest + HA container | `tests/test_haws.py` | WebSocket API validation |
+| **Add-on E2E Testing** | DevContainer + HA | [.devcontainer/README.md](../.devcontainer/README.md) | Full add-on deployment testing |
+| **Multi-arch Builds** | Docker buildx | CI/CD pipeline | Architecture compatibility |
+
+**For complete add-on testing guide with step-by-step instructions, see [.devcontainer/README.md](../.devcontainer/README.md)**
+
 ### Test Structure
 
 Tests are organized in the `tests/` directory:
@@ -973,7 +1014,7 @@ async def test_connect_success(mock_websocket):
 
 ### Test Coverage
 
-Current test coverage goals (see [TODO.md](../TODO.md) for details):
+Current test coverage goals (see [TODO.md](TODO.md) for details):
 
 | Module | Current | Target |
 |--------|---------|--------|
@@ -1713,17 +1754,17 @@ Most IDEs (PyCharm, VSCode) support debugging pytest tests directly. Set breakpo
 
 - **GitHub Issues**: https://github.com/ssenart/gazpar2haws/issues
 - **GitHub Discussions**: https://github.com/ssenart/gazpar2haws/discussions
-- **FAQ**: [FAQ.md](../FAQ.md)
+- **FAQ**: [FAQ.md](FAQ.md)
 
 ---
 
 ## Additional Resources
 
 - **User Documentation**: [README.md](../README.md)
-- **Migration Guides**: [MIGRATIONS.md](../MIGRATIONS.md)
-- **Frequently Asked Questions**: [FAQ.md](../FAQ.md)
+- **Migration Guides**: [MIGRATIONS_GUIDE.md](MIGRATIONS_GUIDE.md)
+- **Frequently Asked Questions**: [FAQ.md](FAQ.md)
 - **Version History**: [CHANGELOG.md](../CHANGELOG.md)
-- **Test Coverage TODO**: [TODO.md](../TODO.md)
+- **Test Coverage TODO**: [TODO.md](TODO.md)
 - **Flexible Pricing Guide**: [FLEXIBLE_PRICING_GUIDE.md](FLEXIBLE_PRICING_GUIDE.md)
 
 ---
