@@ -1,10 +1,11 @@
-# CLAUDE.md
+# Developer Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides comprehensive guidance for developers working with the Gazpar2HAWS codebase.
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Home Assistant Add-on Development References](#home-assistant-add-on-development-references)
 - [Getting Started & Development Setup](#getting-started--development-setup)
   - [Setup and Installation](#setup-and-installation)
   - [Linting and Formatting](#linting-and-formatting)
@@ -52,6 +53,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Gazpar2HAWS is a gateway that reads gas meter data from GrDF (French gas provider) and sends it to Home Assistant using WebSocket interface. It enables uploading historical data and keeping it updated with the latest readings, compatible with Home Assistant Energy Dashboard.
+
+## Home Assistant Add-on Development References
+
+This section contains official Home Assistant documentation and examples used for developing and maintaining this add-on.
+
+### Official Documentation
+- [Home Assistant Apps Documentation](https://developers.home-assistant.io/docs/apps/) - Main documentation for HA apps (formerly add-ons)
+- [Home Assistant Apps Tutorial](https://developers.home-assistant.io/docs/apps/tutorial/) - Step-by-step tutorial for creating apps
+- [Home Assistant Apps Configuration](https://developers.home-assistant.io/docs/apps/configuration) - Complete configuration options reference
+- [Home Assistant Add-on Security](https://developers.home-assistant.io/docs/add-ons/security) - Security best practices including AppArmor
+- [Home Assistant Internationalization](https://developers.home-assistant.io/docs/api/supervisor/endpoints/#addonsaddon-translations) - i18n support for add-ons
+
+### Example Repositories
+- [Home Assistant Addons Example](https://github.com/home-assistant/addons-example) - Official example add-on (blueprint)
+  - [Example Dockerfile](https://github.com/home-assistant/addons-example/blob/main/example/Dockerfile)
+  - [Example build.yaml](https://github.com/home-assistant/addons-example/blob/main/example/build.yaml)
+  - [Example config.yaml](https://github.com/home-assistant/addons-example/blob/main/example/config.yaml)
+  - [Example AppArmor profile](https://github.com/home-assistant/addons-example/blob/main/example/apparmor.txt)
+  - [Example translations](https://github.com/home-assistant/addons-example/tree/main/example/translations)
+
+### Docker Base Images
+- [Home Assistant Docker Base Repository](https://github.com/home-assistant/docker-base) - Official base images for add-ons
+  - Provides Alpine, Debian, and Ubuntu base images
+  - Includes s6-overlay, Bashio, and TempIO
+  - Python images available for Alpine (3.12, 3.13, 3.14)
+- [hassio-addons Debian Base](https://community.home-assistant.io/t/how-do-i-make-an-addon-based-on-debian/424330) - Community Debian base images
+  - Alternative to Alpine for glibc compatibility
+  - Available at `ghcr.io/hassio-addons/debian-base/{arch}:stable`
+
+### Community Resources
+- [Python 3.13 backport for Debian Bookworm](https://community.home-assistant.io/t/python-3-13-backport-for-debian-12-bookworm/842333) - Required for HA 2026.1+
+- [Creating Debian-based Add-ons](https://community.home-assistant.io/t/how-do-i-make-an-addon-based-on-debian/424330) - Guide for Debian add-ons
+
+### Related Issues
+- [Issue #105: Segmentation fault (exit code 139)](https://github.com/ssenart/gazpar2haws/issues/105) - Alpine + pydantic-core compatibility issue resolved by upgrading to Alpine 3.23 with manual Python installation
 
 ## Getting Started & Development Setup
 
@@ -127,6 +163,8 @@ The project includes a DevContainer configuration for testing the Home Assistant
 
 **Location**: `.devcontainer/devcontainer.json`
 
+**📖 For detailed step-by-step instructions, see [.devcontainer/README.md](../.devcontainer/README.md)**
+
 **Prerequisites:**
 - Docker Desktop installed and running
 - Visual Studio Code with "Remote - Containers" extension installed
@@ -185,12 +223,18 @@ The project includes a DevContainer configuration for testing the Home Assistant
 
 **DevContainer Configuration Details:**
 
-- **Base Image**: `ghcr.io/home-assistant/devcontainer:addons` - Includes Supervisor and Home Assistant
+- **Base Image**: `ghcr.io/home-assistant/devcontainer:2-addons` - Includes Supervisor and Home Assistant (updated 2026)
+- **Workspace**: Mounted at `/mnt/supervisor/addons/local/` for proper add-on detection
 - **Bootstrap Command**: Runs `devcontainer_bootstrap` after container starts
 - **Privileged Mode**: Required for Docker operations inside container
-- **Volume Mount**: `/var/lib/docker` for Docker-in-Docker support
+- **Volume Mounts**:
+  - `/var/lib/docker` for Docker-in-Docker support
+  - `/mnt/supervisor` for Supervisor integration
 - **VSCode Extensions**: ShellCheck and Prettier pre-installed
-- **Environment**: `WORKSPACE_DIRECTORY` points to `/workspace`
+- **Default Shell**: bash (`/bin/bash`)
+- **Environment**: `WORKSPACE_DIRECTORY` points to `${containerWorkspaceFolder}`
+
+**Note**: As of Home Assistant 2026.2, "add-ons" have been officially renamed to "apps" in the UI, though the development infrastructure still uses "addons" terminology.
 
 **Troubleshooting:**
 

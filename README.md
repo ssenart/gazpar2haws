@@ -24,7 +24,7 @@ It is a complement to the other available projects:
 
 ### Developer Documentation
 
-- **[CLAUDE.md](CLAUDE.md)** - Developer guide for working with the codebase
+- **[docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Developer guide for working with the codebase
   - Architecture overview
   - Development commands (setup, testing, linting)
   - Key implementation details
@@ -38,7 +38,7 @@ It is a complement to the other available projects:
 ### Quick Links
 
 - 🐛 Found a bug? → Check [FAQ.md](FAQ.md) first, then open an [issue](https://github.com/ssenart/gazpar2haws/issues)
-- 📝 Want to contribute? → Read [CLAUDE.md](CLAUDE.md) and [TODO.md](TODO.md)
+- 📝 Want to contribute? → Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) and [TODO.md](TODO.md)
 - 🔄 Upgrading? → Check [CHANGELOG.md](CHANGELOG.md) for breaking changes
 - ❓ Have a question? → See [FAQ.md](FAQ.md) or ask in [discussions](https://github.com/ssenart/gazpar2haws/discussions)
 
@@ -503,6 +503,32 @@ pricing:
       quantity_value: 0.01637
 ```
 
+## What's New in v0.5.0
+
+### Fixed Segmentation Fault Issue (#105)
+
+Version 0.5.0 resolves the segmentation fault (exit code 139) that affected some users, particularly on ARM architectures. This was fixed by upgrading to Alpine 3.23 with manual Python installation:
+
+- **Base images**: Switched from `{arch}-base-python:3.12-alpine3.20` to `{arch}-base:3.23` (Alpine base without Python pre-installed)
+- **Python installation**: Now manually installed via `apk add python3 py3-pip` in Dockerfile
+- **Improved stability**: Fresh Python installation provides better compatibility
+
+### Architecture Support Update
+
+Starting from v0.5.0, the add-on supports only modern 64-bit architectures:
+- ✅ **aarch64** - ARM 64-bit (Raspberry Pi 4/5, modern ARM devices)
+- ✅ **amd64** - x86 64-bit (Intel/AMD processors)
+
+Legacy 32-bit architectures (armhf, armv7, i386) are no longer supported as they have been deprecated by Home Assistant.
+
+### Developer Documentation Improvements
+
+- Added comprehensive Home Assistant add-on development reference links in the developer guide
+- Updated DevContainer to use the latest `ghcr.io/home-assistant/devcontainer:2-addons` image
+- Reorganized documentation files under `docs/` directory for better structure
+
+See [CHANGELOG.md](CHANGELOG.md) for complete details of all changes in v0.5.0.
+
 ## What's New in v0.4.0
 
 ### Enhanced Cost Breakdown
@@ -537,7 +563,7 @@ This provides more flexibility to accurately model your energy provider's billin
 
 **If you are upgrading from v0.3.x**, the pricing configuration format has changed. You must update your configuration file to the new format.
 
-**See [MIGRATIONS.md](MIGRATIONS.md) for detailed step-by-step migration instructions** including:
+**See [docs/MIGRATIONS_GUIDE.md](docs/MIGRATIONS_GUIDE.md) for detailed step-by-step migration instructions** including:
 - Complete before/after examples for each price type
 - Migration checklist
 - Common issues and troubleshooting
@@ -685,7 +711,7 @@ Pull requests are welcome! For any change proposal, please open an issue first t
 
 ### Before Contributing
 
-1. **Read [CLAUDE.md](CLAUDE.md)** - Developer guide with:
+1. **Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)** - Developer guide with:
    - Architecture overview
    - Development commands (setup, testing, linting)
    - Code structure and patterns
