@@ -97,6 +97,8 @@ class HomeAssistant(BaseModel):
     port: int
     endpoint: str = "/api/websocket"
     token: SecretStr
+    secure: bool = False
+    verify_ssl: bool = True
 
 
 # ----------------------------------
