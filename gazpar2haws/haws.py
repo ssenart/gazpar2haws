@@ -1,5 +1,6 @@
 import json
 import logging
+import ssl
 from datetime import date, datetime, timedelta
 
 import pytz
@@ -18,11 +19,21 @@ class HomeAssistantWSException(Exception):
 # ----------------------------------
 class HomeAssistantWS:
     # ----------------------------------
-    def __init__(self, host: str, port: int, endpoint: str, token: str):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        endpoint: str,
+        token: str,
+        secure: bool = False,
+        verify_ssl: bool = True,
+    ):
         self._host = host
         self._port = port
         self._endpoint = endpoint
         self._token = token
+        self._secure = secure
+        self._verify_ssl = verify_ssl
         self._websocket = None
         self._message_id = 1
 
@@ -31,11 +42,19 @@ class HomeAssistantWS:
 
         Logger.debug(f"Connecting to Home Assistant at {self._host}:{self._port}")
 
-        ws_url = f"ws://{self._host}:{self._port}{self._endpoint}"
+        scheme = "wss" if self._secure else "ws"
+        ws_url = f"{scheme}://{self._host}:{self._port}{self._endpoint}"
+
+        ssl_context = None
+        if self._secure:
+            ssl_context = ssl.create_default_context()
+            if not self._verify_ssl:
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
 
         # Connect to the websocket
         self._websocket = await websockets.connect(
-            ws_url, additional_headers={"Authorization": f"Bearer {self._token}"}
+            ws_url, additional_headers={"Authorization": f"Bearer {self._token}"}, ssl=ssl_context
         )
 
         # When a client connects to the server, the server sends out auth_required.

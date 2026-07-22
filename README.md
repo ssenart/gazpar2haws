@@ -222,6 +222,8 @@ homeassistant:
   host: "!secret homeassistant.host"
   port: "!secret homeassistant.port"
   token: "!secret homeassistant.token"
+  secure: false # If true, connect using wss:// instead of ws:// (default: false)
+  verify_ssl: true # If false, disable TLS certificate verification, e.g. for self-signed certificates (default: true, ignored if secure is false)
 ```
 
 The default secret file:
