@@ -230,10 +230,9 @@ class Pricer:
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
                 earliest_end = min(value.end_date if value.end_date is not None else end_date, end_date)
-                current_date = latest_start
-                while current_date <= earliest_end:
-                    value_array[current_date] = value.value
-                    current_date += timedelta(days=1)
+                if latest_start <= earliest_end:
+                    # Vectorized slice assignment
+                    value_array[latest_start : earliest_end + timedelta(days=1)] = value.value  # type: ignore
 
     # ----------------------------------
     @classmethod
@@ -301,14 +300,14 @@ class Pricer:
             for value in in_values:
                 latest_start = max(value.start_date, start_date)
                 earliest_end = min(value.end_date if value.end_date is not None else end_date, end_date)
-                current_date = latest_start
-                while current_date <= earliest_end:
+                if latest_start <= earliest_end:
+                    target_slice = slice(latest_start, earliest_end + timedelta(days=1))
                     if vat_rate_array_by_id is not None and value.vat_id in vat_rate_array_by_id:
-                        vat_value = vat_rate_array_by_id[value.vat_id].value_array[current_date]  # type: ignore
+                        # This uses DateArray's vectorized __getitem__ and arithmetic
+                        vat_values = vat_rate_array_by_id[value.vat_id].value_array[target_slice]  # type: ignore
                     else:
-                        vat_value = 0.0
-                    value_array[current_date] = (vat_value + 1) * value.value  # type: ignore
-                    current_date += timedelta(days=1)
+                        vat_values = 0.0
+                    value_array[target_slice] = (vat_values + 1) * value.value
 
     # ----------------------------------
     @classmethod
@@ -388,14 +387,13 @@ class Pricer:
                 if component_value is not None:
                     latest_start = max(value.start_date, start_date)
                     earliest_end = min(value.end_date if value.end_date is not None else end_date, end_date)
-                    current_date = latest_start
-                    while current_date <= earliest_end:
+                    if latest_start <= earliest_end:
+                        target_slice = slice(latest_start, earliest_end + timedelta(days=1))
                         if vat_rate_array_by_id is not None and value.vat_id in vat_rate_array_by_id:
-                            vat_value = vat_rate_array_by_id[value.vat_id].value_array[current_date]  # type: ignore
+                            vat_values = vat_rate_array_by_id[value.vat_id].value_array[target_slice]  # type: ignore
                         else:
-                            vat_value = 0.0
-                        component_array[current_date] = (vat_value + 1) * component_value  # type: ignore
-                        current_date += timedelta(days=1)
+                            vat_values = 0.0
+                        component_array[target_slice] = (vat_values + 1) * component_value
 
     # ----------------------------------
     @classmethod
