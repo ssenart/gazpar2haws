@@ -11,6 +11,7 @@ devices:
     username:
     password:
     pce_identifier:
+    consumption_type: informative
     timezone: Europe/Paris
     last_days: 365
     reset: false
@@ -18,6 +19,7 @@ devices:
     username:
     password:
     pce_identifier:
+    consumption_type: informative
     timezone: Europe/Paris
     last_days: 720
     reset: false
@@ -30,6 +32,7 @@ devices:
 | devices[].username       | GrDF account user name                                                                                                                           | Yes      | -             |
 | devices[].password       | GrDF account password (avoid using special characters)                                                                                           | Yes      | -             |
 | devices[].pce_identifier | GrDF meter PCE identifier                                                                                                                        | Yes      | -             |
+| devices[].consumption_type | GrDF readings to use: `informative` or `published`. Use `published` if `informative` returns no data for your PCE (empty `{}` response in the logs) | No       | informative   |
 | devices[].timezone       | Timezone of the GrDF data                                                                                                                        | No       | Europe/Paris  |
 | devices[].last_days      | Number of days of history data to retrieve                                                                                                       | No       | 365 days      |
 | devices[].reset          | Rebuild the history. If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added | No       | false         |

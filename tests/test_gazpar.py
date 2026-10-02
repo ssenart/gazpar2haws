@@ -1,7 +1,9 @@
 """Test gazpar module."""
 
 from datetime import date
+from unittest.mock import patch
 
+import pydantic
 import pygazpar  # type: ignore
 import pytest
 
@@ -10,6 +12,7 @@ from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
 from gazpar2haws.model import (
     ConsumptionQuantityArray,
+    Device,
     PriceUnit,
     QuantityUnit,
     TimeUnit,
@@ -154,3 +157,52 @@ class TestGazpar:
         )
 
         await self._haws.disconnect()
+
+
+# ----------------------------------
+class TestGazparDataSource:
+
+    # ----------------------------------
+    @staticmethod
+    def _make_device_config(consumption_type: str) -> Device:
+        return Device(
+            name="gazpar2haws_test",
+            username="user@example.com",
+            password="password",
+            pce_identifier="22423299474865",
+            consumption_type=consumption_type,
+        )
+
+    # ----------------------------------
+    def test_default_consumption_type_is_informative(self):
+
+        gazpar = Gazpar(self._make_device_config("informative"), None, None)
+
+        with patch("pygazpar.JsonWebDataSource") as mock_data_source:
+            gazpar._create_data_source()  # pylint: disable=protected-access
+
+            mock_data_source.assert_called_once_with(
+                username="user@example.com",
+                password="password",
+                consumption_type=pygazpar.ConsumptionType.INFORMATIVE,
+            )
+
+    # ----------------------------------
+    def test_published_consumption_type_is_forwarded(self):
+
+        gazpar = Gazpar(self._make_device_config("published"), None, None)
+
+        with patch("pygazpar.JsonWebDataSource") as mock_data_source:
+            gazpar._create_data_source()  # pylint: disable=protected-access
+
+            mock_data_source.assert_called_once_with(
+                username="user@example.com",
+                password="password",
+                consumption_type=pygazpar.ConsumptionType.PUBLISHED,
+            )
+
+    # ----------------------------------
+    def test_invalid_consumption_type_is_rejected(self):
+
+        with pytest.raises(pydantic.ValidationError):
+            self._make_device_config("invalid")

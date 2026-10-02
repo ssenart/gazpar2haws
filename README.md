@@ -214,6 +214,8 @@ grdf:
       username: "!secret grdf.username"
       password: "!secret grdf.password"
       pce_identifier: "!secret grdf.pce_identifier"
+      data_source: json # Data source to use: "json" | "excel" | "test" (default: "json")
+      consumption_type: informative # GrDF readings to use: "informative" | "published" (default: "informative"). See below.
       timezone: Europe/Paris
       last_days: 365 # Number of days of data to retrieve
       reset: false # If true, the data will be reset before the first data retrieval
@@ -225,6 +227,20 @@ homeassistant:
   secure: false # If true, connect using wss:// instead of ws:// (default: false)
   verify_ssl: true # If false, disable TLS certificate verification, e.g. for self-signed certificates (default: true, ignored if secure is false)
 ```
+
+#### Consumption type
+
+For some GrDF accounts, the `informative` readings endpoint returns no data (an empty `{}` response) even though a consumption history is visible on the GrDF customer portal. If you see no volume/energy data being published and your logs show `Json meter data: {}`, set `consumption_type: published` on the affected device to read from GrDF's published consumption history instead:
+
+```yaml
+grdf:
+  devices:
+    - name: gazpar2haws
+      ...
+      consumption_type: published
+```
+
+Note that published readings can cover more than one day; their consumption is attributed to the last day of the covered period rather than split evenly across days.
 
 The default secret file:
 

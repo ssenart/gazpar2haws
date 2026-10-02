@@ -15,6 +15,7 @@ options:
       username: "" # Email address used to connect to the GrDF website.
       password: "" # Password used to connect to the GrDF website.
       pce_identifier: "" # PCE identifier of the meter. It should be a positive integer.
+      consumption_type: "informative" # GrDF readings to use: "informative" or "published". Use "published" if "informative" returns no data for your PCE.
       timezone: "Europe/Paris" # Timezone of the data. It should be the same as the Home Assistant timezone.
       last_days: 365 # Number of days of data to retrieve
       reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
@@ -66,6 +67,7 @@ schema:
       username: email # Email address used to connect to the GrDF website.
       password: password # Password used to connect to the GrDF website.
       pce_identifier: match(^0|[1-9][0-9]*$) # PCE identifier of the meter. It should be a positive integer.
+      consumption_type: list(informative|published)? # GrDF readings to use. Default is "informative".
       timezone: str? # Timezone of the data. It should be the same as the Home Assistant timezone.
       last_days: int? # Number of days of data to retrieve.
       reset: bool? # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.

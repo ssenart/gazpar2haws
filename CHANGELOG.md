@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - [#120](https://github.com/ssenart/gazpar2haws/issues/120): Support for TLS (`wss://`) connections to Home Assistant via new `secure` and `verify_ssl` options in the `homeassistant` configuration block (and `HOMEASSISTANT_SECURE` / `HOMEASSISTANT_VERIFY_SSL` env vars for Docker deployments). Defaults preserve existing `ws://` behavior.
+- [#125](https://github.com/ssenart/gazpar2haws/issues/125): New `consumption_type` device option (`informative` | `published`, default `informative`) to work around GrDF accounts where the informative readings endpoint returns no data. Requires `pygazpar>=1.4.0a1`.
 
 ## [0.5.0] - 2026-02-08
 

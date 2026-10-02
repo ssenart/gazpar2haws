@@ -54,6 +54,7 @@ class Logging(BaseModel):
 class Device(BaseModel):
     name: str
     data_source: str = "json"
+    consumption_type: str = "informative"
     tmp_dir: Optional[str] = None  # If None, will use system temp directory
     as_of_date: Optional[date] = None
     username: Optional[EmailStr] = None
@@ -67,6 +68,10 @@ class Device(BaseModel):
     def validate_properties(self):
         if self.data_source not in ["json", "excel", "test"]:
             raise ValueError(f"Invalid data_source{self.data_source} (expected values: json, excel, test)")
+        if self.consumption_type not in ["informative", "published"]:
+            raise ValueError(
+                f"Invalid consumption_type {self.consumption_type} (expected values: informative, published)"
+            )
         if self.data_source != "test" and self.username is None:
             raise ValueError("Missing username")
         if self.data_source != "test" and self.password is None:

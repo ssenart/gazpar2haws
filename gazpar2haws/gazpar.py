@@ -44,6 +44,9 @@ class Gazpar:
         # GrDF configuration: data source
         self._data_source = device_config.data_source
 
+        # GrDF configuration: consumption type (json data source only)
+        self._consumption_type = device_config.consumption_type
+
         # GrDF configuration: username
         self._username = device_config.username
 
@@ -395,7 +398,17 @@ class Gazpar:
                     tmpDirectory=self._tmp_dir,
                 )
 
-        return pygazpar.JsonWebDataSource(username=self._username, password=self._password)
+        consumption_type = (
+            pygazpar.ConsumptionType.PUBLISHED
+            if self._consumption_type == "published"
+            else pygazpar.ConsumptionType.INFORMATIVE
+        )
+
+        return pygazpar.JsonWebDataSource(
+            username=self._username,
+            password=self._password,
+            consumption_type=consumption_type,
+        )
 
     # ----------------------------------
     # Find last date, value of the entity.
