@@ -6,6 +6,7 @@ from unittest.mock import patch
 import pydantic
 import pygazpar  # type: ignore
 import pytest
+from pydantic import SecretStr
 
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.gazpar import Gazpar
@@ -168,8 +169,8 @@ class TestGazparDataSource:
         return Device(
             name="gazpar2haws_test",
             username="user@example.com",
-            password="password",
-            pce_identifier="22423299474865",
+            password=SecretStr("password"),
+            pce_identifier=SecretStr("22423299474865"),
             consumption_type=consumption_type,
         )
 
