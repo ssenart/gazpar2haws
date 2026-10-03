@@ -868,19 +868,21 @@ files = [
 
 [[package]]
 name = "pygazpar"
-version = "1.4.0a1"
+version = "1.4.0a2"
 description = "Python library to download gas consumption from a GrDF (French Gas Company) account"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pygazpar-1.4.0a1-py3-none-any.whl", hash = "sha256:1434618cead08ef2c0dbb3c17cb2d8ee7c4f4d07d1f0e748ae234f101a730706"},
-    {file = "pygazpar-1.4.0a1.tar.gz", hash = "sha256:b0bebdebf6f1240437c3e6f1d1359c0377c5ff6d090865d42e017fc2c247056e"},
+    {file = "pygazpar-1.4.0a2-py3-none-any.whl", hash = "sha256:cf1b954eb766e7e556cb70fb411cd85564c4849569c89ea7c60a6752de723f51"},
+    {file = "pygazpar-1.4.0a2.tar.gz", hash = "sha256:463ad5f16a5c95ad519a1067c2765651e64c0e3452b748b8fe154a2d555538ac"},
 ]
 
 [package.dependencies]
 openpyxl = ">=3.1.5,<4.0.0"
 pandas = ">=2.1.4,<3.0.0"
+pydantic = ">=2.10.6,<3.0.0"
+python-dotenv = ">=1.0.1,<2.0.0"
 requests = ">=2.32.3,<3.0.0"
 
 [[package]]
@@ -969,6 +971,21 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-dotenv"
+version = "1.2.4"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "python_dotenv-1.2.4-py3-none-any.whl", hash = "sha256:42269a8a5b3fd54ffa6f3d84b18abed50064717576b4ecf03dc4a55d8aa04fdc"},
+    {file = "python_dotenv-1.2.4.tar.gz", hash = "sha256:f0d53e69935a851c0dcc78f3ab7aaccd8cabef0b92382b576b824212902873c0"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
 
 [[package]]
 name = "pytz"
@@ -1286,4 +1303,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "24bbf5e4e4fab184ab1805ed52da0ad277544e61515b6a79e74620335f2bfae2"
+content-hash = "b5c99c992cbd80430d9c541936a6c75f6f549829a6b9f68154fa20f35d9f4235"

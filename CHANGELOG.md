@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Upgraded the PyGazpar library to `1.4.0a2`. Requires `pygazpar>=1.4.0a2`.
 - Vectorized the day-by-day fill loops in `Pricer` (`_fill_value_array`, `_fill_price_array`, `_fill_composite_component_array`) into slice assignments on `DateArray`, speeding up cost computation over long date ranges. No behavior change.
 
 ## [0.5.0] - 2026-02-08
