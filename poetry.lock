@@ -868,14 +868,14 @@ files = [
 
 [[package]]
 name = "pygazpar"
-version = "1.4.0a2"
+version = "1.4.0a3"
 description = "Python library to download gas consumption from a GrDF (French Gas Company) account"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pygazpar-1.4.0a2-py3-none-any.whl", hash = "sha256:cf1b954eb766e7e556cb70fb411cd85564c4849569c89ea7c60a6752de723f51"},
-    {file = "pygazpar-1.4.0a2.tar.gz", hash = "sha256:463ad5f16a5c95ad519a1067c2765651e64c0e3452b748b8fe154a2d555538ac"},
+    {file = "pygazpar-1.4.0a3-py3-none-any.whl", hash = "sha256:e307175e4b0f40057317b99fd0d1ed2a6611429aaa90b7a0471a0322fe0f2dc7"},
+    {file = "pygazpar-1.4.0a3.tar.gz", hash = "sha256:aa46d1b86fdb5afe82a05e7746102e6e7edbc486ff08ecc6387d69b803310267"},
 ]
 
 [package.dependencies]
@@ -1303,4 +1303,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "b5c99c992cbd80430d9c541936a6c75f6f549829a6b9f68154fa20f35d9f4235"
+content-hash = "9f83a7e82ebe646531969ff23aee2a6a8e5c7dbc87575f4b06b5faa5bc2ca250"
