@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1a5] - 2026-10-04
+
 ### Added
 
 - [#120](https://github.com/ssenart/gazpar2haws/issues/120): Support for TLS (`wss://`) connections to Home Assistant via new `secure` and `verify_ssl` options in the `homeassistant` configuration block (and `HOMEASSISTANT_SECURE` / `HOMEASSISTANT_VERIFY_SSL` env vars for Docker deployments). Defaults preserve existing `ws://` behavior.
@@ -266,3 +268,6 @@ Users upgrading from v0.3.x must update their pricing configuration to the new f
 ## [0.1.0] - 2024-12-21
 
 First version of the project.
+
+[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a5...HEAD
+[0.5.1a5]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a4...0.5.1a5
