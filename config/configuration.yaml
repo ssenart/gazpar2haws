@@ -7,7 +7,7 @@ logging:
 grdf:
   scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
   devices:
-  - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+  - name: gazpar2haws # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.${name}_*.
     username: "!secret grdf.username"
     password: "!secret grdf.password"
     pce_identifier: "!secret grdf.pce_identifier"

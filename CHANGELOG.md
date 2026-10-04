@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgraded the PyGazpar library to `1.4.0a2`. Requires `pygazpar>=1.4.0a2`.
 - Vectorized the day-by-day fill loops in `Pricer` (`_fill_value_array`, `_fill_price_array`, `_fill_composite_component_array`) into slice assignments on `DateArray`, speeding up cost computation over long date ranges. No behavior change.
 
+### Fixed
+
+- [#125](https://github.com/ssenart/gazpar2haws/issues/125): Device `name` is now validated as lowercase letters, digits and underscores only (e.g. `gazpar_maison`). A name such as `Compteur_de_gaz` made Home Assistant reject the statistics import with `Invalid statistic_id`. The configuration is now refused at startup with an explicit error, and the add-on options schema enforces the same rule.
+
 ## [0.5.0] - 2026-02-08
 
 ### Fixed

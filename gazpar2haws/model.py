@@ -1,10 +1,18 @@
+import re
 import tempfile
 from datetime import date
 from enum import Enum
 from pathlib import Path
 from typing import Generic, Optional, TypeVar
 
-from pydantic import BaseModel, ConfigDict, EmailStr, SecretStr, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    SecretStr,
+    field_validator,
+    model_validator,
+)
 from pydantic_extra_types.timezone_name import TimeZoneName
 
 from gazpar2haws.date_array import DateArray
@@ -63,6 +71,15 @@ class Device(BaseModel):
     timezone: TimeZoneName = TimeZoneName("Europe/Paris")
     last_days: int = 365
     reset: bool = False
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        if not re.fullmatch(r"[a-z0-9_]+", value):
+            raise ValueError(
+                f"Invalid name '{value}' (expected lowercase letters, digits and underscores only, e.g. 'gazpar_maison')"
+            )
+        return value
 
     @model_validator(mode="after")
     def validate_properties(self):

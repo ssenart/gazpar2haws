@@ -28,7 +28,7 @@ devices:
 | Name                     | Description                                                                                                                                      | Required | Default value |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------- |
 | scan_interval            | Period in minutes to refresh meter data (0 means one single refresh and stop)                                                                    | No       | 480 (8 hours) |
-| devices[].name           | Name of the device in Home Assistant                                                                                                             | Yes      | -             |
+| devices[].name           | Name of the device in Home Assistant. Lowercase letters, digits and underscores only (e.g. `gazpar_maison`)                                      | Yes      | -             |
 | devices[].username       | GrDF account user name                                                                                                                           | Yes      | -             |
 | devices[].password       | GrDF account password (avoid using special characters)                                                                                           | Yes      | -             |
 | devices[].pce_identifier | GrDF meter PCE identifier                                                                                                                        | Yes      | -             |
