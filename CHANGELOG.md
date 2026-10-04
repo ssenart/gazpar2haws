@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Development dependencies: black `^26.3.1`, pytest `^9.0.3` and pytest-asyncio `^1.4.0`.
+
+### Security
+
+- Locked `urllib3` to 2.8.0, `requests` to 2.34.2 and `idna` to 3.20 to fix open Dependabot alerts.
+
 ## [0.5.1a5] - 2026-10-04
 
 ### Added
