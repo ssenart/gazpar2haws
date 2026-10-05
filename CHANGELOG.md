@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Upgraded the PyGazpar library to `1.4.0a3`. Requires `pygazpar>=1.4.0a3`.
-- Vectorized the day-by-day fill loops in `Pricer` (`_fill_value_array`, `_fill_price_array`, `_fill_composite_component_array`) into slice assignments on `DateArray`, speeding up cost computation over long date ranges. No behavior change.
+- [#122](https://github.com/ssenart/gazpar2haws/issues/122): Vectorized the day-by-day fill loops in `Pricer` (`_fill_value_array`, `_fill_price_array`, `_fill_composite_component_array`) into slice assignments on `DateArray`, speeding up cost computation over long date ranges. No behavior change.
 
 ### Fixed
 
