@@ -10,7 +10,7 @@ DEVICES_JSON=$(jq --raw-output '.devices // empty' $CONFIG_PATH)
 
 GRDF_JSON="{ 'grdf': { 'scan_interval': $SCAN_INTERVAL_JSON, 'devices': $DEVICES_JSON } }"
 
-GRDF_CONFIG=$(echo $GRDF_JSON | yq -P)
+GRDF_CONFIG=$(printf '%s' "$GRDF_JSON" | yq -P)
 
 VAT_JSON=$(jq --raw-output '.vat // empty' $CONFIG_PATH)
 
@@ -24,7 +24,7 @@ ENERGY_TAXES_JSON=$(jq --raw-output '.energy_taxes // empty' $CONFIG_PATH)
 
 PRICING_JSON="{ 'pricing': { 'vat': $VAT_JSON , 'consumption_prices': $CONSUMPTION_PRICES_JSON, 'subscription_prices': $SUBSCRIPTION_PRICES_JSON, 'transport_prices': $TRANSPORT_PRICES_JSON, 'energy_taxes': $ENERGY_TAXES_JSON } }"
 
-PRICING_CONFIG=$(echo $PRICING_JSON | yq -P)
+PRICING_CONFIG=$(printf '%s' "$PRICING_JSON" | yq -P)
 
 # Home Assistant configuration for Add-on
 HOMEASSISTANT_HOST=supervisor
@@ -38,7 +38,6 @@ HOMEASSISTANT_TOKEN=${SUPERVISOR_TOKEN}
 bashio::log.info "HOMEASSISTANT_HOST: ${HOMEASSISTANT_HOST}"
 bashio::log.info "HOMEASSISTANT_PORT: ${HOMEASSISTANT_PORT}"
 bashio::log.info "HOMEASSISTANT_ENDPOINT: ${HOMEASSISTANT_ENDPOINT}"
-bashio::log.info "HOMEASSISTANT_TOKEN: ${HOMEASSISTANT_TOKEN}"
 
 # Export environment variables
 export GRDF_CONFIG PRICING_CONFIG HOMEASSISTANT_HOST HOMEASSISTANT_PORT HOMEASSISTANT_ENDPOINT HOMEASSISTANT_TOKEN

@@ -10,6 +10,12 @@ from gazpar2haws.datetime_utils import convert_statistics_timestamps
 
 Logger = logging.getLogger(__name__)
 
+# The websockets library logs every handshake header (including the Authorization bearer token) and every frame
+# (including the auth message) when its logger is at DEBUG. Keep it at INFO so the token never reaches the logs,
+# whatever the application log level is.
+WebSocketLogger = logging.getLogger(f"{__name__}.websocket")
+WebSocketLogger.setLevel(logging.INFO)
+
 
 # ----------------------------------
 class HomeAssistantWSException(Exception):
@@ -54,7 +60,10 @@ class HomeAssistantWS:
 
         # Connect to the websocket
         self._websocket = await websockets.connect(
-            ws_url, additional_headers={"Authorization": f"Bearer {self._token}"}, ssl=ssl_context
+            ws_url,
+            additional_headers={"Authorization": f"Bearer {self._token}"},
+            ssl=ssl_context,
+            logger=WebSocketLogger,
         )
 
         # When a client connects to the server, the server sends out auth_required.

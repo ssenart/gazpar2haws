@@ -12,8 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Development dependencies: pytest `^9.0.3` and pytest-asyncio `^1.4.0`.
 - Development tooling: ruff (lint and format) and mypy replace flake8, isort, black and pylint. Ruff and mypy are updated to their latest stable versions, and the CI lint and test steps are inlined in the workflow.
 
+### Fixed
+
+- The add-on startup script no longer alters the GrDF device and pricing settings when they contain repeated spaces (such as in a GrDF password), which made the GrDF login fail.
+
 ### Security
 
+- [#124](https://github.com/ssenart/gazpar2haws/issues/124): The Home Assistant token no longer appears in the add-on logs. The startup script no longer prints `HOMEASSISTANT_TOKEN`, and the `websockets` library, which logged the `Authorization` header and auth frames at DEBUG, is now capped at INFO.
+- The add-on image installs `gazpar2haws` from PyPI only. TestPyPI is no longer used as an index, as a same-named package published there could have been picked up.
 - Locked `urllib3` to 2.8.0, `requests` to 2.34.2 and `idna` to 3.20 to fix open Dependabot alerts.
 
 ## [0.5.1a5] - 2026-10-04
