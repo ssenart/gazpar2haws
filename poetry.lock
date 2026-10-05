@@ -924,14 +924,14 @@ semver = ["semver (>=3.0.2)"]
 
 [[package]]
 name = "pygazpar"
-version = "1.4.0a3"
+version = "1.4.0a4"
 description = "Python library to download gas consumption from a GrDF (French Gas Company) account"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pygazpar-1.4.0a3-py3-none-any.whl", hash = "sha256:e307175e4b0f40057317b99fd0d1ed2a6611429aaa90b7a0471a0322fe0f2dc7"},
-    {file = "pygazpar-1.4.0a3.tar.gz", hash = "sha256:aa46d1b86fdb5afe82a05e7746102e6e7edbc486ff08ecc6387d69b803310267"},
+    {file = "pygazpar-1.4.0a4-py3-none-any.whl", hash = "sha256:22cf6d56dd23396242961e95bec9e9e33c8f963bdad346d55561ed60720f783f"},
+    {file = "pygazpar-1.4.0a4.tar.gz", hash = "sha256:b52ecd6939c8464244fb7623cb7209437b04b8fc7ece39459aa5b4658d9b0ea9"},
 ]
 
 [package.dependencies]
@@ -1213,25 +1213,11 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.12.2"
-description = "Backported and Experimental Type Hints for Python 3.8+"
-optional = false
-python-versions = ">=3.8"
-groups = ["main", "dev"]
-markers = "python_version < \"3.15\""
-files = [
-    {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
-    {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},
-]
-
-[[package]]
-name = "typing-extensions"
 version = "4.16.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
-markers = "python_version >= \"3.15\""
 files = [
     {file = "typing_extensions-4.16.0-py3-none-any.whl", hash = "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"},
     {file = "typing_extensions-4.16.0.tar.gz", hash = "sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5"},
@@ -1349,4 +1335,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "431aa370bc6fd8dfbca10b6207976066dde187d9f601beb8b57182d17a5b5e1e"
+content-hash = "7ab25fc3c518b388aed381783f53e3d4a4fdf50b8ffbb0c96484666ce4a19816"
