@@ -17,7 +17,6 @@ def _make_recv_side_effect():
 
 # ----------------------------------
 class TestHomeAssistantWSSecure:
-
     # ----------------------------------
     @pytest.mark.asyncio
     async def test_connect_uses_ws_scheme_by_default(self):

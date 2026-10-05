@@ -2,20 +2,20 @@ from __future__ import annotations
 
 import datetime as dt
 from datetime import timedelta
-from typing import Optional, overload
+from typing import overload
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, model_validator
 
 
-class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
+class DateArray(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    name: Optional[str] = None
+    name: str | None = None
     start_date: dt.date
     end_date: dt.date
-    array: Optional[np.ndarray] = None
-    initial_value: Optional[float] = None
+    array: np.ndarray | None = None
+    initial_value: float | None = None
 
     @model_validator(mode="after")
     def set_array(self):
@@ -47,9 +47,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
     # ----------------------------------
     def is_aligned_with(self, other: DateArray) -> bool:
 
-        return (
-            self.start_date == other.start_date and self.end_date == other.end_date and len(self) == len(other)
-        )  # pylint: disable=protected-access
+        return self.start_date == other.start_date and self.end_date == other.end_date and len(self) == len(other)
 
     # ----------------------------------
     @overload
@@ -133,7 +131,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
 
     # ----------------------------------
     def __iter__(self):
-        self._index = 0  # pylint: disable=attribute-defined-outside-init
+        self._index = 0
         return self
 
     # ----------------------------------
@@ -167,7 +165,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             if not self.is_aligned_with(other):
                 raise ValueError(f"Date arrays {self} and {other} are not aligned")
             result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
-            result.array = self.array + other.array  # pylint: disable=protected-access
+            result.array = self.array + other.array
             return result
 
         raise TypeError("Other must be a date array or a number")
@@ -194,7 +192,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             if not self.is_aligned_with(other):
                 raise ValueError(f"Date arrays {self} and {other} are not aligned")
             result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
-            result.array = self.array - other.array  # pylint: disable=protected-access
+            result.array = self.array - other.array
             return result
 
         raise TypeError("Other must be a date array or a number")
@@ -221,7 +219,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             if not self.is_aligned_with(other):
                 raise ValueError(f"Date arrays {self} and {other} are not aligned")
             result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
-            result.array = self.array * other.array  # pylint: disable=protected-access
+            result.array = self.array * other.array
             return result
 
         raise TypeError("Other must be a date array or a number")
@@ -248,7 +246,7 @@ class DateArray(BaseModel):  # pylint: disable=too-few-public-methods
             if not self.is_aligned_with(other):
                 raise ValueError(f"Date arrays {self} and {other} are not aligned")
             result = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
-            result.array = self.array / other.array  # pylint: disable=protected-access
+            result.array = self.array / other.array
             return result
 
         raise TypeError("Other must be a date array or a number")

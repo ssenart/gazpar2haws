@@ -1,6 +1,7 @@
 import calendar
+from collections.abc import Callable
 from datetime import date, timedelta
-from typing import Callable, Optional, Tuple, overload
+from typing import overload
 
 from gazpar2haws.date_array import DateArray
 from gazpar2haws.model import (
@@ -24,7 +25,6 @@ from gazpar2haws.model import (
 
 
 class Pricer:
-
     # ----------------------------------
     def __init__(self, pricing: Pricing):
         self._pricing = pricing
@@ -34,9 +34,7 @@ class Pricer:
         return self._pricing
 
     # ----------------------------------
-    def compute(  # pylint: disable=too-many-branches
-        self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit
-    ) -> CostBreakdown:
+    def compute(self, quantities: ConsumptionQuantityArray, price_unit: PriceUnit) -> CostBreakdown:
 
         if quantities is None:
             raise ValueError("quantities is None")
@@ -236,7 +234,7 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def _fill_price_array(  # pylint: disable=too-many-branches
+    def _fill_price_array(
         cls,
         out_value_array: ValueArray,
         in_values: list[PriceValue],
@@ -285,14 +283,18 @@ class Pricer:
             if start_date < first_value.start_date:
                 # Partially before first value period.
                 if vat_rate_array_by_id is not None and first_value.vat_id in vat_rate_array_by_id:
-                    vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date : first_value.start_date + timedelta(1)]  # type: ignore
+                    vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[
+                        start_date : first_value.start_date + timedelta(1)
+                    ]  # type: ignore
                 else:
                     vat_value = 0.0
                 value_array[start_date : first_value.start_date + timedelta(1)] = (vat_value + 1) * first_value.value  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
                 if vat_rate_array_by_id is not None and last_value.vat_id in vat_rate_array_by_id:
-                    vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date : end_date + timedelta(1)]  # type: ignore
+                    vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[
+                        last_value.end_date : end_date + timedelta(1)
+                    ]  # type: ignore
                 else:
                     vat_value = 0.0
                 value_array[last_value.end_date : end_date + timedelta(1)] = (vat_value + 1) * last_value.value  # type: ignore
@@ -311,13 +313,13 @@ class Pricer:
 
     # ----------------------------------
     @classmethod
-    def _fill_composite_component_array(  # pylint: disable=too-many-branches, too-many-statements
+    def _fill_composite_component_array(
         cls,
         out_composite_array: CompositePriceArray,
         in_composite_values: list[CompositePriceValue],
         vat_rate_array_by_id: dict[str, VatRateArray],
         get_array: Callable[[CompositePriceArray], DateArray],
-        get_value: Callable[[CompositePriceValue], Optional[float]],
+        get_value: Callable[[CompositePriceValue], float | None],
     ) -> None:
         """Generic method to fill either quantity or time component array of a CompositePriceArray."""
 
@@ -349,7 +351,9 @@ class Pricer:
             component_value = get_value(first_value)
             if component_value is not None:
                 if vat_rate_array_by_id is not None and first_value.vat_id in vat_rate_array_by_id:
-                    vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date : end_date + timedelta(1)]  # type: ignore
+                    vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[
+                        start_date : end_date + timedelta(1)
+                    ]  # type: ignore
                 else:
                     vat_value = 0.0
                 component_array[start_date : end_date + timedelta(1)] = (vat_value + 1) * component_value  # type: ignore
@@ -358,7 +362,9 @@ class Pricer:
             component_value = get_value(last_value)
             if component_value is not None:
                 if vat_rate_array_by_id is not None and last_value.vat_id in vat_rate_array_by_id:
-                    vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[start_date : end_date + timedelta(1)]  # type: ignore
+                    vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[
+                        start_date : end_date + timedelta(1)
+                    ]  # type: ignore
                 else:
                     vat_value = 0.0
                 component_array[start_date : end_date + timedelta(1)] = (vat_value + 1) * component_value  # type: ignore
@@ -368,16 +374,22 @@ class Pricer:
                 component_value = get_value(first_value)
                 if component_value is not None:
                     if vat_rate_array_by_id is not None and first_value.vat_id in vat_rate_array_by_id:
-                        vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[start_date : first_value.start_date + timedelta(1)]  # type: ignore
+                        vat_value = vat_rate_array_by_id[first_value.vat_id].value_array[
+                            start_date : first_value.start_date + timedelta(1)
+                        ]  # type: ignore
                     else:
                         vat_value = 0.0
-                    component_array[start_date : first_value.start_date + timedelta(1)] = (vat_value + 1) * component_value  # type: ignore
+                    component_array[start_date : first_value.start_date + timedelta(1)] = (
+                        vat_value + 1
+                    ) * component_value  # type: ignore
             if last_value.end_date is not None and end_date > last_value.end_date:
                 # Partially after last value period.
                 component_value = get_value(last_value)
                 if component_value is not None:
                     if vat_rate_array_by_id is not None and last_value.vat_id in vat_rate_array_by_id:
-                        vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[last_value.end_date : end_date + timedelta(1)]  # type: ignore
+                        vat_value = vat_rate_array_by_id[last_value.vat_id].value_array[
+                            last_value.end_date : end_date + timedelta(1)
+                        ]  # type: ignore
                     else:
                         vat_value = 0.0
                     component_array[last_value.end_date : end_date + timedelta(1)] = (vat_value + 1) * component_value  # type: ignore
@@ -513,22 +525,22 @@ class Pricer:
     @classmethod
     def get_convertion_factor(
         cls,
-        from_unit: Tuple[PriceUnit, QuantityUnit],
-        to_unit: Tuple[PriceUnit, QuantityUnit],
-        dt: Optional[date] = None,
+        from_unit: tuple[PriceUnit, QuantityUnit],
+        to_unit: tuple[PriceUnit, QuantityUnit],
+        dt: date | None = None,
     ) -> float: ...
 
     @overload
     @classmethod
     def get_convertion_factor(
         cls,
-        from_unit: Tuple[PriceUnit, TimeUnit],
-        to_unit: Tuple[PriceUnit, TimeUnit],
-        dt: Optional[date] = None,
+        from_unit: tuple[PriceUnit, TimeUnit],
+        to_unit: tuple[PriceUnit, TimeUnit],
+        dt: date | None = None,
     ) -> float: ...
 
     @classmethod
-    def get_convertion_factor(cls, from_unit, to_unit, dt: Optional[date] = None) -> float:
+    def get_convertion_factor(cls, from_unit, to_unit, dt: date | None = None) -> float:
         if type(from_unit) is not type(to_unit):
             raise ValueError(f"from_unit {from_unit} and to_unit {to_unit} must be of the same type")
         if (
@@ -558,7 +570,7 @@ class Pricer:
     def convert(
         cls,
         price_values: list[PriceValue[ValueUnit, BaseUnit]],
-        to_unit: Tuple[ValueUnit, BaseUnit],
+        to_unit: tuple[ValueUnit, BaseUnit],
     ) -> list[PriceValue[ValueUnit, BaseUnit]]: ...
 
     @overload
@@ -566,7 +578,7 @@ class Pricer:
     def convert(
         cls,
         composite_prices: list[CompositePriceValue],
-        to_unit: Tuple[PriceUnit, QuantityUnit, TimeUnit],
+        to_unit: tuple[PriceUnit, QuantityUnit, TimeUnit],
     ) -> list[CompositePriceValue]: ...
 
     @classmethod
@@ -636,7 +648,9 @@ class Pricer:
                     end_date=price_value.end_date,
                     value=price_value.value
                     * cls.get_convertion_factor(
-                        (price_value.value_unit, price_value.base_unit), to_unit, price_value.start_date  # type: ignore
+                        (price_value.value_unit, price_value.base_unit),
+                        to_unit,
+                        price_value.start_date,  # type: ignore
                     ),
                     value_unit=to_unit[0],
                     base_unit=to_unit[1],

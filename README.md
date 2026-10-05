@@ -751,7 +751,7 @@ Pull requests are welcome! For any change proposal, please open an issue first t
 - Update documentation (README.md, docs/FAQ.md) as appropriate
 - Add entries to CHANGELOG.md for your changes
 - Ensure all tests pass: `poetry run pytest`
-- Run linters: `poetry run pylint gazpar2haws`
+- Format and lint: `poetry run ruff format gazpar2haws` and `poetry run ruff check gazpar2haws`
 
 ## License
 

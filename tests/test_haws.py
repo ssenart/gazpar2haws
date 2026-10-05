@@ -13,16 +13,13 @@ from gazpar2haws.haws import HomeAssistantWS
 
 # ----------------------------------
 class TestHomeAssistantWS:
-
     # ----------------------------------
     def setup_method(self):
         """setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
         # Load configuration
-        self._config = config_utils.ConfigLoader(  # pylint: disable=W0201
-            "tests/config/configuration.yaml", "tests/config/secrets.yaml"
-        )
+        self._config = config_utils.ConfigLoader("tests/config/configuration.yaml", "tests/config/secrets.yaml")
         self._config.load_secrets()
         self._config.load_config()
 
@@ -35,7 +32,7 @@ class TestHomeAssistantWS:
         )
         ha_token = self._config.get("homeassistant.token")
 
-        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)  # pylint: disable=W0201
+        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
 
     # ----------------------------------
     # @pytest.mark.skip(reason="Requires Home Assistant server")
@@ -151,7 +148,7 @@ class TestHomeAssistantWS:
         # Clear any existing data from previous tests
         try:
             await self._haws.clear_statistics(["sensor.gazpar2haws_cost", "sensor.gazpar2haws_total_cost"])
-        except Exception:  # pylint: disable=broad-except
+        except Exception:  # noqa: BLE001
             pass  # OK if sensors don't exist yet
 
         # First, ensure both sensors exist by importing test data
@@ -217,7 +214,7 @@ class TestHomeAssistantWS:
             await self._haws.clear_statistics(
                 ["sensor.gazpar2haws_cost_migrate_test", "sensor.gazpar2haws_total_cost_migrate_test"]
             )
-        except Exception:  # pylint: disable=broad-except
+        except Exception:  # noqa: BLE001
             pass  # OK if sensors don't exist yet
 
         # Create old sensor with historical data

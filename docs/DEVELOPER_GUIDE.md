@@ -98,6 +98,7 @@ Standard for type annotations in Python.
 ```python
 from typing import Optional, List, Dict
 
+
 def process_data(items: List[str], config: Optional[Dict[str, Any]] = None) -> int:
     """Process items and return count."""
     return len(items)
@@ -130,12 +131,12 @@ Standard Markdown syntax for all documentation files.
 
 ### Code Quality Standards
 
-#### 🎨 [Black](https://black.readthedocs.io/) – Code Formatter
-Opinionated Python code formatter ("The Uncompromising Code Formatter").
+#### ⚡ [Ruff](https://docs.astral.sh/ruff/) – Linter and Code Formatter
+A fast Python linter and code formatter. `ruff format` formats the code, and `ruff check` lints it.
 
-**Configuration**: `pyproject.toml` → `[tool.black]`
+**Configuration**: `pyproject.toml` → `[tool.ruff]` and `[tool.ruff.lint]`
 
-**Why**: Zero-debate formatting, consistent code style, faster code reviews.
+**Why**: One fast tool for formatting and linting, with zero-debate formatting.
 
 #### 🔍 [mypy](https://mypy.readthedocs.io/) – Static Type Checker
 Static type checker for Python using PEP 484 type hints.
@@ -228,8 +229,8 @@ Gazpar2HAWS is a gateway application that:
   - `pyyaml`: Configuration file parsing
 - **Development Tools**:
   - `pytest`: Testing framework
-  - `black`, `isort`, `ruff`: Code formatting
-  - `pylint`, `flake8`, `mypy`: Linting and type checking
+  - `ruff`: Code formatting and linting
+  - `mypy`: Type checking
   - `poetry`: Dependency management
 
 ---
@@ -855,13 +856,8 @@ Follow this workflow for feature development (using Gitflow):
 
 4. **Run code quality checks**:
    ```bash
-   # Format code
-   poetry run black gazpar2haws
-   poetry run isort gazpar2haws
-
-   # Lint code
-   poetry run pylint gazpar2haws
-   poetry run flake8 gazpar2haws
+   # Format and lint code
+   poetry run ruff format gazpar2haws
    poetry run ruff check gazpar2haws
 
    # Type check
@@ -969,6 +965,7 @@ import pytest
 from gazpar2haws.pricer import Pricer
 from gazpar2haws.model import Pricing
 
+
 def test_compute_cost_basic():
     """Test basic cost computation with quantity-based pricing"""
     # Arrange
@@ -980,9 +977,9 @@ def test_compute_cost_basic():
                 "quantity_value": 0.10,
                 "quantity_unit": "kWh",
                 "price_unit": "€",
-                "vat_id": "normal"
+                "vat_id": "normal",
             }
-        ]
+        ],
     )
     pricer = Pricer(pricing)
 
@@ -998,6 +995,7 @@ def test_compute_cost_basic():
 ```python
 import pytest
 from gazpar2haws.haws import HomeAssistantWS
+
 
 @pytest.mark.asyncio
 async def test_connect_success(mock_websocket):
@@ -1041,7 +1039,8 @@ Tests use `unittest.mock` or `pytest-mock` for mocking external dependencies:
 ```python
 from unittest.mock import Mock, patch
 
-@patch('gazpar2haws.gazpar.Client')
+
+@patch("gazpar2haws.gazpar.Client")
 def test_gazpar_fetch_data(mock_client):
     """Test GrDF data fetching"""
     # Arrange
@@ -1055,39 +1054,18 @@ def test_gazpar_fetch_data(mock_client):
 
 ## Code Quality
 
-### Code Formatting
+### Code Formatting and Linting
 
-**Black** is used for code formatting:
+**Ruff** is used for code formatting and linting:
 ```bash
 # Format all code
-poetry run black gazpar2haws tests
+poetry run ruff format gazpar2haws tests
 
 # Check formatting without changes
-poetry run black --check gazpar2haws tests
-```
+poetry run ruff format --check gazpar2haws tests
 
-**isort** is used for import sorting:
-```bash
-# Sort imports
-poetry run isort gazpar2haws tests
-
-# Check import order
-poetry run isort --check gazpar2haws tests
-```
-
-### Linting
-
-Multiple linters are used:
-
-```bash
-# Pylint
-poetry run pylint gazpar2haws
-
-# Flake8
-poetry run flake8 gazpar2haws
-
-# Ruff (fast linter)
-poetry run ruff check gazpar2haws
+# Lint code
+poetry run ruff check gazpar2haws tests
 ```
 
 ### Type Checking
@@ -1102,32 +1080,25 @@ poetry run mypy gazpar2haws
 Tool configurations are in `pyproject.toml`:
 
 ```toml
-[tool.black]
+[tool.ruff]
 line-length = 120
 
-[tool.isort]
-profile = "black"
-
-[tool.pylint.'MESSAGES CONTROL']
-max-line-length = 120
-disable = "C,W1203,R0902,R0913,R0914,R0917,R0801"
-
-[tool.flake8]
-max-line-length = 120
-extend-ignore = ["E203", "W503"]
+[tool.ruff.lint]
+# E501 is ignored: ruff format owns the line length, and long strings are left as they are.
+select = ["E", "F", "W", "I", "B", "UP", "ARG", "RET", "BLE"]
+ignore = ["E501"]
 ```
 
 ### Pre-commit Checks
 
 Before committing, run:
 ```bash
-# Format code
-poetry run black gazpar2haws tests
-poetry run isort gazpar2haws tests
+# Format and lint
+poetry run ruff format gazpar2haws tests
+poetry run ruff check gazpar2haws tests
 
-# Lint
-poetry run pylint gazpar2haws
-poetry run ruff check gazpar2haws
+# Type check
+poetry run mypy gazpar2haws tests
 
 # Test
 poetry run pytest
@@ -1144,7 +1115,7 @@ poetry run pytest
 3. **Create an issue first**: For significant changes, discuss in an issue
 4. **Write tests**: All new features must have tests
 5. **Update documentation**: Update relevant docs (README, FAQ, etc.)
-6. **Follow code style**: Use black, isort, and pass linters
+6. **Follow code style**: Run `ruff format` and pass `ruff check` and mypy
 7. **Write clear commit messages**: Follow conventional commits
 
 ### Pull Request Process
@@ -1188,11 +1159,8 @@ This project uses **GitHub Actions** for automated Continuous Integration and Co
 **Jobs**:
 1. **Prepare** – Read the target Python versions
 2. **Lint** – Run code quality checks:
-   - `black --check` (formatting)
-   - `isort --check` (import sorting)
-   - `pylint` (static analysis)
-   - `flake8` (style guide enforcement)
-   - `ruff` (fast linting)
+   - `ruff format --check` (formatting)
+   - `ruff check` (linting: pyflakes, pycodestyle, import order, bugbear and more)
    - `mypy` (type checking)
 3. **Test** – Run test suite on multiple Python versions:
    - Python 3.10, 3.11, 3.12, 3.13
@@ -1618,9 +1586,8 @@ Required GitHub Secrets (configured in repository settings):
 **Solution**:
 ```bash
 # Run locally before pushing
-poetry run black gazpar2haws tests
-poetry run isort gazpar2haws tests
-poetry run pylint gazpar2haws
+poetry run ruff format gazpar2haws tests
+poetry run ruff check gazpar2haws tests
 poetry run mypy gazpar2haws tests
 ```
 

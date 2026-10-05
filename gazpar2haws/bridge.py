@@ -11,7 +11,6 @@ Logger = logging.getLogger(__name__)
 
 # ----------------------------------
 class Bridge:
-
     # ----------------------------------
     def __init__(self, config: Configuration):
 
@@ -67,7 +66,6 @@ class Bridge:
 
         try:
             while self._running:
-
                 # Connect to Home Assistant
                 await self._homeassistant.connect()
 

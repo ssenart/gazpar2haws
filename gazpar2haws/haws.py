@@ -356,7 +356,7 @@ class HomeAssistantWS:
             )
             return True
 
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:  # noqa: BLE001
             Logger.warning(
                 f"Error during statistic migration from {old_entity_id} to {new_entity_id}: {exc}. "
                 f"Continuing without migration (data is preserved in old sensor)."

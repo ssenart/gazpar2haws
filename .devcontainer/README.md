@@ -384,8 +384,8 @@ poetry run pytest tests/
 poetry run pytest tests/test_pricer.py -v
 
 # Run linters
-poetry run pylint gazpar2haws
-poetry run black gazpar2haws
+poetry run ruff check gazpar2haws
+poetry run ruff format gazpar2haws
 ```
 
 ### Debugging

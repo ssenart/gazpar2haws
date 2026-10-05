@@ -3,7 +3,7 @@ import tempfile
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import (
     BaseModel,
@@ -63,11 +63,11 @@ class Device(BaseModel):
     name: str
     data_source: str = "json"
     consumption_type: str = "informative"
-    tmp_dir: Optional[str] = None  # If None, will use system temp directory
-    as_of_date: Optional[date] = None
-    username: Optional[EmailStr] = None
-    password: Optional[SecretStr] = None
-    pce_identifier: Optional[SecretStr] = None
+    tmp_dir: str | None = None  # If None, will use system temp directory
+    as_of_date: date | None = None
+    username: EmailStr | None = None
+    password: SecretStr | None = None
+    pce_identifier: SecretStr | None = None
     timezone: TimeZoneName = TimeZoneName("Europe/Paris")
     last_days: int = 365
     reset: bool = False
@@ -109,7 +109,7 @@ class Device(BaseModel):
 
 # ----------------------------------
 class Grdf(BaseModel):
-    scan_interval: Optional[int] = 480
+    scan_interval: int | None = 480
     devices: list[Device]
 
 
@@ -126,7 +126,7 @@ class HomeAssistant(BaseModel):
 # ----------------------------------
 class Period(BaseModel):
     start_date: date
-    end_date: Optional[date] = None
+    end_date: date | None = None
 
 
 # ----------------------------------
@@ -136,15 +136,13 @@ class Value(Period):
 
 # ----------------------------------
 class ValueArray(Period):
-    name: Optional[str] = None
-    value_array: Optional[DateArray] = None
+    name: str | None = None
+    value_array: DateArray | None = None
 
     @model_validator(mode="after")
     def set_value_array(self):
         if self.value_array is None:
-            self.value_array = DateArray(
-                name=self.name, start_date=self.start_date, end_date=self.end_date
-            )  # pylint: disable=attribute-defined-outside-init
+            self.value_array = DateArray(name=self.name, start_date=self.start_date, end_date=self.end_date)
         return self
 
 
@@ -171,27 +169,27 @@ BaseUnit = TypeVar("BaseUnit")
 
 # ----------------------------------
 class Unit(BaseModel, Generic[ValueUnit, BaseUnit]):
-    value_unit: Optional[ValueUnit] = None
-    base_unit: Optional[BaseUnit] = None
+    value_unit: ValueUnit | None = None
+    base_unit: BaseUnit | None = None
 
 
 # ----------------------------------
-class Price(Unit[ValueUnit, BaseUnit]):  # pylint: disable=too-few-public-methods
-    vat_id: Optional[str] = None
+class Price(Unit[ValueUnit, BaseUnit]):
+    vat_id: str | None = None
 
 
 # ----------------------------------
 class CompositePriceValue(Period):
-    price_unit: Optional[PriceUnit] = None  # € or ¢ (applies to both components)
-    vat_id: Optional[str] = None
+    price_unit: PriceUnit | None = None  # € or ¢ (applies to both components)
+    vat_id: str | None = None
 
     # Quantity component (€/kWh)
-    quantity_value: Optional[float] = None
-    quantity_unit: Optional[QuantityUnit] = None
+    quantity_value: float | None = None
+    quantity_unit: QuantityUnit | None = None
 
     # Time component (€/month)
-    time_value: Optional[float] = None
-    time_unit: Optional[TimeUnit] = None
+    time_value: float | None = None
+    time_unit: TimeUnit | None = None
 
 
 # ----------------------------------
@@ -205,49 +203,49 @@ class PriceValueArray(Price[ValueUnit, BaseUnit], ValueArray):
 
 
 # ----------------------------------
-class ConsumptionPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):  # pylint: disable=too-few-public-methods
+class ConsumptionPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):
     pass
 
 
 # ----------------------------------
-class SubscriptionPriceArray(PriceValueArray[PriceUnit, TimeUnit]):  # pylint: disable=too-few-public-methods
+class SubscriptionPriceArray(PriceValueArray[PriceUnit, TimeUnit]):
     pass
 
 
 # ----------------------------------
-class TransportPriceArray(PriceValueArray[PriceUnit, TimeUnit]):  # pylint: disable=too-few-public-methods
+class TransportPriceArray(PriceValueArray[PriceUnit, TimeUnit]):
     pass
 
 
 # ----------------------------------
-class EnergyTaxesPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):  # pylint: disable=too-few-public-methods
+class EnergyTaxesPriceArray(PriceValueArray[PriceUnit, QuantityUnit]):
     pass
 
 
 # ----------------------------------
-class CompositePriceArray(Period):  # pylint: disable=too-few-public-methods
-    name: Optional[str] = None
-    price_unit: Optional[PriceUnit] = None
-    vat_id: Optional[str] = None
+class CompositePriceArray(Period):
+    name: str | None = None
+    price_unit: PriceUnit | None = None
+    vat_id: str | None = None
 
     # Quantity component (€/kWh) - vectorized
-    quantity_value_array: Optional[DateArray] = None
-    quantity_unit: Optional[QuantityUnit] = None
+    quantity_value_array: DateArray | None = None
+    quantity_unit: QuantityUnit | None = None
 
     # Time component (€/month) - vectorized
-    time_value_array: Optional[DateArray] = None
-    time_unit: Optional[TimeUnit] = None
+    time_value_array: DateArray | None = None
+    time_unit: TimeUnit | None = None
 
     @model_validator(mode="after")
     def set_value_arrays(self):
         if self.quantity_value_array is None:
             self.quantity_value_array = DateArray(
                 name=f"{self.name}_quantity", start_date=self.start_date, end_date=self.end_date
-            )  # pylint: disable=attribute-defined-outside-init
+            )
         if self.time_value_array is None:
             self.time_value_array = DateArray(
                 name=f"{self.name}_time", start_date=self.start_date, end_date=self.end_date
-            )  # pylint: disable=attribute-defined-outside-init
+            )
         return self
 
 
@@ -262,7 +260,7 @@ class Pricing(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    vat: Optional[list[VatRate]] = None
+    vat: list[VatRate] | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -295,7 +293,7 @@ class Pricing(BaseModel):
             for i in range(len(prices) - 1):
                 if "end_date" not in prices[i]:
                     prices[i]["end_date"] = prices[i + 1]["start_date"]
-                for key, default_value in default_units.items():
+                for key in default_units:
                     if key not in prices[i + 1]:
                         prices[i + 1][key] = prices[i][key]
                 if "vat_id" not in prices[i + 1] and "vat_id" in prices[i]:

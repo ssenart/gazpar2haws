@@ -1,7 +1,6 @@
 import logging
 import traceback
 from datetime import date, datetime, timedelta
-from typing import Optional
 
 import pygazpar  # type: ignore
 import pytz
@@ -25,12 +24,11 @@ Logger = logging.getLogger(__name__)
 
 # ----------------------------------
 class Gazpar:
-
     # ----------------------------------
     def __init__(
         self,
         device_config: Device,
-        pricing_config: Optional[Pricing],
+        pricing_config: Pricing | None,
         homeassistant: HomeAssistantWS,
     ):
 
@@ -86,7 +84,7 @@ class Gazpar:
 
     # ----------------------------------
     # Publish Gaspar data to Home Assistant WS
-    async def publish(self):  # pylint: disable=too-many-branches, too-many-statements
+    async def publish(self):
 
         # As of date
         as_of_date = self.as_of_date()
@@ -119,7 +117,7 @@ class Gazpar:
                     timezone=self._timezone,
                     as_of_date=as_of_date,
                 )
-            except Exception:  # pylint: disable=broad-except
+            except Exception:  # noqa: BLE001
                 Logger.warning(
                     f"Error during automatic sensor migration from "
                     f"{old_total_cost_sensor_name} to {total_cost_sensor_name}: "
@@ -307,7 +305,7 @@ class Gazpar:
                     res.append(reading)
 
             Logger.debug(f"Fetched {len(res)} daily readings from start date {start_date} to end date {end_date}")
-        except Exception:  # pylint: disable=broad-except
+        except Exception:  # noqa: BLE001
             Logger.warning(f"Error while fetching data from GrDF: {traceback.format_exc()}")
             res = MeterReadings()
 
@@ -321,10 +319,10 @@ class Gazpar:
         property_name: str,
         start_date: date,
         end_date: date,
-    ) -> Optional[DateArray]:
+    ) -> DateArray | None:
 
         # Fill the quantity array.
-        res: Optional[DateArray] = None
+        res: DateArray | None = None
 
         for reading in readings:
             # Parse date format DD/MM/YYYY into datetime.

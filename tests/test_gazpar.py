@@ -23,26 +23,23 @@ from gazpar2haws.pricer import Pricer
 
 # ----------------------------------
 class TestGazpar:
-
     # ----------------------------------
-    def setup_method(self):  # pylint: disable=R0801
+    def setup_method(self):
         """setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
 
         # Load configuration
-        self._config = Configuration.load(  # pylint: disable=W0201
-            "tests/config/configuration.yaml", "tests/config/secrets.yaml"
-        )
+        self._config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")
 
         ha_host = self._config.homeassistant.host
         ha_port = self._config.homeassistant.port
         ha_endpoint = self._config.homeassistant.endpoint
         ha_token = self._config.homeassistant.token.get_secret_value()
 
-        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)  # pylint: disable=W0201
-        self._grdf_device_config = self._config.grdf.devices[0]  # pylint: disable=W0201
-        self._pricing_config = self._config.pricing  # pylint: disable=W0201
+        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
+        self._grdf_device_config = self._config.grdf.devices[0]
+        self._pricing_config = self._config.pricing
 
     # ----------------------------------
     # @pytest.mark.skip(reason="Requires Home Assistant server")
@@ -162,7 +159,6 @@ class TestGazpar:
 
 # ----------------------------------
 class TestGazparDataSource:
-
     # ----------------------------------
     @staticmethod
     def _make_device_config(consumption_type: str) -> Device:
@@ -180,7 +176,7 @@ class TestGazparDataSource:
         gazpar = Gazpar(self._make_device_config("informative"), None, None)
 
         with patch("pygazpar.JsonWebDataSource") as mock_data_source:
-            gazpar._create_data_source()  # pylint: disable=protected-access
+            gazpar._create_data_source()
 
             mock_data_source.assert_called_once_with(
                 username="user@example.com",
@@ -194,7 +190,7 @@ class TestGazparDataSource:
         gazpar = Gazpar(self._make_device_config("published"), None, None)
 
         with patch("pygazpar.JsonWebDataSource") as mock_data_source:
-            gazpar._create_data_source()  # pylint: disable=protected-access
+            gazpar._create_data_source()
 
             mock_data_source.assert_called_once_with(
                 username="user@example.com",

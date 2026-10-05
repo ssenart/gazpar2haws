@@ -12,7 +12,7 @@ from gazpar2haws.configuration import Configuration
 async def test_run():
 
     # Load configuration
-    config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")  # pylint: disable=W0201
+    config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")
 
     bridge = Bridge(config)
     await bridge.run()
