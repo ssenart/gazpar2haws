@@ -98,7 +98,6 @@ Standard for type annotations in Python.
 ```python
 from typing import Optional, List, Dict
 
-
 def process_data(items: List[str], config: Optional[Dict[str, Any]] = None) -> int:
     """Process items and return count."""
     return len(items)
@@ -965,7 +964,6 @@ import pytest
 from gazpar2haws.pricer import Pricer
 from gazpar2haws.model import Pricing
 
-
 def test_compute_cost_basic():
     """Test basic cost computation with quantity-based pricing"""
     # Arrange
@@ -977,9 +975,9 @@ def test_compute_cost_basic():
                 "quantity_value": 0.10,
                 "quantity_unit": "kWh",
                 "price_unit": "€",
-                "vat_id": "normal",
+                "vat_id": "normal"
             }
-        ],
+        ]
     )
     pricer = Pricer(pricing)
 
@@ -995,7 +993,6 @@ def test_compute_cost_basic():
 ```python
 import pytest
 from gazpar2haws.haws import HomeAssistantWS
-
 
 @pytest.mark.asyncio
 async def test_connect_success(mock_websocket):
@@ -1039,8 +1036,7 @@ Tests use `unittest.mock` or `pytest-mock` for mocking external dependencies:
 ```python
 from unittest.mock import Mock, patch
 
-
-@patch("gazpar2haws.gazpar.Client")
+@patch('gazpar2haws.gazpar.Client')
 def test_gazpar_fetch_data(mock_client):
     """Test GrDF data fetching"""
     # Arrange
