@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1a6] - 2026-10-06
+
 ### Changed
 
 - Upgraded the PyGazpar library to `1.4.0a4`.
@@ -285,5 +287,6 @@ Users upgrading from v0.3.x must update their pricing configuration to the new f
 
 First version of the project.
 
-[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a5...HEAD
+[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a6...HEAD
+[0.5.1a6]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a5...0.5.1a6
 [0.5.1a5]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a4...0.5.1a5
