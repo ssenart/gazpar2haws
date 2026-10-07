@@ -406,12 +406,17 @@ Where `${name}` is the device name from your configuration (default: `gazpar2haw
 
 ### Can I use these entities in the Energy Dashboard?
 
-**Yes.** The volume and energy entities are fully compatible with the Home Assistant Energy Dashboard:
+**Yes**, but expect a warning while doing it — see below.
 
 1. Go to **Settings → Dashboards → Energy**
 2. Add a gas source
-3. Select `sensor.${name}_energy` as the gas consumption entity
-4. Select `sensor.${name}_total_cost` as the cost entity (optional)
+3. In the entity field, type (don't pick from the dropdown) `sensor.${name}_energy` as the gas consumption entity
+4. Type `sensor.${name}_total_cost` as the cost entity (optional)
+5. Validate despite the warning (see next question)
+
+**You will see "Entité non définie" / "Entity not defined" / "entity has no state"** when doing this. This is expected, not an error: as explained [below](#why-doesnt-gazpar2haws-create-regular-entities-states-instead-of-just-statistics), `sensor.${name}_energy` is a statistics-only identifier with no backing entity, so the picker — which checks for a live entity — can't find one. Type/paste the ID directly into the field and validate anyway; the Energy Dashboard itself reads from statistics (not live state), so the history displays correctly once validated. This exact confusion is the subject of many duplicate issues: [#46](https://github.com/ssenart/gazpar2haws/issues/46), [#54](https://github.com/ssenart/gazpar2haws/issues/54), [#68](https://github.com/ssenart/gazpar2haws/issues/68), [#74](https://github.com/ssenart/gazpar2haws/issues/74), [#75](https://github.com/ssenart/gazpar2haws/issues/75), [#79](https://github.com/ssenart/gazpar2haws/issues/79), [#85](https://github.com/ssenart/gazpar2haws/issues/85), [#99](https://github.com/ssenart/gazpar2haws/issues/99), [#116](https://github.com/ssenart/gazpar2haws/issues/116) — see [#99](https://github.com/ssenart/gazpar2haws/issues/99) in particular for the community-confirmed workaround this section is based on.
+
+**To make the warning disappear entirely** if you also run [home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar) in parallel (e.g. to keep using [lovelace-gazpar-card](https://github.com/ssenart/lovelace-gazpar-card), which reads live entity state, not statistics): configure gazpar2haws's device `name` to match home-assistant-gazpar's entity name — e.g. `name: gazpar` so the statistic becomes `sensor.gazpar_energy` — then rename the existing `home-assistant-gazpar` entity to `sensor.gazpar_energy` (via *Settings → Devices & services → Entities*, since entity IDs aren't renamed by config changes alone). A real entity then exists under that ID, so the Energy Dashboard picker finds it with no warning. **You must then exclude that entity from the recorder** (`recorder: exclude: entities: [sensor.gazpar_energy]` in `configuration.yaml`), otherwise the recorder's own automatic statistics computation from the entity's live state will fight with gazpar2haws's direct statistics writes under the same ID, corrupting the history. ⚠️ This combination is not yet field-confirmed the way the plain workaround above is — if you try it, please report back on [#92](https://github.com/ssenart/home-assistant-gazpar/issues/92) or open an issue here.
 
 ### Using HassIO, I get connection errors
 
