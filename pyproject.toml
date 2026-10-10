@@ -2,7 +2,8 @@
 name = "gazpar2haws"
 version = "0.5.1a6"
 description = "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -18,23 +19,33 @@ dependencies = [
     "pygazpar>=1.4.0a4",
     "websockets>=14.1",
     "pyyaml>=6.0.2",
-    "pydantic[email] (>=2.10.6,<3.0.0)",
-    "pydantic-extra-types (>=2.10.2,<3.0.0)",
+    "pydantic[email]>=2.10.6,<3.0.0",
+    "pydantic-extra-types>=2.10.2,<3.0.0",
+    "numpy>=1.26.0",
+    "pytz>=2024.1",
 ]
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-include = ["CHANGELOG.md"]
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^9.0.3"
-pytest-asyncio = "^1.4.0"
-mypy = "^2.4.0"
-ruff = "^0.16.10"
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3,<10.0.0",
+    "pytest-asyncio>=1.4.0,<2.0.0",
+    "mypy>=2.4.0,<3.0.0",
+    "ruff>=0.16.10,<0.17.0",
+    "types-pytz>=2024.1",
+    "types-pyyaml>=6.0.12,<7.0.0",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+required-version = ">=0.13.0"
+
+[tool.uv.build-backend]
+module-name = "gazpar2haws"
+module-root = ""
+source-include = ["CHANGELOG.md"]
 
 [tool.mypy]
 exclude = [ ".venv" ]

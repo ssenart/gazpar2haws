@@ -375,17 +375,17 @@ docker volume rm <volume-name>
 
 ```bash
 # Install dependencies (if needed)
-poetry install
+uv sync
 
 # Run unit tests
-poetry run pytest tests/
+uv run pytest tests/
 
 # Run specific test
-poetry run pytest tests/test_pricer.py -v
+uv run pytest tests/test_pricer.py -v
 
 # Run linters
-poetry run ruff check gazpar2haws
-poetry run ruff format gazpar2haws
+uv run ruff check gazpar2haws
+uv run ruff format gazpar2haws
 ```
 
 ### Debugging

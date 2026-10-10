@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Development tooling: [uv](https://docs.astral.sh/uv/) replaces Poetry. The package is built with the `uv_build` backend, the development tools are a `dev` dependency group in `pyproject.toml`, and the locked versions are in `uv.lock` (`poetry.lock` is removed). To work on the project, run `uv sync` instead of `poetry install`. The CI and release workflows and the Docker image use uv. The application, its configuration and its command line are unchanged.
+- `types-pytz` and `types-pyyaml` are development dependencies, so that mypy needs no `--install-types`.
+
+### Fixed
+
+- `numpy` and `pytz`, which the code imports, are declared dependencies. They used to come with PyGazpar through `pandas`, which PyGazpar 1.4.0 no longer requires.
+
 ## [0.5.1a6] - 2026-10-06
 
 ### Changed

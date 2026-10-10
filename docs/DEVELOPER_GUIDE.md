@@ -230,7 +230,7 @@ Gazpar2HAWS is a gateway application that:
   - `pytest`: Testing framework
   - `ruff`: Code formatting and linting
   - `mypy`: Type checking
-  - `poetry`: Dependency management
+  - `uv`: Dependency management, virtual environment and build
 
 ---
 
@@ -412,7 +412,7 @@ Configuration loading uses factories:
 ### Prerequisites
 
 - **Python**: 3.10 or higher
-- **Poetry**: 2.0 or higher
+- **uv**: 0.13 or higher
 - **Git**: For version control
 - **Home Assistant**: Running instance for integration testing (optional)
 
@@ -424,19 +424,19 @@ Configuration loading uses factories:
    cd gazpar2haws
    ```
 
-2. **Install Poetry** (if not already installed):
+2. **Install uv** (if not already installed):
    ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 3. **Install dependencies**:
    ```bash
-   poetry install
+   uv sync
    ```
 
-4. **Activate virtual environment**:
+4. **Activate virtual environment** (or prefix the commands with `uv run`):
    ```bash
-   poetry shell
+   source .venv/bin/activate
    ```
 
 ### Configuration for Development
@@ -469,14 +469,14 @@ Configuration loading uses factories:
 
 ```bash
 # Run with default config paths
-poetry run python -m gazpar2haws
+uv run python -m gazpar2haws
 
 # Run with custom config paths
-poetry run python -m gazpar2haws --config /path/to/config.yaml --secrets /path/to/secrets.yaml
+uv run python -m gazpar2haws --config /path/to/config.yaml --secrets /path/to/secrets.yaml
 
 # Run with debug logging
 # (Edit config/configuration.yaml: logging.level: debug)
-poetry run python -m gazpar2haws
+uv run python -m gazpar2haws
 ```
 
 ---
@@ -533,7 +533,7 @@ gazpar2haws/
 ### Key Files
 
 - **`pyproject.toml`**: Project metadata, dependencies, tool configurations
-- **`poetry.lock`**: Locked dependency versions
+- **`uv.lock`**: Locked dependency versions
 - **`.github/workflows/`**: CI/CD workflows (build, test, publish)
 - **`Dockerfile`**: Docker image build configuration
 - **`tests/config/example_*.yaml`**: Example configurations for testing
@@ -856,16 +856,16 @@ Follow this workflow for feature development (using Gitflow):
 4. **Run code quality checks**:
    ```bash
    # Format and lint code
-   poetry run ruff format gazpar2haws
-   poetry run ruff check gazpar2haws
+   uv run ruff format gazpar2haws
+   uv run ruff check gazpar2haws
 
    # Type check
-   poetry run mypy gazpar2haws
+   uv run mypy gazpar2haws
    ```
 
 5. **Run tests**:
    ```bash
-   poetry run pytest
+   uv run pytest
    ```
 
 6. **Commit your changes**:
@@ -937,22 +937,22 @@ tests/
 
 ```bash
 # Run all tests
-poetry run pytest
+uv run pytest
 
 # Run with coverage
-poetry run pytest --cov=gazpar2haws --cov-report=html
+uv run pytest --cov=gazpar2haws --cov-report=html
 
 # Run specific test file
-poetry run pytest tests/test_pricer.py
+uv run pytest tests/test_pricer.py
 
 # Run specific test
-poetry run pytest tests/test_pricer.py::test_compute_cost
+uv run pytest tests/test_pricer.py::test_compute_cost
 
 # Run with verbose output
-poetry run pytest -v
+uv run pytest -v
 
 # Run with debug output
-poetry run pytest -s
+uv run pytest -s
 ```
 
 ### Writing Tests
@@ -1023,7 +1023,7 @@ Current test coverage goals (see [TODO.md](TODO.md) for details):
 
 **View coverage report**:
 ```bash
-poetry run pytest --cov=gazpar2haws --cov-report=html
+uv run pytest --cov=gazpar2haws --cov-report=html
 open htmlcov/index.html  # macOS
 xdg-open htmlcov/index.html  # Linux
 start htmlcov/index.html  # Windows
@@ -1055,20 +1055,20 @@ def test_gazpar_fetch_data(mock_client):
 **Ruff** is used for code formatting and linting:
 ```bash
 # Format all code
-poetry run ruff format gazpar2haws tests
+uv run ruff format gazpar2haws tests
 
 # Check formatting without changes
-poetry run ruff format --check gazpar2haws tests
+uv run ruff format --check gazpar2haws tests
 
 # Lint code
-poetry run ruff check gazpar2haws tests
+uv run ruff check gazpar2haws tests
 ```
 
 ### Type Checking
 
 **mypy** is used for static type checking:
 ```bash
-poetry run mypy gazpar2haws
+uv run mypy gazpar2haws
 ```
 
 ### Configuration
@@ -1090,14 +1090,14 @@ ignore = ["E501"]
 Before committing, run:
 ```bash
 # Format and lint
-poetry run ruff format gazpar2haws tests
-poetry run ruff check gazpar2haws tests
+uv run ruff format gazpar2haws tests
+uv run ruff check gazpar2haws tests
 
 # Type check
-poetry run mypy gazpar2haws tests
+uv run mypy gazpar2haws tests
 
 # Test
-poetry run pytest
+uv run pytest
 ```
 
 ---
@@ -1495,10 +1495,10 @@ git checkout release/0.6.0
 
 ```bash
 # Install build dependencies
-poetry install
+uv sync
 
 # Build wheel and source distribution
-poetry build
+uv build
 
 # Output in dist/
 ls dist/
@@ -1524,7 +1524,7 @@ docker run --rm gazpar2haws:dev --version
 pip install dist/gazpar2haws-0.5.0-py3-none-any.whl
 
 # Or install in editable mode for development
-poetry install
+uv sync
 ```
 
 ---
@@ -1582,9 +1582,9 @@ Required GitHub Secrets (configured in repository settings):
 **Solution**:
 ```bash
 # Run locally before pushing
-poetry run ruff format gazpar2haws tests
-poetry run ruff check gazpar2haws tests
-poetry run mypy gazpar2haws tests
+uv run ruff format gazpar2haws tests
+uv run ruff check gazpar2haws tests
+uv run mypy gazpar2haws tests
 ```
 
 #### CI Fails on Tests
@@ -1642,12 +1642,12 @@ poetry run mypy gazpar2haws tests
 
 ### Common Development Issues
 
-#### Issue: Poetry lock file conflicts
+#### Issue: Lock file conflicts
 
 **Solution**:
 ```bash
-poetry lock --no-update
-git add poetry.lock
+uv lock
+git add uv.lock
 ```
 
 #### Issue: Tests fail with "Connection refused"
@@ -1663,14 +1663,14 @@ def test_my_function(mock_connect):
 
 **Solution**: Install the package in development mode:
 ```bash
-poetry install
+uv sync
 ```
 
 #### Issue: Coverage report not generated
 
 **Solution**: Install coverage plugin:
 ```bash
-poetry add --group dev pytest-cov
+uv add --group dev pytest-cov
 ```
 
 ### Debugging
@@ -1688,13 +1688,13 @@ logging:
 
 ```bash
 # Run with verbose output
-poetry run pytest -v -s
+uv run pytest -v -s
 
 # Debug specific test
-poetry run pytest tests/test_file.py::test_name -v -s
+uv run pytest tests/test_file.py::test_name -v -s
 
 # Drop into debugger on failure
-poetry run pytest --pdb
+uv run pytest --pdb
 ```
 
 #### Debug in IDE

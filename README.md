@@ -173,7 +173,7 @@ $ docker compose -f docker/docker-compose.yaml up -d
 
 ### 5. Using source files
 
-The project requires [Poetry](https://python-poetry.org/) tool for dependency and package management.
+The project requires [uv](https://docs.astral.sh/uv/) tool for dependency and package management.
 
 ```sh
 $ cd /path/to/my_install_folder/
@@ -182,11 +182,13 @@ $ git clone https://github.com/ssenart/gazpar2haws.git
 
 $ cd gazpar2haws
 
-$ poetry install
+$ uv sync
 
-$ poetry shell
+$ source .venv/bin/activate
 
 ```
+
+`uv sync` creates the `.venv` virtual environment from the versions locked in `uv.lock`. Activate it as above (`.venv\Scripts\activate` on Windows), or prefix the commands with `uv run`.
 
 ## Usage
 
@@ -750,8 +752,8 @@ Pull requests are welcome! For any change proposal, please open an issue first t
 - Follow existing code style and patterns
 - Update documentation (README.md, docs/FAQ.md) as appropriate
 - Add entries to CHANGELOG.md for your changes
-- Ensure all tests pass: `poetry run pytest`
-- Format and lint: `poetry run ruff format gazpar2haws` and `poetry run ruff check gazpar2haws`
+- Ensure all tests pass: `uv run pytest`
+- Format and lint: `uv run ruff format gazpar2haws` and `uv run ruff check gazpar2haws`
 
 ## License
 

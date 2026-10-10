@@ -59,7 +59,7 @@ No. Gazpar2HAWS is specifically designed to integrate with Home Assistant via th
 
 ### What are the installation options?
 
-1. **Standalone Python application**: Run directly with Python and Poetry
+1. **Standalone Python application**: Run directly with Python and uv
 2. **Docker container**: Use Docker Compose with the provided configuration
 3. **Home Assistant add-on**: Install from the add-on store (requires Supervisor)
 
@@ -92,7 +92,7 @@ grdf:
 
 ### What are the system requirements?
 
-- **For standalone**: Python 3.11 or higher, Poetry
+- **For standalone**: Python 3.11 or higher, uv
 - **For Docker**: Docker and Docker Compose
 - **For HA add-on**: Home Assistant with Supervisor
 - **For all**: Active Home Assistant instance with WebSocket API access
@@ -836,7 +836,7 @@ v0.4.0 introduces **breaking changes** in the pricing configuration format. Your
 1. Update pricing configuration (see MIGRATIONS.md for examples)
 2. Update the application:
    - Docker: `docker compose pull && docker compose up -d`
-   - Standalone: `git pull && poetry install`
+   - Standalone: `git pull && uv sync`
    - Add-on: Update from Home Assistant UI
 3. Verify: Check logs for errors, verify new cost entities appear in Home Assistant
 
