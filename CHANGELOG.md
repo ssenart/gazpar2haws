@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Upgraded the PyGazpar library to `1.4.0a5`. It no longer depends on `pandas`, so `pandas` and the packages it needed are no longer installed. `numpy` and `pytz` stay, since they are declared dependencies.
+- The Excel data source is created with the `tmp_directory` parameter of PyGazpar 1.4.0a5, instead of the deprecated `tmpDirectory`.
 - Development tooling: [uv](https://docs.astral.sh/uv/) replaces Poetry. The package is built with the `uv_build` backend, the development tools are a `dev` dependency group in `pyproject.toml`, and the locked versions are in `uv.lock` (`poetry.lock` is removed). To work on the project, run `uv sync` instead of `poetry install`. The CI and release workflows and the Docker image use uv. The application, its configuration and its command line are unchanged.
 - `types-pytz` and `types-pyyaml` are development dependencies, so that mypy needs no `--install-types`.
 

@@ -393,7 +393,7 @@ class Gazpar:
                 return pygazpar.ExcelWebDataSource(
                     username=self._username,
                     password=self._password,
-                    tmpDirectory=self._tmp_dir,
+                    tmp_directory=self._tmp_dir,
                 )
 
         consumption_type = (
