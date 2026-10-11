@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Breaking:** A failure while fetching data from GrDF (e.g. a dead login) now stops Gazpar2HAWS instead of being logged as a warning and treated as "no data this cycle." It was silently publishing nothing, cycle after cycle, with no visible signal that something needed investigating (see [#118](https://github.com/ssenart/gazpar2haws/issues/118)). The add-on/container now exits non-zero on such a failure, which should be visible to its supervisor.
+- Upgraded the PyGazpar library to `1.4.0a6`. It logs the GrDF/Okta login steps at DEBUG (with the state handle redacted), to help diagnose [#118](https://github.com/ssenart/gazpar2haws/issues/118) on an account that still fails to log in.
 
 ## [0.5.1a7] - 2026-10-10
 
