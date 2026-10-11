@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1a8] - 2026-10-11
+
 ### Changed
 
 - **Breaking:** A failure while fetching data from GrDF (e.g. a dead login) now stops Gazpar2HAWS instead of being logged as a warning and treated as "no data this cycle." It was silently publishing nothing, cycle after cycle, with no visible signal that something needed investigating (see [#118](https://github.com/ssenart/gazpar2haws/issues/118)). The add-on/container now exits non-zero on such a failure, which should be visible to its supervisor.
@@ -305,7 +307,8 @@ Users upgrading from v0.3.x must update their pricing configuration to the new f
 
 First version of the project.
 
-[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a7...HEAD
+[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a8...HEAD
+[0.5.1a8]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a7...0.5.1a8
 [0.5.1a7]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a6...0.5.1a7
 [0.5.1a6]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a5...0.5.1a6
 [0.5.1a5]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a4...0.5.1a5
