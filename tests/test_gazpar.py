@@ -67,10 +67,11 @@ class TestGazpar:
         assert daily_history is not None and len(daily_history) > 0
 
     # ----------------------------------
-    def test_fetch_daily_gazpar_history_propagates_grdf_errors(self):
-        """A GrDF failure (e.g. a dead login) must stop the run, not be swallowed as empty data."""
+    def test_fetch_daily_gazpar_history_with_on_error_stop_propagates_grdf_errors(self):
+        """With on_error: stop, a GrDF failure (e.g. a dead login) must stop the run, not be swallowed as empty
+        data - the signal that something needs investigating is the process exiting, not a log line."""
 
-        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws)
+        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws, on_error="stop")
 
         with patch("pygazpar.Client") as mock_client_class:
             mock_client_class.return_value.load_date_range.side_effect = pygazpar.LoginError(
@@ -79,6 +80,36 @@ class TestGazpar:
 
             with pytest.raises(pygazpar.LoginError):
                 gazpar.fetch_daily_gazpar_history(date(2019, 6, 1), date(2019, 6, 30))
+
+    # ----------------------------------
+    def test_fetch_daily_gazpar_history_with_on_error_continue_keeps_running(self, caplog):
+        """With on_error: continue (the default), a GrDF failure is treated as no data for this cycle instead of
+        stopping the run - e.g. for a deployment whose container restart policy would otherwise crash-loop and
+        hammer GrDF far more often than the configured scan_interval. An ERROR must still reach the log, since
+        that is the only signal left that something needs investigating."""
+
+        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws, on_error="continue")
+
+        with patch("pygazpar.Client") as mock_client_class:
+            mock_client_class.return_value.load_date_range.side_effect = pygazpar.LoginError(
+                "Authentication failed", 401
+            )
+
+            daily_history = gazpar.fetch_daily_gazpar_history(date(2019, 6, 1), date(2019, 6, 30))
+
+        assert daily_history == []
+        assert any(
+            record.levelname == "ERROR" and "Error while fetching data from GrDF" in record.message
+            for record in caplog.records
+        )
+
+    # ----------------------------------
+    def test_on_error_defaults_to_continue(self):
+        """The default must not change behavior for existing configurations/users."""
+
+        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws)
+
+        assert gazpar._on_error == "continue"
 
     # ----------------------------------
     @pytest.mark.asyncio

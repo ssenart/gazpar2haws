@@ -42,7 +42,7 @@ class Bridge:
         self._gazpar = []
 
         for grdf_device_config in config.grdf.devices:
-            self._gazpar.append(Gazpar(grdf_device_config, config.pricing, self._homeassistant))
+            self._gazpar.append(Gazpar(grdf_device_config, config.pricing, self._homeassistant, config.grdf.on_error))
 
         # Set up signal handler
         signal.signal(signal.SIGINT, self.handle_signal)

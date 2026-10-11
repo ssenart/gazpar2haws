@@ -6,6 +6,7 @@ logging:
 
 grdf:
   scan_interval: ${GRDF_SCAN_INTERVAL} # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  on_error: ${GRDF_ON_ERROR} # What to do when a GrDF data retrieval fails (e.g. a dead login): "continue" (default) logs an ERROR and retries at the next scan_interval, like before - the safe choice inside Docker/the add-on, since most container restart policies (e.g. "always"/"unless-stopped") would otherwise restart it immediately, retrying far more often than scan_interval and hammering GrDF. "stop" exits the process instead, which is only a useful signal if something restarts it no faster than scan_interval and surfaces the failure to you (e.g. running it directly, under a process supervisor with a cooldown, or a restart policy capped at a low retry count).
   devices:
   - name: gazpar2haws # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.{{name}}_*.
     username: "!secret grdf.username"

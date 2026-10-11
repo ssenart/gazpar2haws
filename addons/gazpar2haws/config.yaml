@@ -10,6 +10,7 @@ homeassistant_api: true
 hassio_api: true
 options:
   scan_interval: 480 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  on_error: "continue" # What to do when a GrDF data retrieval fails (e.g. a dead login): "continue" (default) logs an error and retries at the next scan_interval - the safe choice here, since an add-on that exits is liable to be restarted automatically (e.g. with "Watchdog" enabled in its Info tab), which would then retry far more often than scan_interval and hammer GrDF. "stop" exits the add-on instead, as a stronger signal that something needs investigating, but only use it if you are watching for that (e.g. checking the add-on's status) rather than relying on it staying up on its own.
   devices:
     - name: gazpar2haws # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.{{name}}_*.
       username: "" # Email address used to connect to the GrDF website.
@@ -62,6 +63,7 @@ options:
       quantity_value: 0.01637
 schema:
   scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  on_error: list(stop|continue)? # What to do when a GrDF data retrieval fails. Default is "continue".
   devices:
     - name: match(^[a-z0-9_]+$) # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.{{name}}_*.
       username: email # Email address used to connect to the GrDF website.

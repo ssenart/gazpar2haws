@@ -3,7 +3,7 @@ import tempfile
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Generic, TypeVar
+from typing import Generic, Literal, TypeVar
 
 from pydantic import (
     BaseModel,
@@ -110,6 +110,7 @@ class Device(BaseModel):
 # ----------------------------------
 class Grdf(BaseModel):
     scan_interval: int | None = 480
+    on_error: Literal["stop", "continue"] = "continue"
     devices: list[Device]
 
 

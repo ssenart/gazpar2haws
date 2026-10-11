@@ -6,9 +6,11 @@ CONFIG_PATH=/data/options.json
 # Load the Add-on configuration in JSON and reformat it to YAML.
 SCAN_INTERVAL_JSON=$(jq --raw-output '.scan_interval // empty' $CONFIG_PATH)
 
+ON_ERROR_JSON=$(jq '.on_error // "continue"' $CONFIG_PATH)
+
 DEVICES_JSON=$(jq --raw-output '.devices // empty' $CONFIG_PATH)
 
-GRDF_JSON="{ 'grdf': { 'scan_interval': $SCAN_INTERVAL_JSON, 'devices': $DEVICES_JSON } }"
+GRDF_JSON="{ 'grdf': { 'scan_interval': $SCAN_INTERVAL_JSON, 'on_error': $ON_ERROR_JSON, 'devices': $DEVICES_JSON } }"
 
 GRDF_CONFIG=$(printf '%s' "$GRDF_JSON" | yq -P)
 

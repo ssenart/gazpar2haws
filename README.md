@@ -211,6 +211,7 @@ logging:
 
 grdf:
   scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  on_error: continue # What to do when a GrDF data retrieval fails (e.g. a dead login): "continue" (default) logs an error and retries at the next scan_interval. "stop" exits the process instead, as a stronger signal that something needs investigating - only use it where whatever restarts the process (if anything) won't do so faster than scan_interval, otherwise it will hammer GrDF far more often than configured. See below.
   devices:
     - name: gazpar2haws # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.${name}_*.
       username: "!secret grdf.username"
@@ -243,6 +244,15 @@ grdf:
 ```
 
 Note that published readings can cover more than one day; their consumption is attributed to the last day of the covered period rather than split evenly across days.
+
+#### On error
+
+`grdf.on_error` decides what happens when a GrDF data retrieval fails, e.g. a dead login, a GrDF outage, or the account hitting a block from GrDF/Okta:
+
+- `continue` (default): logs the error and tries again at the next `scan_interval`, exactly as before this option existed. Nothing is published for that device this cycle, but Gazpar2HAWS keeps running.
+- `stop`: exits the process on that same failure instead, as a strong, hard-to-miss signal that something needs investigating.
+
+Pick `stop` only where whatever restarts the process, if anything, won't do so faster than `scan_interval`. Running Gazpar2HAWS directly, or under a supervisor configured with a matching cooldown, that's true. Inside Docker or the Home Assistant add-on, it usually isn't: a container that exits under a restart policy such as `always`/`unless-stopped` (or an add-on with its Watchdog enabled) gets started again right away, which with `stop` means retrying - and hitting GrDF - far more often than `scan_interval`, not less. That is why both the Docker image and the add-on default to `continue`.
 
 The default secret file:
 

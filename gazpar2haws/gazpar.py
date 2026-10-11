@@ -1,6 +1,7 @@
 import logging
 import traceback
 from datetime import date, datetime, timedelta
+from typing import Literal
 
 import pygazpar  # type: ignore
 import pytz
@@ -30,11 +31,15 @@ class Gazpar:
         device_config: Device,
         pricing_config: Pricing | None,
         homeassistant: HomeAssistantWS,
+        on_error: Literal["stop", "continue"] = "continue",
     ):
 
         self._homeassistant = homeassistant
         self._grdf_config = device_config
         self._pricing_config = pricing_config
+
+        # GrDF configuration: on_error
+        self._on_error = on_error
 
         # GrDF configuration: name
         self._name = device_config.name
@@ -306,8 +311,10 @@ class Gazpar:
 
             Logger.debug(f"Fetched {len(res)} daily readings from start date {start_date} to end date {end_date}")
         except Exception:
-            Logger.warning(f"Error while fetching data from GrDF: {traceback.format_exc()}")
-            raise
+            Logger.error(f"Error while fetching data from GrDF: {traceback.format_exc()}")
+            if self._on_error == "stop":
+                raise
+            res = MeterReadings()
 
         return res
 

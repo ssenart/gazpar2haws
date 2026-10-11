@@ -6,6 +6,7 @@ The configuration permits to define multiple devices if you have multiple GrDF m
 
 ```yaml
 scan_interval: 480
+on_error: continue
 devices:
   - name: meter1
     username:
@@ -28,6 +29,7 @@ devices:
 | Name                     | Description                                                                                                                                      | Required | Default value |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------- |
 | scan_interval            | Period in minutes to refresh meter data (0 means one single refresh and stop)                                                                    | No       | 480 (8 hours) |
+| on_error                 | What to do when a GrDF data retrieval fails: `continue` logs an error and retries at the next scan_interval; `stop` exits the add-on instead, as a stronger signal that something needs investigating. Only use `stop` if you are not relying on the add-on's Watchdog (or similar) to keep it running - otherwise it gets restarted immediately, retrying far more often than scan_interval and hammering GrDF | No       | continue      |
 | devices[].name           | Name of the device in Home Assistant. Lowercase letters, digits and underscores only (e.g. `gazpar_maison`)                                      | Yes      | -             |
 | devices[].username       | GrDF account user name                                                                                                                           | Yes      | -             |
 | devices[].password       | GrDF account password (avoid using special characters)                                                                                           | Yes      | -             |
