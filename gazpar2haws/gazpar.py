@@ -305,9 +305,9 @@ class Gazpar:
                     res.append(reading)
 
             Logger.debug(f"Fetched {len(res)} daily readings from start date {start_date} to end date {end_date}")
-        except Exception:  # noqa: BLE001
+        except Exception:
             Logger.warning(f"Error while fetching data from GrDF: {traceback.format_exc()}")
-            res = MeterReadings()
+            raise
 
         return res
 

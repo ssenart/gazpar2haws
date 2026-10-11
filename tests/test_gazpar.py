@@ -67,6 +67,20 @@ class TestGazpar:
         assert daily_history is not None and len(daily_history) > 0
 
     # ----------------------------------
+    def test_fetch_daily_gazpar_history_propagates_grdf_errors(self):
+        """A GrDF failure (e.g. a dead login) must stop the run, not be swallowed as empty data."""
+
+        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws)
+
+        with patch("pygazpar.Client") as mock_client_class:
+            mock_client_class.return_value.load_date_range.side_effect = pygazpar.LoginError(
+                "Authentication failed", 401
+            )
+
+            with pytest.raises(pygazpar.LoginError):
+                gazpar.fetch_daily_gazpar_history(date(2019, 6, 1), date(2019, 6, 30))
+
+    # ----------------------------------
     @pytest.mark.asyncio
     async def test_find_last_date_and_value(self):
 
