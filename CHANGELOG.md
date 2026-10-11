@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1a9] - 2026-10-11
+
 ### Changed
 
 - The `stop` behavior added in `0.5.1a8` is no longer unconditional: a new `grdf.on_error` option (`continue` | `stop`, default `continue`) lets you choose it instead of having it forced on you. Default `continue` restores the pre-`0.5.1a8` behavior - log an error, retry at the next `scan_interval`, keep running - because `0.5.1a8`'s unconditional `stop` turned out to interact badly with container restart policies: a container that gets restarted immediately (e.g. `restart: always`/`unless-stopped`, or an add-on with its Watchdog enabled) retries far more often than `scan_interval`, hammering GrDF instead of backing off. `stop` is still available, as a strong investigate-this signal, for deployments where nothing restarts the process faster than `scan_interval`. The add-on and Docker image both default to `continue`. See the README's "On error" section.
@@ -311,7 +313,8 @@ Users upgrading from v0.3.x must update their pricing configuration to the new f
 
 First version of the project.
 
-[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a8...HEAD
+[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a9...HEAD
+[0.5.1a9]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a8...0.5.1a9
 [0.5.1a8]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a7...0.5.1a8
 [0.5.1a7]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a6...0.5.1a7
 [0.5.1a6]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a5...0.5.1a6
