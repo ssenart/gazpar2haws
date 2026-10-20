@@ -643,7 +643,7 @@ No, absolutely not. It was made by reverse engineering GrDF website without any 
 
 **What are the differences between PyGazpar, home-assistant-gazpar, Gazpar2MQTT, and Gazpar2HAWS?**
 
-- **[PyGazpar](https://github.com/ssenart/PyGazpar)** - Low-level Python library used to query GrDF data
+- **[PyGazpar](https://github.com/ssenart/pygazpar)** - Low-level Python library used to query GrDF data
 - **[home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar)** - Home Assistant integration providing energy sensor with Recorder/Energy Dashboard support
 - **[Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt)** - Standalone application that publishes data via MQTT (reduces coupling with HA)
 - **[Gazpar2HAWS](https://github.com/ssenart/gazpar2haws)** - Uses HA Recorder integration directly, timestamps readings to exact observation dates, reconstructs 3-year history, calculates detailed costs
