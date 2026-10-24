@@ -364,7 +364,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.26.0" },
     { name = "pydantic", extras = ["email"], specifier = ">=2.10.6,<3.0.0" },
     { name = "pydantic-extra-types", specifier = ">=2.10.2,<3.0.0" },
-    { name = "pygazpar", specifier = ">=1.4.0a6" },
+    { name = "pygazpar", specifier = ">=1.4.0a7" },
     { name = "pytz", specifier = ">=2024.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "websockets", specifier = ">=14.1" },
@@ -1049,7 +1049,7 @@ wheels = [
 
 [[package]]
 name = "pygazpar"
-version = "1.4.0a6"
+version = "1.4.0a7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "openpyxl" },
@@ -1057,9 +1057,9 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/78/39/94e757ae2e6c35bec1be10634604d8f24ccfc4055e630bad0673a3933414/pygazpar-1.4.0a6.tar.gz", hash = "sha256:94050518db388d5822b4ac7118543cd9b7a3b2871506169604eb4e1209674a34", size = 63525, upload-time = "2026-10-11T18:20:05.232Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/74/9e07477bdf55abed35f904cc827614013cbcd42f9db88bf26ba5d82b6e33/pygazpar-1.4.0a7.tar.gz", hash = "sha256:bde3868fe70b90946f74f9daab16aa8264f04dd3440a8d94ff1dc24e45141637", size = 67788, upload-time = "2026-10-20T21:38:21.071Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0a/71/46c2faa8af0d182094df2e742b8f5e8892dcacd574c0899313cf89219289/pygazpar-1.4.0a6-py3-none-any.whl", hash = "sha256:de1b91072595e94a544f78fcb87fd8131ef2f09ac9b4493f0234a9668af7390b", size = 50695, upload-time = "2026-10-11T18:20:03.761Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/5f/431cd561cfcfc17ae18b6c363bb6162f255c618dd1330d117f49037be5f4/pygazpar-1.4.0a7-py3-none-any.whl", hash = "sha256:1b807d2538d4a3a194bfe56457ac31ab5ecd8d72deb6675368df5760e193c649", size = 59078, upload-time = "2026-10-20T21:38:19.499Z" },
 ]
 
 [[package]]
