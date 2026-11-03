@@ -360,7 +360,7 @@ These tests provide maximum value with minimal implementation effort:
 ### Coverage Measurement
 ```bash
 # Run with coverage
-poetry run pytest --cov=gazpar2haws --cov-report=html
+uv run pytest --cov=gazpar2haws --cov-report=html
 
 # View report
 open htmlcov/index.html

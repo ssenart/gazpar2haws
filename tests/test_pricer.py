@@ -1,5 +1,3 @@
-# pylint: disable=protected-access
-
 """Test pricer module."""
 
 import math
@@ -19,15 +17,14 @@ from gazpar2haws.pricer import Pricer
 
 
 # ----------------------------------
-class TestPricer:  # pylint: disable=R0904
-
+class TestPricer:
     # ----------------------------------
     def setup_method(self):
 
         # Load configuration
         config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")
 
-        self._pricer = Pricer(config.pricing)  # pylint: disable=W0201
+        self._pricer = Pricer(config.pricing)
 
     # ----------------------------------
     def test_get_composite_price_array_edge_cases(self):
@@ -301,15 +298,13 @@ class TestPricer:  # pylint: disable=R0904
         self, start_date: date, end_date: date, quantity: float, unit: QuantityUnit
     ) -> ConsumptionQuantityArray:
 
-        quantities = ConsumptionQuantityArray(
+        return ConsumptionQuantityArray(
             start_date=start_date,
             end_date=end_date,
             value_array=DateArray(start_date=start_date, end_date=end_date, initial_value=quantity),
             value_unit=unit,
             base_unit=TimeUnit.DAY,
         )
-
-        return quantities
 
     # ----------------------------------
     def test_compute(self):

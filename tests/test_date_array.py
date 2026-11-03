@@ -42,7 +42,7 @@ def test_date_array():
     date_array9 = date_array + 1
 
     for i in range(31):
-        assert date_array9[i] == 1  # pylint: disable=unsubscriptable-object
+        assert date_array9[i] == 1
 
     date_array10 = date_array9 * 5
 

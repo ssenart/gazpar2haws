@@ -1,5 +1,3 @@
-from typing import Optional
-
 import yaml
 from pydantic import BaseModel
 
@@ -8,11 +6,10 @@ from gazpar2haws.model import Grdf, HomeAssistant, Logging, Pricing
 
 
 class Configuration(BaseModel):
-
     logging: Logging
     grdf: Grdf
     homeassistant: HomeAssistant
-    pricing: Optional[Pricing] = None
+    pricing: Pricing | None = None
 
     @classmethod
     def load(cls, config_file: str, secrets_file: str):

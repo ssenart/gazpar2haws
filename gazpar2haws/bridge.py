@@ -11,7 +11,6 @@ Logger = logging.getLogger(__name__)
 
 # ----------------------------------
 class Bridge:
-
     # ----------------------------------
     def __init__(self, config: Configuration):
 
@@ -30,14 +29,20 @@ class Bridge:
         # Home Assistant configuration: token
         ha_token = config.homeassistant.token.get_secret_value()
 
+        # Home Assistant configuration: secure (wss://)
+        ha_secure = config.homeassistant.secure
+
+        # Home Assistant configuration: verify_ssl
+        ha_verify_ssl = config.homeassistant.verify_ssl
+
         # Initialize Home Assistant
-        self._homeassistant = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
+        self._homeassistant = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token, ha_secure, ha_verify_ssl)
 
         # Initialize Gazpar
         self._gazpar = []
 
         for grdf_device_config in config.grdf.devices:
-            self._gazpar.append(Gazpar(grdf_device_config, config.pricing, self._homeassistant))
+            self._gazpar.append(Gazpar(grdf_device_config, config.pricing, self._homeassistant, config.grdf.on_error))
 
         # Set up signal handler
         signal.signal(signal.SIGINT, self.handle_signal)
@@ -61,7 +66,6 @@ class Bridge:
 
         try:
             while self._running:
-
                 # Connect to Home Assistant
                 await self._homeassistant.connect()
 

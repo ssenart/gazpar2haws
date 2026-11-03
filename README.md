@@ -173,7 +173,7 @@ $ docker compose -f docker/docker-compose.yaml up -d
 
 ### 5. Using source files
 
-The project requires [Poetry](https://python-poetry.org/) tool for dependency and package management.
+The project requires [uv](https://docs.astral.sh/uv/) tool for dependency and package management.
 
 ```sh
 $ cd /path/to/my_install_folder/
@@ -182,11 +182,13 @@ $ git clone https://github.com/ssenart/gazpar2haws.git
 
 $ cd gazpar2haws
 
-$ poetry install
+$ uv sync
 
-$ poetry shell
+$ source .venv/bin/activate
 
 ```
+
+`uv sync` creates the `.venv` virtual environment from the versions locked in `uv.lock`. Activate it as above (`.venv\Scripts\activate` on Windows), or prefix the commands with `uv run`.
 
 ## Usage
 
@@ -209,11 +211,14 @@ logging:
 
 grdf:
   scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  on_error: continue # What to do when a GrDF data retrieval fails (e.g. a dead login): "continue" (default) logs an error and retries at the next scan_interval. "stop" exits the process instead, as a stronger signal that something needs investigating - only use it where whatever restarts the process (if anything) won't do so faster than scan_interval, otherwise it will hammer GrDF far more often than configured. See below.
   devices:
-    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id prefix: sensor.${name}_*.
+    - name: gazpar2haws # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.${name}_*.
       username: "!secret grdf.username"
       password: "!secret grdf.password"
       pce_identifier: "!secret grdf.pce_identifier"
+      data_source: json # Data source to use: "json" | "excel" | "test" (default: "json")
+      consumption_type: informative # GrDF readings to use: "informative" | "published" (default: "informative"). See below.
       timezone: Europe/Paris
       last_days: 365 # Number of days of data to retrieve
       reset: false # If true, the data will be reset before the first data retrieval
@@ -222,7 +227,32 @@ homeassistant:
   host: "!secret homeassistant.host"
   port: "!secret homeassistant.port"
   token: "!secret homeassistant.token"
+  secure: false # If true, connect using wss:// instead of ws:// (default: false)
+  verify_ssl: true # If false, disable TLS certificate verification, e.g. for self-signed certificates (default: true, ignored if secure is false)
 ```
+
+#### Consumption type
+
+For some GrDF accounts, the `informative` readings endpoint returns no data (an empty `{}` response) even though a consumption history is visible on the GrDF customer portal. If you see no volume/energy data being published and your logs show `Json meter data: {}`, set `consumption_type: published` on the affected device to read from GrDF's published consumption history instead:
+
+```yaml
+grdf:
+  devices:
+    - name: gazpar2haws
+      ...
+      consumption_type: published
+```
+
+Note that published readings can cover more than one day; their consumption is attributed to the last day of the covered period rather than split evenly across days.
+
+#### On error
+
+`grdf.on_error` decides what happens when a GrDF data retrieval fails, e.g. a dead login, a GrDF outage, or the account hitting a block from GrDF/Okta:
+
+- `continue` (default): logs the error and tries again at the next `scan_interval`, exactly as before this option existed. Nothing is published for that device this cycle, but Gazpar2HAWS keeps running.
+- `stop`: exits the process on that same failure instead, as a strong, hard-to-miss signal that something needs investigating.
+
+Pick `stop` only where whatever restarts the process, if anything, won't do so faster than `scan_interval`. Running Gazpar2HAWS directly, or under a supervisor configured with a matching cooldown, that's true. Inside Docker or the Home Assistant add-on, it usually isn't: a container that exits under a restart policy such as `always`/`unless-stopped` (or an add-on with its Watchdog enabled) gets started again right away, which with `stop` means retrying - and hitting GrDF - far more often than `scan_interval`, not less. That is why both the Docker image and the add-on default to `continue`.
 
 The default secret file:
 
@@ -613,7 +643,7 @@ No, absolutely not. It was made by reverse engineering GrDF website without any 
 
 **What are the differences between PyGazpar, home-assistant-gazpar, Gazpar2MQTT, and Gazpar2HAWS?**
 
-- **[PyGazpar](https://github.com/ssenart/PyGazpar)** - Low-level Python library used to query GrDF data
+- **[PyGazpar](https://github.com/ssenart/pygazpar)** - Low-level Python library used to query GrDF data
 - **[home-assistant-gazpar](https://github.com/ssenart/home-assistant-gazpar)** - Home Assistant integration providing energy sensor with Recorder/Energy Dashboard support
 - **[Gazpar2MQTT](https://github.com/ssenart/gazpar2mqtt)** - Standalone application that publishes data via MQTT (reduces coupling with HA)
 - **[Gazpar2HAWS](https://github.com/ssenart/gazpar2haws)** - Uses HA Recorder integration directly, timestamps readings to exact observation dates, reconstructs 3-year history, calculates detailed costs
@@ -732,8 +762,8 @@ Pull requests are welcome! For any change proposal, please open an issue first t
 - Follow existing code style and patterns
 - Update documentation (README.md, docs/FAQ.md) as appropriate
 - Add entries to CHANGELOG.md for your changes
-- Ensure all tests pass: `poetry run pytest`
-- Run linters: `poetry run pylint gazpar2haws`
+- Ensure all tests pass: `uv run pytest`
+- Format and lint: `uv run ruff format gazpar2haws` and `uv run ruff check gazpar2haws`
 
 ## License
 

@@ -18,11 +18,8 @@ RUN apk add --no-cache \
 # Allow pip to install packages system-wide (required for Python 3.11+)
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
-# Install gazpar2haws from PyPI
-RUN pip3 install --no-cache-dir \
-    --index-url https://test.pypi.org/simple/ \
-    --extra-index-url https://pypi.org/simple/ \
-    gazpar2haws==${GAZPAR2HAWS_VERSION}
+# Install gazpar2haws from PyPI only: TestPyPI is not an index here, as a same-named package there could be picked up
+RUN pip3 install --no-cache-dir gazpar2haws==${GAZPAR2HAWS_VERSION}
 
 WORKDIR /app
 

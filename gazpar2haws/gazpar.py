@@ -1,7 +1,7 @@
 import logging
 import traceback
 from datetime import date, datetime, timedelta
-from typing import Optional
+from typing import Literal
 
 import pygazpar  # type: ignore
 import pytz
@@ -25,18 +25,21 @@ Logger = logging.getLogger(__name__)
 
 # ----------------------------------
 class Gazpar:
-
     # ----------------------------------
     def __init__(
         self,
         device_config: Device,
-        pricing_config: Optional[Pricing],
+        pricing_config: Pricing | None,
         homeassistant: HomeAssistantWS,
+        on_error: Literal["stop", "continue"] = "continue",
     ):
 
         self._homeassistant = homeassistant
         self._grdf_config = device_config
         self._pricing_config = pricing_config
+
+        # GrDF configuration: on_error
+        self._on_error = on_error
 
         # GrDF configuration: name
         self._name = device_config.name
@@ -44,8 +47,11 @@ class Gazpar:
         # GrDF configuration: data source
         self._data_source = device_config.data_source
 
+        # GrDF configuration: consumption type (json data source only)
+        self._consumption_type = device_config.consumption_type
+
         # GrDF configuration: username
-        self._username = device_config.username
+        self._username = device_config.username.get_secret_value() if device_config.username is not None else None
 
         # GrDF configuration: password
         self._password = device_config.password.get_secret_value() if device_config.password is not None else None
@@ -83,7 +89,7 @@ class Gazpar:
 
     # ----------------------------------
     # Publish Gaspar data to Home Assistant WS
-    async def publish(self):  # pylint: disable=too-many-branches, too-many-statements
+    async def publish(self):
 
         # As of date
         as_of_date = self.as_of_date()
@@ -116,7 +122,7 @@ class Gazpar:
                     timezone=self._timezone,
                     as_of_date=as_of_date,
                 )
-            except Exception:  # pylint: disable=broad-except
+            except Exception:  # noqa: BLE001
                 Logger.warning(
                     f"Error during automatic sensor migration from "
                     f"{old_total_cost_sensor_name} to {total_cost_sensor_name}: "
@@ -304,8 +310,10 @@ class Gazpar:
                     res.append(reading)
 
             Logger.debug(f"Fetched {len(res)} daily readings from start date {start_date} to end date {end_date}")
-        except Exception:  # pylint: disable=broad-except
-            Logger.warning(f"Error while fetching data from GrDF: {traceback.format_exc()}")
+        except Exception:
+            Logger.error(f"Error while fetching data from GrDF: {traceback.format_exc()}")
+            if self._on_error == "stop":
+                raise
             res = MeterReadings()
 
         return res
@@ -318,10 +326,10 @@ class Gazpar:
         property_name: str,
         start_date: date,
         end_date: date,
-    ) -> Optional[DateArray]:
+    ) -> DateArray | None:
 
         # Fill the quantity array.
-        res: Optional[DateArray] = None
+        res: DateArray | None = None
 
         for reading in readings:
             # Parse date format DD/MM/YYYY into datetime.
@@ -392,10 +400,20 @@ class Gazpar:
                 return pygazpar.ExcelWebDataSource(
                     username=self._username,
                     password=self._password,
-                    tmpDirectory=self._tmp_dir,
+                    tmp_directory=self._tmp_dir,
                 )
 
-        return pygazpar.JsonWebDataSource(username=self._username, password=self._password)
+        consumption_type = (
+            pygazpar.ConsumptionType.PUBLISHED
+            if self._consumption_type == "published"
+            else pygazpar.ConsumptionType.INFORMATIVE
+        )
+
+        return pygazpar.JsonWebDataSource(
+            username=self._username,
+            password=self._password,
+            consumption_type=consumption_type,
+        )
 
     # ----------------------------------
     # Find last date, value of the entity.

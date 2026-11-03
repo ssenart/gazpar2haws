@@ -1,25 +1,24 @@
 # The builder image, used to build the virtual environment
 FROM python:3.12-bookworm AS builder
 
-RUN pip install poetry==2.0.0
+RUN pip install uv==0.13.0
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+# The virtual environment is created in /app/.venv with the Python of the image, from the locked versions.
+ENV UV_PYTHON_DOWNLOADS=never \
+    UV_LINK_MODE=copy
 
 WORKDIR /app
 
 COPY pyproject.toml ./
-COPY poetry.lock ./
+COPY uv.lock ./
 COPY README.md ./
 COPY LICENSE ./
 
 COPY gazpar2haws/ /app/gazpar2haws
 
-RUN cat pyproject.toml | grep "version = " | awk '{print $3}' | tr -d '"' > /app/VERSION
+RUN cat pyproject.toml | grep "^version = " | awk '{print $3}' | tr -d '"' > /app/VERSION
 
-RUN poetry install --without dev && rm -rf $POETRY_CACHE_DIR
+RUN uv sync --locked --no-dev
 RUN cat /app/VERSION
 
 # The runtime image, used to just run the code provided its virtual environment

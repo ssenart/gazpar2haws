@@ -6,8 +6,9 @@ logging:
 
 grdf:
   scan_interval: 0 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  on_error: continue # What to do when a GrDF data retrieval fails: "continue" (default) or "stop". See README.md.
   devices:
-  - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.${name}.
+  - name: gazpar2haws # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.${name}_*.
     username: "!secret grdf.username"
     password: "!secret grdf.password"
     pce_identifier: "!secret grdf.pce_identifier"
@@ -20,6 +21,8 @@ homeassistant:
   port: "!secret homeassistant.port"
   endpoint: "/api/websocket"
   token: "!secret homeassistant.token"
+  secure: false # If true, connect using wss:// instead of ws://.
+  verify_ssl: true # If false, disable TLS certificate verification (e.g. for self-signed certificates). Ignored if secure is false.
 
 pricing:
   vat:

@@ -6,11 +6,13 @@ The configuration permits to define multiple devices if you have multiple GrDF m
 
 ```yaml
 scan_interval: 480
+on_error: continue
 devices:
   - name: meter1
     username:
     password:
     pce_identifier:
+    consumption_type: informative
     timezone: Europe/Paris
     last_days: 365
     reset: false
@@ -18,6 +20,7 @@ devices:
     username:
     password:
     pce_identifier:
+    consumption_type: informative
     timezone: Europe/Paris
     last_days: 720
     reset: false
@@ -26,10 +29,12 @@ devices:
 | Name                     | Description                                                                                                                                      | Required | Default value |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------- |
 | scan_interval            | Period in minutes to refresh meter data (0 means one single refresh and stop)                                                                    | No       | 480 (8 hours) |
-| devices[].name           | Name of the device in Home Assistant                                                                                                             | Yes      | -             |
+| on_error                 | What to do when a GrDF data retrieval fails: `continue` logs an error and retries at the next scan_interval; `stop` exits the add-on instead, as a stronger signal that something needs investigating. Only use `stop` if you are not relying on the add-on's Watchdog (or similar) to keep it running - otherwise it gets restarted immediately, retrying far more often than scan_interval and hammering GrDF | No       | continue      |
+| devices[].name           | Name of the device in Home Assistant. Lowercase letters, digits and underscores only (e.g. `gazpar_maison`)                                      | Yes      | -             |
 | devices[].username       | GrDF account user name                                                                                                                           | Yes      | -             |
 | devices[].password       | GrDF account password (avoid using special characters)                                                                                           | Yes      | -             |
 | devices[].pce_identifier | GrDF meter PCE identifier                                                                                                                        | Yes      | -             |
+| devices[].consumption_type | GrDF readings to use: `informative` or `published`. Use `published` if `informative` returns no data for your PCE (empty `{}` response in the logs) | No       | informative   |
 | devices[].timezone       | Timezone of the GrDF data                                                                                                                        | No       | Europe/Paris  |
 | devices[].last_days      | Number of days of history data to retrieve                                                                                                       | No       | 365 days      |
 | devices[].reset          | Rebuild the history. If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added | No       | false         |

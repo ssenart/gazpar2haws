@@ -1,15 +1,19 @@
 """Test gazpar module."""
 
 from datetime import date
+from unittest.mock import patch
 
+import pydantic
 import pygazpar  # type: ignore
 import pytest
+from pydantic import SecretStr
 
 from gazpar2haws.configuration import Configuration
 from gazpar2haws.gazpar import Gazpar
 from gazpar2haws.haws import HomeAssistantWS
 from gazpar2haws.model import (
     ConsumptionQuantityArray,
+    Device,
     PriceUnit,
     QuantityUnit,
     TimeUnit,
@@ -19,26 +23,23 @@ from gazpar2haws.pricer import Pricer
 
 # ----------------------------------
 class TestGazpar:
-
     # ----------------------------------
-    def setup_method(self):  # pylint: disable=R0801
+    def setup_method(self):
         """setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
 
         # Load configuration
-        self._config = Configuration.load(  # pylint: disable=W0201
-            "tests/config/configuration.yaml", "tests/config/secrets.yaml"
-        )
+        self._config = Configuration.load("tests/config/configuration.yaml", "tests/config/secrets.yaml")
 
         ha_host = self._config.homeassistant.host
         ha_port = self._config.homeassistant.port
         ha_endpoint = self._config.homeassistant.endpoint
         ha_token = self._config.homeassistant.token.get_secret_value()
 
-        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)  # pylint: disable=W0201
-        self._grdf_device_config = self._config.grdf.devices[0]  # pylint: disable=W0201
-        self._pricing_config = self._config.pricing  # pylint: disable=W0201
+        self._haws = HomeAssistantWS(ha_host, ha_port, ha_endpoint, ha_token)
+        self._grdf_device_config = self._config.grdf.devices[0]
+        self._pricing_config = self._config.pricing
 
     # ----------------------------------
     # @pytest.mark.skip(reason="Requires Home Assistant server")
@@ -64,6 +65,51 @@ class TestGazpar:
         daily_history = gazpar.fetch_daily_gazpar_history(start_date, end_date)
 
         assert daily_history is not None and len(daily_history) > 0
+
+    # ----------------------------------
+    def test_fetch_daily_gazpar_history_with_on_error_stop_propagates_grdf_errors(self):
+        """With on_error: stop, a GrDF failure (e.g. a dead login) must stop the run, not be swallowed as empty
+        data - the signal that something needs investigating is the process exiting, not a log line."""
+
+        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws, on_error="stop")
+
+        with patch("pygazpar.Client") as mock_client_class:
+            mock_client_class.return_value.load_date_range.side_effect = pygazpar.LoginError(
+                "Authentication failed", 401
+            )
+
+            with pytest.raises(pygazpar.LoginError):
+                gazpar.fetch_daily_gazpar_history(date(2019, 6, 1), date(2019, 6, 30))
+
+    # ----------------------------------
+    def test_fetch_daily_gazpar_history_with_on_error_continue_keeps_running(self, caplog):
+        """With on_error: continue (the default), a GrDF failure is treated as no data for this cycle instead of
+        stopping the run - e.g. for a deployment whose container restart policy would otherwise crash-loop and
+        hammer GrDF far more often than the configured scan_interval. An ERROR must still reach the log, since
+        that is the only signal left that something needs investigating."""
+
+        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws, on_error="continue")
+
+        with patch("pygazpar.Client") as mock_client_class:
+            mock_client_class.return_value.load_date_range.side_effect = pygazpar.LoginError(
+                "Authentication failed", 401
+            )
+
+            daily_history = gazpar.fetch_daily_gazpar_history(date(2019, 6, 1), date(2019, 6, 30))
+
+        assert daily_history == []
+        assert any(
+            record.levelname == "ERROR" and "Error while fetching data from GrDF" in record.message
+            for record in caplog.records
+        )
+
+    # ----------------------------------
+    def test_on_error_defaults_to_continue(self):
+        """The default must not change behavior for existing configurations/users."""
+
+        gazpar = Gazpar(self._grdf_device_config, self._pricing_config, self._haws)
+
+        assert gazpar._on_error == "continue"
 
     # ----------------------------------
     @pytest.mark.asyncio
@@ -154,3 +200,51 @@ class TestGazpar:
         )
 
         await self._haws.disconnect()
+
+
+# ----------------------------------
+class TestGazparDataSource:
+    # ----------------------------------
+    @staticmethod
+    def _make_device_config(consumption_type: str) -> Device:
+        return Device(
+            name="gazpar2haws_test",
+            username=SecretStr("user@example.com"),
+            password=SecretStr("password"),
+            pce_identifier=SecretStr("22423299474865"),
+            consumption_type=consumption_type,
+        )
+
+    # ----------------------------------
+    def test_default_consumption_type_is_informative(self):
+
+        gazpar = Gazpar(self._make_device_config("informative"), None, None)
+
+        with patch("pygazpar.JsonWebDataSource") as mock_data_source:
+            gazpar._create_data_source()
+
+            mock_data_source.assert_called_once_with(
+                username="user@example.com",
+                password="password",
+                consumption_type=pygazpar.ConsumptionType.INFORMATIVE,
+            )
+
+    # ----------------------------------
+    def test_published_consumption_type_is_forwarded(self):
+
+        gazpar = Gazpar(self._make_device_config("published"), None, None)
+
+        with patch("pygazpar.JsonWebDataSource") as mock_data_source:
+            gazpar._create_data_source()
+
+            mock_data_source.assert_called_once_with(
+                username="user@example.com",
+                password="password",
+                consumption_type=pygazpar.ConsumptionType.PUBLISHED,
+            )
+
+    # ----------------------------------
+    def test_invalid_consumption_type_is_rejected(self):
+
+        with pytest.raises(pydantic.ValidationError):
+            self._make_device_config("invalid")

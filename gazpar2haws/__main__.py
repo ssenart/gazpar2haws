@@ -88,7 +88,7 @@ async def main():
 
         return 0
 
-    except Exception:  # pylint: disable=broad-except
+    except Exception:
         errorMessage = f"An error occured while running Gazpar2HAWS: {traceback.format_exc()}"
         Logger.error(errorMessage)
         print(errorMessage)

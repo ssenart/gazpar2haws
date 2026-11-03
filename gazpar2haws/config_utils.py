@@ -17,7 +17,7 @@ class ConfigLoader:
         if self.secrets_file is None:
             return
         if os.path.exists(self.secrets_file):
-            with open(self.secrets_file, "r", encoding="utf-8") as file:
+            with open(self.secrets_file, encoding="utf-8") as file:
                 self.secrets = yaml.safe_load(file)
         else:
             raise FileNotFoundError(f"Secrets file '{self.secrets_file}' not found.")
@@ -25,7 +25,7 @@ class ConfigLoader:
     def load_config(self):
         """Load the main configuration file and resolve secrets."""
         if os.path.exists(self.config_file):
-            with open(self.config_file, "r", encoding="utf-8") as file:
+            with open(self.config_file, encoding="utf-8") as file:
                 self.raw_config = yaml.safe_load(file)
             self.config = self._resolve_secrets(self.raw_config)
         else:

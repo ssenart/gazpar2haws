@@ -130,12 +130,12 @@ Standard Markdown syntax for all documentation files.
 
 ### Code Quality Standards
 
-#### 🎨 [Black](https://black.readthedocs.io/) – Code Formatter
-Opinionated Python code formatter ("The Uncompromising Code Formatter").
+#### ⚡ [Ruff](https://docs.astral.sh/ruff/) – Linter and Code Formatter
+A fast Python linter and code formatter. `ruff format` formats the code, and `ruff check` lints it.
 
-**Configuration**: `pyproject.toml` → `[tool.black]`
+**Configuration**: `pyproject.toml` → `[tool.ruff]` and `[tool.ruff.lint]`
 
-**Why**: Zero-debate formatting, consistent code style, faster code reviews.
+**Why**: One fast tool for formatting and linting, with zero-debate formatting.
 
 #### 🔍 [mypy](https://mypy.readthedocs.io/) – Static Type Checker
 Static type checker for Python using PEP 484 type hints.
@@ -228,9 +228,9 @@ Gazpar2HAWS is a gateway application that:
   - `pyyaml`: Configuration file parsing
 - **Development Tools**:
   - `pytest`: Testing framework
-  - `black`, `isort`, `ruff`: Code formatting
-  - `pylint`, `flake8`, `mypy`: Linting and type checking
-  - `poetry`: Dependency management
+  - `ruff`: Code formatting and linting
+  - `mypy`: Type checking
+  - `uv`: Dependency management, virtual environment and build
 
 ---
 
@@ -412,7 +412,7 @@ Configuration loading uses factories:
 ### Prerequisites
 
 - **Python**: 3.10 or higher
-- **Poetry**: 2.0 or higher
+- **uv**: 0.13 or higher
 - **Git**: For version control
 - **Home Assistant**: Running instance for integration testing (optional)
 
@@ -424,19 +424,19 @@ Configuration loading uses factories:
    cd gazpar2haws
    ```
 
-2. **Install Poetry** (if not already installed):
+2. **Install uv** (if not already installed):
    ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 3. **Install dependencies**:
    ```bash
-   poetry install
+   uv sync
    ```
 
-4. **Activate virtual environment**:
+4. **Activate virtual environment** (or prefix the commands with `uv run`):
    ```bash
-   poetry shell
+   source .venv/bin/activate
    ```
 
 ### Configuration for Development
@@ -469,14 +469,14 @@ Configuration loading uses factories:
 
 ```bash
 # Run with default config paths
-poetry run python -m gazpar2haws
+uv run python -m gazpar2haws
 
 # Run with custom config paths
-poetry run python -m gazpar2haws --config /path/to/config.yaml --secrets /path/to/secrets.yaml
+uv run python -m gazpar2haws --config /path/to/config.yaml --secrets /path/to/secrets.yaml
 
 # Run with debug logging
 # (Edit config/configuration.yaml: logging.level: debug)
-poetry run python -m gazpar2haws
+uv run python -m gazpar2haws
 ```
 
 ---
@@ -533,7 +533,7 @@ gazpar2haws/
 ### Key Files
 
 - **`pyproject.toml`**: Project metadata, dependencies, tool configurations
-- **`poetry.lock`**: Locked dependency versions
+- **`uv.lock`**: Locked dependency versions
 - **`.github/workflows/`**: CI/CD workflows (build, test, publish)
 - **`Dockerfile`**: Docker image build configuration
 - **`tests/config/example_*.yaml`**: Example configurations for testing
@@ -855,22 +855,17 @@ Follow this workflow for feature development (using Gitflow):
 
 4. **Run code quality checks**:
    ```bash
-   # Format code
-   poetry run black gazpar2haws
-   poetry run isort gazpar2haws
-
-   # Lint code
-   poetry run pylint gazpar2haws
-   poetry run flake8 gazpar2haws
-   poetry run ruff check gazpar2haws
+   # Format and lint code
+   uv run ruff format gazpar2haws
+   uv run ruff check gazpar2haws
 
    # Type check
-   poetry run mypy gazpar2haws
+   uv run mypy gazpar2haws
    ```
 
 5. **Run tests**:
    ```bash
-   poetry run pytest
+   uv run pytest
    ```
 
 6. **Commit your changes**:
@@ -942,22 +937,22 @@ tests/
 
 ```bash
 # Run all tests
-poetry run pytest
+uv run pytest
 
 # Run with coverage
-poetry run pytest --cov=gazpar2haws --cov-report=html
+uv run pytest --cov=gazpar2haws --cov-report=html
 
 # Run specific test file
-poetry run pytest tests/test_pricer.py
+uv run pytest tests/test_pricer.py
 
 # Run specific test
-poetry run pytest tests/test_pricer.py::test_compute_cost
+uv run pytest tests/test_pricer.py::test_compute_cost
 
 # Run with verbose output
-poetry run pytest -v
+uv run pytest -v
 
 # Run with debug output
-poetry run pytest -s
+uv run pytest -s
 ```
 
 ### Writing Tests
@@ -1028,7 +1023,7 @@ Current test coverage goals (see [TODO.md](TODO.md) for details):
 
 **View coverage report**:
 ```bash
-poetry run pytest --cov=gazpar2haws --cov-report=html
+uv run pytest --cov=gazpar2haws --cov-report=html
 open htmlcov/index.html  # macOS
 xdg-open htmlcov/index.html  # Linux
 start htmlcov/index.html  # Windows
@@ -1055,46 +1050,25 @@ def test_gazpar_fetch_data(mock_client):
 
 ## Code Quality
 
-### Code Formatting
+### Code Formatting and Linting
 
-**Black** is used for code formatting:
+**Ruff** is used for code formatting and linting:
 ```bash
 # Format all code
-poetry run black gazpar2haws tests
+uv run ruff format gazpar2haws tests
 
 # Check formatting without changes
-poetry run black --check gazpar2haws tests
-```
+uv run ruff format --check gazpar2haws tests
 
-**isort** is used for import sorting:
-```bash
-# Sort imports
-poetry run isort gazpar2haws tests
-
-# Check import order
-poetry run isort --check gazpar2haws tests
-```
-
-### Linting
-
-Multiple linters are used:
-
-```bash
-# Pylint
-poetry run pylint gazpar2haws
-
-# Flake8
-poetry run flake8 gazpar2haws
-
-# Ruff (fast linter)
-poetry run ruff check gazpar2haws
+# Lint code
+uv run ruff check gazpar2haws tests
 ```
 
 ### Type Checking
 
 **mypy** is used for static type checking:
 ```bash
-poetry run mypy gazpar2haws
+uv run mypy gazpar2haws
 ```
 
 ### Configuration
@@ -1102,35 +1076,28 @@ poetry run mypy gazpar2haws
 Tool configurations are in `pyproject.toml`:
 
 ```toml
-[tool.black]
+[tool.ruff]
 line-length = 120
 
-[tool.isort]
-profile = "black"
-
-[tool.pylint.'MESSAGES CONTROL']
-max-line-length = 120
-disable = "C,W1203,R0902,R0913,R0914,R0917,R0801"
-
-[tool.flake8]
-max-line-length = 120
-extend-ignore = ["E203", "W503"]
+[tool.ruff.lint]
+# E501 is ignored: ruff format owns the line length, and long strings are left as they are.
+select = ["E", "F", "W", "I", "B", "UP", "ARG", "RET", "BLE"]
+ignore = ["E501"]
 ```
 
 ### Pre-commit Checks
 
 Before committing, run:
 ```bash
-# Format code
-poetry run black gazpar2haws tests
-poetry run isort gazpar2haws tests
+# Format and lint
+uv run ruff format gazpar2haws tests
+uv run ruff check gazpar2haws tests
 
-# Lint
-poetry run pylint gazpar2haws
-poetry run ruff check gazpar2haws
+# Type check
+uv run mypy gazpar2haws tests
 
 # Test
-poetry run pytest
+uv run pytest
 ```
 
 ---
@@ -1144,7 +1111,7 @@ poetry run pytest
 3. **Create an issue first**: For significant changes, discuss in an issue
 4. **Write tests**: All new features must have tests
 5. **Update documentation**: Update relevant docs (README, FAQ, etc.)
-6. **Follow code style**: Use black, isort, and pass linters
+6. **Follow code style**: Run `ruff format` and pass `ruff check` and mypy
 7. **Write clear commit messages**: Follow conventional commits
 
 ### Pull Request Process
@@ -1186,13 +1153,10 @@ This project uses **GitHub Actions** for automated Continuous Integration and Co
 - Manual trigger via GitHub UI (with options to skip lint/tests)
 
 **Jobs**:
-1. **Prepare** – Compute version and environment info
+1. **Prepare** – Read the target Python versions
 2. **Lint** – Run code quality checks:
-   - `black --check` (formatting)
-   - `isort --check` (import sorting)
-   - `pylint` (static analysis)
-   - `flake8` (style guide enforcement)
-   - `ruff` (fast linting)
+   - `ruff format --check` (formatting)
+   - `ruff check` (linting: pyflakes, pycodestyle, import order, bugbear and more)
    - `mypy` (type checking)
 3. **Test** – Run test suite on multiple Python versions:
    - Python 3.10, 3.11, 3.12, 3.13
@@ -1216,56 +1180,47 @@ This project uses **GitHub Actions** for automated Continuous Integration and Co
 
 **File**: `.github/workflows/create-release.yaml`
 
-**Purpose**: Full release pipeline for production releases
+**Purpose**: Release a version: validate, bump, finalize the changelog, publish, tag and create the GitHub release.
 
-**Triggered**: Manually via GitHub Actions UI only
+**Triggered**: Manually only, from the GitHub Actions UI or with `gh workflow run create-release.yaml --ref <branch> -f version=<version>`.
 
-**Process**:
-1. **Prepare** – Compute or use specified version
-2. **Build**:
-   - Bump version in `pyproject.toml`, `addons/gazpar2haws/config.yaml`, `addons/gazpar2haws/build.yaml`
-   - Commit changes
-   - Create Git tag
-   - Build Python wheel and source distribution
-3. **Publish to PyPI**:
-   - If branch is `main`, `develop`, or `release/*` → Publish to **PyPI**
-   - Otherwise → Publish to **TestPyPI** (for testing)
-4. **Publish Docker Image**:
-   - Build Docker image
-   - Push to DockerHub (`ssenart/gazpar2haws`)
-   - Tag with version number
-   - Optionally tag as `latest` (if final release)
+**Pipeline**:
+1. **Preflight** – Validates before anything is changed:
+   - The version is PEP 440 and in canonical form (`0.6.0a1`, not `0.6.0a01`).
+   - The version kind matches the branch: `develop` → `aN`, `release/X.Y.Z` → `bN` or `rcN` with base `X.Y.Z`, `main` → final, `feature/*` → TestPyPI only.
+   - The version is new and greater than the highest existing tag.
+   - The `[Unreleased]` section of `CHANGELOG.md` is not empty.
+   - The `ci.yaml` run for this exact commit succeeded.
+2. **Release** (one job, in this order):
+   - Bump `pyproject.toml`, `addons/gazpar2haws/config.yaml` and `addons/gazpar2haws/build.yaml`.
+   - Finalize `CHANGELOG.md`: `[Unreleased]` becomes `[<version>] - <date>`, a new empty `[Unreleased]` is added above it, and the compare links are updated.
+   - Build the Python package.
+   - Publish to PyPI (`main`, `develop`, `release/*`) or TestPyPI (`feature/*`).
+   - Build and push the Docker image. The `latest` tag is set only for final versions published from `main`.
+   - Commit the bump, create the tag and push both atomically.
+   - Create the GitHub release, with the changelog section as its notes.
 
 **How to trigger**:
-1. Go to GitHub repository → "Actions" tab
-2. Select "Create Release" workflow
-3. Click "Run workflow"
-4. Fill in parameters:
-   - **Package version** (optional, auto-computed if empty)
-   - **Is final release** (checkbox for tagging as `latest`)
-5. Click "Run workflow"
+1. Go to GitHub repository → "Actions" tab → "Create Release" → "Run workflow".
+2. Select the branch to release from. The branch decides which version kinds are allowed.
+3. Fill in the parameters:
+   - **Version** (required), e.g. `0.6.0a1`.
+   - **Draft** (default: checked): create the GitHub release as a draft, to review it before publishing it.
+   - **Dry run** (default: unchecked): validate, bump and build without pushing, publishing or releasing.
+4. Click "Run workflow".
 
 **Parameters**:
-- `package-version` (optional): Override version (e.g., `0.5.0`, `0.6.0a1`)
-- `is_final` (boolean): If true, Docker image is tagged as `latest`
+- `version` (required): the version to release, in PEP 440 form.
+- `draft` (boolean, default `true`): create the GitHub release as a draft.
+- `dry_run` (boolean, default `false`): run everything except push, publish and release.
 
-**Example usage**:
-```yaml
-# Alpha release (development)
-Package version: 0.6.0a1
-Is final: false (unchecked)
-# → Publishes as 0.6.0a1, no 'latest' tag
+**Run summary**: the job summary shows the last tag, the version channel, the publish target, the commit and the files changed.
 
-# Beta release (pre-release)
-Package version: 0.6.0b1
-Is final: false (unchecked)
-# → Publishes as 0.6.0b1, no 'latest' tag
-
-# Final release (production)
-Package version: 0.6.0
-Is final: true (checked)
-# → Publishes as 0.6.0 AND tags as 'latest'
-```
+**Failure recovery**:
+- A failed preflight changes nothing.
+- A failure before publishing leaves no tag: fix the cause and rerun with the same version.
+- PyPI never accepts the same version twice. If PyPI already accepted the version and a later step failed, release a new version instead.
+- If the final push fails after publishing (for example, because the branch moved), push the bump commit and the tag manually, then create the GitHub release by hand.
 
 #### 🐳 Publish to DockerHub Workflow (Manual)
 
@@ -1285,8 +1240,8 @@ Is final: true (checked)
 2. Select "Publish to DockerHub" workflow
 3. Click "Run workflow"
 4. Fill in parameters:
-   - **Package version** (optional)
-   - **Update 'latest' tag** (boolean)
+   - **Version** (required): an existing tag, e.g. `0.6.0`
+   - **Update 'latest' tag** (boolean, default unchecked): only for final versions
 5. Click "Run workflow"
 
 ---
@@ -1367,9 +1322,9 @@ git checkout develop
 git checkout -b release/0.6.0
 ```
 
-**Update CHANGELOG.md**:
+**Update CHANGELOG.md**: add the entries under `[Unreleased]`. The release workflow dates and versions that section:
 ```markdown
-## [0.6.0] - 2026-02-15
+## [Unreleased]
 
 ### Added
 - New feature X (#123)
@@ -1391,23 +1346,9 @@ git push origin release/0.6.0
 
 **Test the release branch** – Run final integration tests, QA
 
-#### 3. Trigger Release via GitHub Actions
+#### 3. Merge Release to Main
 
-**Go to GitHub Actions** → "Create Release" workflow:
-- **Package version**: `0.6.0`
-- **Is final release**: ✅ (checked)
-
-**What happens automatically**:
-1. Bumps version in all files
-2. Commits changes to current branch
-3. Creates Git tag `0.6.0`
-4. Builds Python package
-5. Publishes to PyPI
-6. Builds and publishes Docker image (tagged `0.6.0` and `latest`)
-
-#### 4. Merge Release to Main
-
-**After successful release**:
+**Merge the release into `main` and `develop`, before the final release**:
 ```bash
 # Merge release to main
 git checkout main
@@ -1424,13 +1365,24 @@ git branch -d release/0.6.0
 git push origin --delete release/0.6.0
 ```
 
-#### 5. Create GitHub Release (Optional)
+#### 4. Trigger the Release on `main`
 
-Go to GitHub → Releases → Create new release:
-- **Tag**: Select `0.6.0`
-- **Release title**: `v0.6.0`
-- **Description**: Copy from CHANGELOG.md
-- **Attach binaries** (optional): Add wheel/tar.gz from artifacts
+The final version is released from `main`, after the merge in step 3.
+
+**Go to GitHub Actions** → "Create Release" workflow (on branch `main`):
+- **Version**: `0.6.0`
+- **Draft**: ✅ (checked, publish the GitHub release after review)
+
+**What happens automatically** (see [Create Release Workflow](#-create-release-workflow-manual) above):
+1. Validates the version, the branch and the CI status
+2. Bumps the version files and finalizes `CHANGELOG.md`
+3. Publishes to PyPI and builds the Docker image
+4. Commits the bump, tags `0.6.0` and pushes both
+5. Creates the GitHub release (draft)
+
+#### 5. Publish the GitHub Release
+
+The workflow creates the GitHub release as a draft, with the changelog section as its notes. Go to GitHub → Releases, check the notes and publish the release.
 
 ---
 
@@ -1468,13 +1420,7 @@ git commit -m "docs: update CHANGELOG for v0.5.1"
 git push origin hotfix/0.5.1-critical_security_fix
 ```
 
-#### 4. Trigger Release
-
-**GitHub Actions** → "Create Release":
-- **Package version**: `0.5.1`
-- **Is final release**: ✅ (checked)
-
-#### 5. Merge Hotfix
+#### 4. Merge Hotfix
 
 ```bash
 # Merge to main
@@ -1491,6 +1437,15 @@ git push origin develop
 git branch -d hotfix/0.5.1-critical_security_fix
 ```
 
+
+#### 5. Trigger the Release on `main`
+
+After the merge in step 4.
+
+**GitHub Actions** → "Create Release":
+- **Version**: `0.5.1` (on `main`)
+- **Draft**: ❌ (unchecked, publish right away)
+
 ---
 
 ### Pre-release Process (Alpha/Beta)
@@ -1504,8 +1459,7 @@ For testing releases before final:
 git checkout develop
 
 # GitHub Actions → "Create Release"
-# Package version: 0.6.0a1
-# Is final: ❌ (unchecked)
+# Version: 0.6.0a1
 ```
 
 **Published to**:
@@ -1520,8 +1474,7 @@ git checkout develop
 git checkout release/0.6.0
 
 # GitHub Actions → "Create Release"
-# Package version: 0.6.0b1
-# Is final: ❌ (unchecked)
+# Version: 0.6.0b1
 ```
 
 #### Release Candidate
@@ -1531,8 +1484,7 @@ git checkout release/0.6.0
 git checkout release/0.6.0
 
 # GitHub Actions → "Create Release"
-# Package version: 0.6.0rc1
-# Is final: ❌ (unchecked)
+# Version: 0.6.0rc1
 ```
 
 ---
@@ -1543,10 +1495,10 @@ git checkout release/0.6.0
 
 ```bash
 # Install build dependencies
-poetry install
+uv sync
 
 # Build wheel and source distribution
-poetry build
+uv build
 
 # Output in dist/
 ls dist/
@@ -1572,7 +1524,7 @@ docker run --rm gazpar2haws:dev --version
 pip install dist/gazpar2haws-0.5.0-py3-none-any.whl
 
 # Or install in editable mode for development
-poetry install
+uv sync
 ```
 
 ---
@@ -1630,10 +1582,9 @@ Required GitHub Secrets (configured in repository settings):
 **Solution**:
 ```bash
 # Run locally before pushing
-poetry run black gazpar2haws tests
-poetry run isort gazpar2haws tests
-poetry run pylint gazpar2haws
-poetry run mypy gazpar2haws tests
+uv run ruff format gazpar2haws tests
+uv run ruff check gazpar2haws tests
+uv run mypy gazpar2haws tests
 ```
 
 #### CI Fails on Tests
@@ -1691,12 +1642,12 @@ poetry run mypy gazpar2haws tests
 
 ### Common Development Issues
 
-#### Issue: Poetry lock file conflicts
+#### Issue: Lock file conflicts
 
 **Solution**:
 ```bash
-poetry lock --no-update
-git add poetry.lock
+uv lock
+git add uv.lock
 ```
 
 #### Issue: Tests fail with "Connection refused"
@@ -1712,14 +1663,14 @@ def test_my_function(mock_connect):
 
 **Solution**: Install the package in development mode:
 ```bash
-poetry install
+uv sync
 ```
 
 #### Issue: Coverage report not generated
 
 **Solution**: Install coverage plugin:
 ```bash
-poetry add --group dev pytest-cov
+uv add --group dev pytest-cov
 ```
 
 ### Debugging
@@ -1737,13 +1688,13 @@ logging:
 
 ```bash
 # Run with verbose output
-poetry run pytest -v -s
+uv run pytest -v -s
 
 # Debug specific test
-poetry run pytest tests/test_file.py::test_name -v -s
+uv run pytest tests/test_file.py::test_name -v -s
 
 # Drop into debugger on failure
-poetry run pytest --pdb
+uv run pytest --pdb
 ```
 
 #### Debug in IDE

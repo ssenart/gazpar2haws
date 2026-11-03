@@ -122,7 +122,7 @@ class TestFlexiblePricing:
                     }
                 ]
             )
-            assert False, "Should have raised ValidationError"
+            raise AssertionError("Should have raised ValidationError")
         except ValidationError as e:
             assert "At least one component must have quantity_value defined" in str(e)
 
@@ -135,6 +135,6 @@ class TestFlexiblePricing:
         # This should fail - no components
         try:
             Pricing()
-            assert False, "Should have raised ValidationError"
+            raise AssertionError("Should have raised ValidationError")
         except ValidationError as e:
             assert "At least one pricing component is required" in str(e)

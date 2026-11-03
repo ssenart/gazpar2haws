@@ -1,6 +1,6 @@
 name: "Gazpar2HAWS"
 description: "Gazpar2HAWS is a gateway that reads data history from the GrDF (French gas provider) meter and send it to Home Assistant using WebSocket interface."
-version: "0.5.1a1"
+version: "0.5.1a10"
 slug: "gazpar2haws"
 init: false
 arch:
@@ -10,11 +10,13 @@ homeassistant_api: true
 hassio_api: true
 options:
   scan_interval: 480 # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  on_error: "continue" # What to do when a GrDF data retrieval fails (e.g. a dead login): "continue" (default) logs an error and retries at the next scan_interval - the safe choice here, since an add-on that exits is liable to be restarted automatically (e.g. with "Watchdog" enabled in its Info tab), which would then retry far more often than scan_interval and hammer GrDF. "stop" exits the add-on instead, as a stronger signal that something needs investigating, but only use it if you are watching for that (e.g. checking the add-on's status) rather than relying on it staying up on its own.
   devices:
-    - name: gazpar2haws # Name of the device in home assistant. It will be used as the entity_id: sensor.{{name}}.
+    - name: gazpar2haws # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.{{name}}_*.
       username: "" # Email address used to connect to the GrDF website.
       password: "" # Password used to connect to the GrDF website.
       pce_identifier: "" # PCE identifier of the meter. It should be a positive integer.
+      consumption_type: "informative" # GrDF readings to use: "informative" or "published". Use "published" if "informative" returns no data for your PCE.
       timezone: "Europe/Paris" # Timezone of the data. It should be the same as the Home Assistant timezone.
       last_days: 365 # Number of days of data to retrieve
       reset: false # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.
@@ -61,11 +63,13 @@ options:
       quantity_value: 0.01637
 schema:
   scan_interval: int # Number of minutes between each data retrieval (0 means no scan: a single data retrieval at startup, then stops).
+  on_error: list(stop|continue)? # What to do when a GrDF data retrieval fails. Default is "continue".
   devices:
-    - name: str # Name of the device in home assistant. It will be used as the entity_id: sensor.{{name}}.
+    - name: match(^[a-z0-9_]+$) # Name of the device in Home Assistant, lowercase letters, digits and underscores only (e.g. gazpar_maison). It is used as the entity_id prefix: sensor.{{name}}_*.
       username: email # Email address used to connect to the GrDF website.
       password: password # Password used to connect to the GrDF website.
       pce_identifier: match(^0|[1-9][0-9]*$) # PCE identifier of the meter. It should be a positive integer.
+      consumption_type: list(informative|published)? # GrDF readings to use. Default is "informative".
       timezone: str? # Timezone of the data. It should be the same as the Home Assistant timezone.
       last_days: int? # Number of days of data to retrieve.
       reset: bool? # If true, the data will be reset before the first data retrieval. If false, the data will be kept and new data will be added.

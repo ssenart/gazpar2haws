@@ -5,6 +5,101 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+This release follows 0.5.0. The alpha sections below give the detail of each step. The one behavior to know about: a failed GrDF fetch is still logged and retried at the next `scan_interval` by default, as in 0.5.0. The `stop` behavior added in `0.5.1a8` is opt-in (`grdf.on_error: stop`).
+
+### Added
+
+- [#120](https://github.com/ssenart/gazpar2haws/issues/120): TLS (`wss://`) connections to Home Assistant, with the new `secure` and `verify_ssl` options in the `homeassistant` block (and `HOMEASSISTANT_SECURE` / `HOMEASSISTANT_VERIFY_SSL` for Docker). The defaults keep `ws://`.
+- [#125](https://github.com/ssenart/gazpar2haws/issues/125): `consumption_type` device option (`informative` | `published`, default `informative`), for GrDF accounts whose informative readings endpoint returns no data.
+- `grdf.on_error` option (`continue` | `stop`, default `continue`), to choose whether a failed GrDF fetch stops the process.
+
+### Changed
+
+- Upgraded the PyGazpar library to `1.4.0`, which requires `pygazpar>=1.4.0`. Its API is used through the snake_case names, and it no longer depends on `pandas`.
+- [#122](https://github.com/ssenart/gazpar2haws/issues/122): The day-by-day fill loops in `Pricer` are vectorized, which speeds up cost computation over long date ranges. No behavior change.
+- Development tooling: [uv](https://docs.astral.sh/uv/) replaces Poetry (`poetry.lock` is removed, `uv.lock` is the lock file), and ruff and mypy replace flake8, isort, black and pylint. The application, its configuration and its command line are unchanged.
+
+### Fixed
+
+- [#125](https://github.com/ssenart/gazpar2haws/issues/125): The device `name` must be lowercase letters, digits and underscores only (e.g. `gazpar_maison`). A name such as `Compteur_de_gaz` made Home Assistant reject the statistics import with `Invalid statistic_id`. The configuration is refused at startup with an explicit error, and the add-on options schema enforces the same rule.
+- The add-on startup script no longer alters the GrDF device and pricing settings that contain repeated spaces, such as in a password, which made the GrDF login fail.
+- `numpy` and `pytz`, which the code imports, are declared dependencies.
+
+### Security
+
+- [#124](https://github.com/ssenart/gazpar2haws/issues/124): The Home Assistant token no longer appears in the add-on logs. The startup script no longer prints `HOMEASSISTANT_TOKEN`, and the `websockets` library is capped at INFO, so its DEBUG output no longer shows the `Authorization` header.
+- The add-on image installs `gazpar2haws` from PyPI only. TestPyPI is no longer used as an index, since a same-named package published there could have been picked up.
+- The GrDF username (an e-mail address) is no longer written in clear in the startup `Configuration:` log. It is a secret, like the password and the PCE identifier, and is still checked as an e-mail address. See [#127](https://github.com/ssenart/gazpar2haws/issues/127). PyGazpar 1.4.0 also stops logging the GrDF login answer at DEBUG, which carried the account e-mail in clear.
+- Locked `urllib3` to 2.8.0, `requests` to 2.34.2 and `idna` to 3.20 to fix open Dependabot alerts.
+
+## [0.5.1a10] - 2026-10-24
+
+### Changed
+
+- Upgraded the PyGazpar library to `1.4.0a7`.
+
+## [0.5.1a9] - 2026-10-11
+
+### Changed
+
+- The `stop` behavior added in `0.5.1a8` is no longer unconditional: a new `grdf.on_error` option (`continue` | `stop`, default `continue`) lets you choose it instead of having it forced on you. Default `continue` restores the pre-`0.5.1a8` behavior - log an error, retry at the next `scan_interval`, keep running - because `0.5.1a8`'s unconditional `stop` turned out to interact badly with container restart policies: a container that gets restarted immediately (e.g. `restart: always`/`unless-stopped`, or an add-on with its Watchdog enabled) retries far more often than `scan_interval`, hammering GrDF instead of backing off. `stop` is still available, as a strong investigate-this signal, for deployments where nothing restarts the process faster than `scan_interval`. The add-on and Docker image both default to `continue`. See the README's "On error" section.
+
+## [0.5.1a8] - 2026-10-11
+
+### Changed
+
+- **Breaking:** A failure while fetching data from GrDF (e.g. a dead login) now stops Gazpar2HAWS instead of being logged as a warning and treated as "no data this cycle." It was silently publishing nothing, cycle after cycle, with no visible signal that something needed investigating (see [#118](https://github.com/ssenart/gazpar2haws/issues/118)). The add-on/container now exits non-zero on such a failure, which should be visible to its supervisor.
+- Upgraded the PyGazpar library to `1.4.0a6`. It logs the GrDF/Okta login steps at DEBUG (with the state handle redacted), to help diagnose [#118](https://github.com/ssenart/gazpar2haws/issues/118) on an account that still fails to log in.
+
+## [0.5.1a7] - 2026-10-10
+
+### Changed
+
+- Upgraded the PyGazpar library to `1.4.0a5`. It no longer depends on `pandas`, so `pandas` and the packages it needed are no longer installed. `numpy` and `pytz` stay, since they are declared dependencies.
+- The Excel data source is created with the `tmp_directory` parameter of PyGazpar 1.4.0a5, instead of the deprecated `tmpDirectory`.
+- Development tooling: [uv](https://docs.astral.sh/uv/) replaces Poetry. The package is built with the `uv_build` backend, the development tools are a `dev` dependency group in `pyproject.toml`, and the locked versions are in `uv.lock` (`poetry.lock` is removed). To work on the project, run `uv sync` instead of `poetry install`. The CI and release workflows and the Docker image use uv. The application, its configuration and its command line are unchanged.
+- `types-pytz` and `types-pyyaml` are development dependencies, so that mypy needs no `--install-types`.
+
+### Fixed
+
+- `numpy` and `pytz`, which the code imports, are declared dependencies. They used to come with PyGazpar through `pandas`, which PyGazpar 1.4.0 no longer requires.
+
+## [0.5.1a6] - 2026-10-06
+
+### Changed
+
+- Upgraded the PyGazpar library to `1.4.0a4`.
+- Development dependencies: pytest `^9.0.3` and pytest-asyncio `^1.4.0`.
+- Development tooling: ruff (lint and format) and mypy replace flake8, isort, black and pylint. Ruff and mypy are updated to their latest stable versions, and the CI lint and test steps are inlined in the workflow.
+
+### Fixed
+
+- The add-on startup script no longer alters the GrDF device and pricing settings when they contain repeated spaces (such as in a GrDF password), which made the GrDF login fail.
+
+### Security
+
+- [#124](https://github.com/ssenart/gazpar2haws/issues/124): The Home Assistant token no longer appears in the add-on logs. The startup script no longer prints `HOMEASSISTANT_TOKEN`, and the `websockets` library, which logged the `Authorization` header and auth frames at DEBUG, is now capped at INFO.
+- The add-on image installs `gazpar2haws` from PyPI only. TestPyPI is no longer used as an index, as a same-named package published there could have been picked up.
+- Locked `urllib3` to 2.8.0, `requests` to 2.34.2 and `idna` to 3.20 to fix open Dependabot alerts.
+
+## [0.5.1a5] - 2026-10-04
+
+### Added
+
+- [#120](https://github.com/ssenart/gazpar2haws/issues/120): Support for TLS (`wss://`) connections to Home Assistant via new `secure` and `verify_ssl` options in the `homeassistant` configuration block (and `HOMEASSISTANT_SECURE` / `HOMEASSISTANT_VERIFY_SSL` env vars for Docker deployments). Defaults preserve existing `ws://` behavior.
+- [#125](https://github.com/ssenart/gazpar2haws/issues/125): New `consumption_type` device option (`informative` | `published`, default `informative`) to work around GrDF accounts where the informative readings endpoint returns no data. Requires `pygazpar>=1.4.0a1`.
+
+### Changed
+
+- Upgraded the PyGazpar library to `1.4.0a3`. Requires `pygazpar>=1.4.0a3`.
+- [#122](https://github.com/ssenart/gazpar2haws/issues/122): Vectorized the day-by-day fill loops in `Pricer` (`_fill_value_array`, `_fill_price_array`, `_fill_composite_component_array`) into slice assignments on `DateArray`, speeding up cost computation over long date ranges. No behavior change.
+
+### Fixed
+
+- [#125](https://github.com/ssenart/gazpar2haws/issues/125): Device `name` is now validated as lowercase letters, digits and underscores only (e.g. `gazpar_maison`). A name such as `Compteur_de_gaz` made Home Assistant reject the statistics import with `Invalid statistic_id`. The configuration is now refused at startup with an explicit error, and the add-on options schema enforces the same rule.
+
 ## [0.5.0] - 2026-02-08
 
 ### Fixed
@@ -250,3 +345,11 @@ Users upgrading from v0.3.x must update their pricing configuration to the new f
 ## [0.1.0] - 2024-12-21
 
 First version of the project.
+
+[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a10...HEAD
+[0.5.1a10]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a9...0.5.1a10
+[0.5.1a9]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a8...0.5.1a9
+[0.5.1a8]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a7...0.5.1a8
+[0.5.1a7]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a6...0.5.1a7
+[0.5.1a6]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a5...0.5.1a6
+[0.5.1a5]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a4...0.5.1a5

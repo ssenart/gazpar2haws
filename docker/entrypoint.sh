@@ -5,26 +5,32 @@
 : "${GRDF_PASSWORD:?GRDF_PASSWORD is required and not set.}"
 : "${GRDF_PCE_IDENTIFIER:?GRDF_PCE_IDENTIFIER is required and not set.}"
 : "${GRDF_SCAN_INTERVAL:="480"}" # 8 hours
+: "${GRDF_ON_ERROR:="continue"}" # "continue" (default) or "stop". See configuration.template.yaml for details.
 : "${GRDF_LAST_DAYS:="1095"}" # 3 years
 
 : "${HOMEASSISTANT_HOST:?HOMEASSISTANT_HOST is required and not set.}"
 : "${HOMEASSISTANT_PORT:="8123"}" # Default Home Assistant port
 : "${HOMEASSISTANT_ENDPOINT:="/api/websocket"}" # Default Home Assistant endpoint
 : "${HOMEASSISTANT_TOKEN:?HOMEASSISTANT_TOKEN is required and not set.}"
+: "${HOMEASSISTANT_SECURE:="false"}" # If true, connect using wss:// instead of ws://
+: "${HOMEASSISTANT_VERIFY_SSL:="true"}" # If false, disable TLS certificate verification
 
 # Display environment variables
 echo "GRDF_USERNAME: ${GRDF_USERNAME}"
 echo "GRDF_PASSWORD: ***************"
 echo "GRDF_PCE_IDENTIFIER: ${GRDF_PCE_IDENTIFIER}"
 echo "GRDF_SCAN_INTERVAL: ${GRDF_SCAN_INTERVAL}"
+echo "GRDF_ON_ERROR: ${GRDF_ON_ERROR}"
 echo "GRDF_LAST_DAYS: ${GRDF_LAST_DAYS}"
 echo "HOMEASSISTANT_HOST: ${HOMEASSISTANT_HOST}"
 echo "HOMEASSISTANT_ENDPOINT: ${HOMEASSISTANT_ENDPOINT}"
 echo "HOMEASSISTANT_PORT: ${HOMEASSISTANT_PORT}"
 echo "HOMEASSISTANT_TOKEN: ***************"
+echo "HOMEASSISTANT_SECURE: ${HOMEASSISTANT_SECURE}"
+echo "HOMEASSISTANT_VERIFY_SSL: ${HOMEASSISTANT_VERIFY_SSL}"
 
 # Export environment variables
-export GRDF_USERNAME GRDF_PASSWORD GRDF_PCE_IDENTIFIER GRDF_SCAN_INTERVAL GRDF_LAST_DAYS HOMEASSISTANT_HOST HOMEASSISTANT_PORT HOMEASSISTANT_ENDPOINT HOMEASSISTANT_TOKEN
+export GRDF_USERNAME GRDF_PASSWORD GRDF_PCE_IDENTIFIER GRDF_SCAN_INTERVAL GRDF_ON_ERROR GRDF_LAST_DAYS HOMEASSISTANT_HOST HOMEASSISTANT_PORT HOMEASSISTANT_ENDPOINT HOMEASSISTANT_TOKEN HOMEASSISTANT_SECURE HOMEASSISTANT_VERIFY_SSL
 
 # Instantiate the template config
 if [ ! -e /app/config/configuration.yaml ]; then
