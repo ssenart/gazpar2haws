@@ -84,8 +84,10 @@ class Device(BaseModel):
 
     @field_validator("username", mode="before")
     @classmethod
-    def validate_username(cls, value: str | None) -> str | None:
+    def validate_username(cls, value: str | SecretStr | None) -> str | None:
         # The username is kept as a SecretStr (it is logged in the configuration dump), so check the e-mail format here
+        if isinstance(value, SecretStr):
+            value = value.get_secret_value()
         if value is not None:
             TypeAdapter(EmailStr).validate_python(value)
         return value

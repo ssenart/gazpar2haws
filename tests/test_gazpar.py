@@ -209,7 +209,7 @@ class TestGazparDataSource:
     def _make_device_config(consumption_type: str) -> Device:
         return Device(
             name="gazpar2haws_test",
-            username="user@example.com",
+            username=SecretStr("user@example.com"),
             password=SecretStr("password"),
             pce_identifier=SecretStr("22423299474865"),
             consumption_type=consumption_type,
