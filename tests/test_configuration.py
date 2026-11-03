@@ -44,3 +44,18 @@ def test_device_name_rejects_invalid_home_assistant_characters(name):
 def test_device_name_accepts_lowercase_home_assistant_name():
 
     assert Device(name="gazpar_maison_1", data_source="test").name == "gazpar_maison_1"
+
+
+def test_username_is_masked_in_the_configuration_dump_but_still_used_as_is():
+
+    device = Device(name="gazpar_maison", username="user@example.com", password="secret", pce_identifier="12345")
+
+    assert device.username.get_secret_value() == "user@example.com"
+    assert device.model_dump(mode="json")["username"] == "**********"
+    assert "user@example.com" not in str(device.model_dump(mode="json"))
+
+
+def test_username_must_be_an_email_address():
+
+    with pytest.raises(ValidationError, match="email"):
+        Device(name="gazpar_maison", username="not-an-email", password="secret", pce_identifier="12345")

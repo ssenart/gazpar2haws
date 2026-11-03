@@ -51,7 +51,7 @@ class Gazpar:
         self._consumption_type = device_config.consumption_type
 
         # GrDF configuration: username
-        self._username = device_config.username
+        self._username = device_config.username.get_secret_value() if device_config.username is not None else None
 
         # GrDF configuration: password
         self._password = device_config.password.get_secret_value() if device_config.password is not None else None

@@ -10,6 +10,7 @@ from pydantic import (
     ConfigDict,
     EmailStr,
     SecretStr,
+    TypeAdapter,
     field_validator,
     model_validator,
 )
@@ -65,7 +66,7 @@ class Device(BaseModel):
     consumption_type: str = "informative"
     tmp_dir: str | None = None  # If None, will use system temp directory
     as_of_date: date | None = None
-    username: EmailStr | None = None
+    username: SecretStr | None = None
     password: SecretStr | None = None
     pce_identifier: SecretStr | None = None
     timezone: TimeZoneName = TimeZoneName("Europe/Paris")
@@ -79,6 +80,14 @@ class Device(BaseModel):
             raise ValueError(
                 f"Invalid name '{value}' (expected lowercase letters, digits and underscores only, e.g. 'gazpar_maison')"
             )
+        return value
+
+    @field_validator("username", mode="before")
+    @classmethod
+    def validate_username(cls, value: str | None) -> str | None:
+        # The username is kept as a SecretStr (it is logged in the configuration dump), so check the e-mail format here
+        if value is not None:
+            TypeAdapter(EmailStr).validate_python(value)
         return value
 
     @model_validator(mode="after")

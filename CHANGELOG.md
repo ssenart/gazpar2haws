@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Upgraded the PyGazpar library to `1.4.0`. Requires `pygazpar>=1.4.0`.
+- Upgraded the PyGazpar library to `1.4.0`. Requires `pygazpar>=1.4.0`. PyGazpar 1.4.0 no longer logs the GrDF login answer at DEBUG, which carried the account e-mail in clear.
+
+### Security
+
+- The GrDF username (an e-mail address) is no longer written in clear in the startup `Configuration:` log. It is now a secret, like the password and the PCE identifier, and is still checked as an e-mail address. See [#127](https://github.com/ssenart/gazpar2haws/issues/127).
 
 ## [0.5.1a10] - 2026-10-24
 
