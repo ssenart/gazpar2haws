@@ -220,7 +220,7 @@ Gazpar2HAWS is a gateway application that:
 
 ### Technology Stack
 
-- **Language**: Python 3.10+
+- **Language**: Python 3.11+
 - **Key Dependencies**:
   - `pygazpar`: GrDF API client
   - `websockets`: Home Assistant WebSocket communication
@@ -411,7 +411,7 @@ Configuration loading uses factories:
 
 ### Prerequisites
 
-- **Python**: 3.10 or higher
+- **Python**: 3.11 or higher
 - **uv**: 0.13 or higher
 - **Git**: For version control
 - **Home Assistant**: Running instance for integration testing (optional)
@@ -1159,7 +1159,7 @@ This project uses **GitHub Actions** for automated Continuous Integration and Co
    - `ruff check` (linting: pyflakes, pycodestyle, import order, bugbear and more)
    - `mypy` (type checking)
 3. **Test** – Run test suite on multiple Python versions:
-   - Python 3.10, 3.11, 3.12, 3.13
+   - Python 3.11, 3.12, 3.13, 3.14
    - Full pytest suite with coverage
 
 **How to view CI results**:
@@ -1592,7 +1592,7 @@ uv run mypy gazpar2haws tests
 **Problem**: Tests fail in CI but pass locally
 
 **Solution**:
-- Check Python version compatibility (CI tests 3.10-3.13)
+- Check Python version compatibility (CI tests 3.11-3.14)
 - Check for environment-specific dependencies
 - Review CI logs for specific failure
 

@@ -17,9 +17,11 @@ This release follows 0.5.0. The alpha sections below give the detail of each ste
 
 ### Changed
 
+- **Breaking:** Python 3.10 is no longer supported. The minimum is now Python 3.11, and CI tests 3.11, 3.12, 3.13 and 3.14. Python 3.14 is added to the supported versions. The reason is a security fix: the patched releases of `dnspython` (the high-severity advisory for excessive CPU use on crafted DNS input) require Python 3.11, so keeping 3.10 would have kept the vulnerable `dnspython` 2.8.0 installed on that version. Python 3.10 also reached its end of life in October 2026. Users on Python 3.10 can stay on 0.5.0, the last final release that supports it.
 - Upgraded the PyGazpar library to `1.4.0`, which requires `pygazpar>=1.4.0`. Its API is used through the snake_case names, and it no longer depends on `pandas`.
 - [#122](https://github.com/ssenart/gazpar2haws/issues/122): The day-by-day fill loops in `Pricer` are vectorized, which speeds up cost computation over long date ranges. No behavior change.
 - Development tooling: [uv](https://docs.astral.sh/uv/) replaces Poetry (`poetry.lock` is removed, `uv.lock` is the lock file), and ruff and mypy replace flake8, isort, black and pylint. The application, its configuration and its command line are unchanged.
+- The logging level and the pricing units are standard `StrEnum` classes. Error messages about an invalid unit show its value (e.g. `day`) instead of the enum name (`TimeUnit.DAY`).
 
 ### Fixed
 
@@ -33,6 +35,8 @@ This release follows 0.5.0. The alpha sections below give the detail of each ste
 - The add-on image installs `gazpar2haws` from PyPI only. TestPyPI is no longer used as an index, since a same-named package published there could have been picked up.
 - The GrDF username (an e-mail address) is no longer written in clear in the startup `Configuration:` log. It is a secret, like the password and the PCE identifier, and is still checked as an e-mail address. See [#127](https://github.com/ssenart/gazpar2haws/issues/127). PyGazpar 1.4.0 also stops logging the GrDF login answer at DEBUG, which carried the account e-mail in clear.
 - Locked `urllib3` to 2.8.0, `requests` to 2.34.2 and `idna` to 3.20 to fix open Dependabot alerts.
+- Locked `certifi` to 2026.10.23 to fix a critical advisory: `certifi` bundled emSign root CAs with compromised intermediate CA keys (GHSA-6q48-6c7w-9gw2).
+- Locked `dnspython` to 2.9.1 to fix a high-severity advisory: excessive CPU use on crafted input (see the Python 3.11 minimum above).
 
 ## [0.5.1a10] - 2026-10-24
 
