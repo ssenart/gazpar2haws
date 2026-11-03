@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Upgraded the PyGazpar library to `1.4.0`. Requires `pygazpar>=1.4.0`.
+
 ## [0.5.1a10] - 2026-10-24
 
 ### Changed
