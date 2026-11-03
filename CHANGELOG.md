@@ -21,6 +21,7 @@ This release follows 0.5.0. The alpha sections below give the detail of each ste
 - Upgraded the PyGazpar library to `1.4.0`, which requires `pygazpar>=1.4.0`. Its API is used through the snake_case names, and it no longer depends on `pandas`.
 - [#122](https://github.com/ssenart/gazpar2haws/issues/122): The day-by-day fill loops in `Pricer` are vectorized, which speeds up cost computation over long date ranges. No behavior change.
 - Development tooling: [uv](https://docs.astral.sh/uv/) replaces Poetry (`poetry.lock` is removed, `uv.lock` is the lock file), and ruff and mypy replace flake8, isort, black and pylint. The application, its configuration and its command line are unchanged.
+- The logging level and the pricing units are standard `StrEnum` classes. Error messages about an invalid unit show its value (e.g. `day`) instead of the enum name (`TimeUnit.DAY`).
 
 ### Fixed
 

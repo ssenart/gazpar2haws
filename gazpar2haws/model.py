@@ -1,7 +1,7 @@
 import re
 import tempfile
 from datetime import date
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Generic, Literal, TypeVar
 
@@ -20,7 +20,7 @@ from gazpar2haws.date_array import DateArray
 
 
 # ----------------------------------
-class LoggingLevel(str, Enum):
+class LoggingLevel(StrEnum):
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -29,7 +29,7 @@ class LoggingLevel(str, Enum):
 
 
 # ----------------------------------
-class TimeUnit(str, Enum):
+class TimeUnit(StrEnum):
     DAY = "day"
     WEEK = "week"
     MONTH = "month"
@@ -37,13 +37,13 @@ class TimeUnit(str, Enum):
 
 
 # ----------------------------------
-class PriceUnit(str, Enum):
+class PriceUnit(StrEnum):
     EURO = "€"
     CENT = "¢"
 
 
 # ----------------------------------
-class QuantityUnit(str, Enum):
+class QuantityUnit(StrEnum):
     MWH = "MWh"
     KWH = "kWh"
     WH = "Wh"
