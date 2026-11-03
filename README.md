@@ -12,6 +12,35 @@ It is a complement to the other available projects:
 
 ---
 
+## 🎉 What's New in v0.6.0
+
+### ⚠️ Breaking Changes
+
+**Device names must be lowercase.** A device name is used as a Home Assistant entity id, so it can only contain lowercase letters, digits and underscores. Rename any device that doesn't follow this before upgrading:
+
+```yaml
+grdf:
+  devices:
+    - name: compteur_de_gaz  # was Compteur_de_gaz
+```
+
+A configuration with another name is refused at startup with an explicit error.
+
+**Python 3.10 is no longer supported.** Gazpar2HAWS requires Python 3.11 or later, and is tested on 3.11 to 3.14. If you run it on Python 3.10, stay on v0.5.0.
+
+### Also New
+
+- **TLS to Home Assistant:** connect over `wss://` with the `secure` and `verify_ssl` options of the `homeassistant` block.
+- **Published consumption:** the `consumption_type` device option reads the published readings, for accounts whose informative readings return no data.
+- **Stop on error:** the `grdf.on_error` option chooses whether a failed GrDF fetch stops the process. The default, `continue`, is unchanged.
+- **Faster cost computation:** the pricing loops are vectorized, so long date ranges are computed faster. Results are unchanged.
+- **Security:** the Home Assistant token no longer appears in the add-on logs, the GrDF username is masked in the startup configuration log, and the dependencies with known vulnerabilities are updated.
+
+**Learn More:**
+- 🔄 [CHANGELOG](CHANGELOG.md) - Full release notes
+
+---
+
 ## 🎉 What's New in v0.5.0
 
 ### Flexible Pricing Components

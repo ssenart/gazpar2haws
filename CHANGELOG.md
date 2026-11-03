@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-This release follows 0.5.0. The alpha sections below give the detail of each step. The one behavior to know about: a failed GrDF fetch is still logged and retried at the next `scan_interval` by default, as in 0.5.0. The `stop` behavior added in `0.5.1a8` is opt-in (`grdf.on_error: stop`).
+This release follows 0.5.0, and it contains breaking changes: read the **Breaking** entries under Changed before upgrading. The alpha sections below give the detail of each step. The one behavior to know about: a failed GrDF fetch is still logged and retried at the next `scan_interval` by default, as in 0.5.0. The `stop` behavior added in `0.5.1a8` is opt-in (`grdf.on_error: stop`).
 
 ### Added
 
@@ -18,6 +18,7 @@ This release follows 0.5.0. The alpha sections below give the detail of each ste
 ### Changed
 
 - **Breaking:** Python 3.10 is no longer supported. The minimum is now Python 3.11, and CI tests 3.11, 3.12, 3.13 and 3.14. Python 3.14 is added to the supported versions. The reason is a security fix: the patched releases of `dnspython` (the high-severity advisory for excessive CPU use on crafted DNS input) require Python 3.11, so keeping 3.10 would have kept the vulnerable `dnspython` 2.8.0 installed on that version. Python 3.10 also reached its end of life in October 2026. Users on Python 3.10 can stay on 0.5.0, the last final release that supports it.
+- **Breaking:** The device `name` must be lowercase letters, digits and underscores only (e.g. `gazpar_maison`), because it becomes a Home Assistant entity id. A configuration with another name, such as `Compteur_de_gaz`, is refused at startup with an explicit error. Before upgrading, rename such devices (e.g. `compteur_de_gaz`); the add-on options schema enforces the same rule.
 - Upgraded the PyGazpar library to `1.4.0`, which requires `pygazpar>=1.4.0`. Its API is used through the snake_case names, and it no longer depends on `pandas`.
 - [#122](https://github.com/ssenart/gazpar2haws/issues/122): The day-by-day fill loops in `Pricer` are vectorized, which speeds up cost computation over long date ranges. No behavior change.
 - Development tooling: [uv](https://docs.astral.sh/uv/) replaces Poetry (`poetry.lock` is removed, `uv.lock` is the lock file), and ruff and mypy replace flake8, isort, black and pylint. The application, its configuration and its command line are unchanged.
@@ -25,7 +26,7 @@ This release follows 0.5.0. The alpha sections below give the detail of each ste
 
 ### Fixed
 
-- [#125](https://github.com/ssenart/gazpar2haws/issues/125): The device `name` must be lowercase letters, digits and underscores only (e.g. `gazpar_maison`). A name such as `Compteur_de_gaz` made Home Assistant reject the statistics import with `Invalid statistic_id`. The configuration is refused at startup with an explicit error, and the add-on options schema enforces the same rule.
+- [#125](https://github.com/ssenart/gazpar2haws/issues/125): A device name such as `Compteur_de_gaz` made Home Assistant reject the statistics import with `Invalid statistic_id`. The name is now validated at startup, see the **Breaking** change under Changed.
 - The add-on startup script no longer alters the GrDF device and pricing settings that contain repeated spaces, such as in a password, which made the GrDF login fail.
 - `numpy` and `pytz`, which the code imports, are declared dependencies.
 
