@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-03
+
 This release follows 0.5.0, and it contains breaking changes: read the **Breaking** entries under Changed before upgrading. The alpha sections below give the detail of each step. The one behavior to know about: a failed GrDF fetch is still logged and retried at the next `scan_interval` by default, as in 0.5.0. The `stop` behavior added in `0.5.1a8` is opt-in (`grdf.on_error: stop`).
 
 ### Added
@@ -351,7 +353,8 @@ Users upgrading from v0.3.x must update their pricing configuration to the new f
 
 First version of the project.
 
-[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a10...HEAD
+[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.6.0...HEAD
+[0.6.0]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a10...0.6.0
 [0.5.1a10]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a9...0.5.1a10
 [0.5.1a9]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a8...0.5.1a9
 [0.5.1a8]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a7...0.5.1a8
