@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-04
+
 ### Fixed
 
 - [#128](https://github.com/ssenart/gazpar2haws/issues/128): A monthly price (e.g. a subscription in €/month) was converted to a daily amount with the number of days of the month where its price period started, not of the day being priced. A November cost was therefore divided by October's 31 days instead of 30.
@@ -363,7 +365,8 @@ Users upgrading from v0.3.x must update their pricing configuration to the new f
 
 First version of the project.
 
-[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/ssenart/gazpar2haws/compare/0.6.1...HEAD
+[0.6.1]: https://github.com/ssenart/gazpar2haws/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a10...0.6.0
 [0.5.1a10]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a9...0.5.1a10
 [0.5.1a9]: https://github.com/ssenart/gazpar2haws/compare/0.5.1a8...0.5.1a9
