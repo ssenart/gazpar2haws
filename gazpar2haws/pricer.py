@@ -102,7 +102,7 @@ class Pricer:
 
             # Accumulate to total
             if total_cost_array is None:
-                total_cost_array = component_cost.value_array.copy()  # type: ignore
+                total_cost_array = component_cost.value_array.model_copy()  # type: ignore
             else:
                 total_cost_array = total_cost_array + component_cost.value_array  # type: ignore
 
