@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- [#128](https://github.com/ssenart/gazpar2haws/issues/128): A monthly price (e.g. a subscription in €/month) was converted to a daily amount with the number of days of the month where its price period started, not of the day being priced. A November cost was therefore divided by October's 31 days instead of 30.
+- [#128](https://github.com/ssenart/gazpar2haws/issues/128): Price lists are now sorted by start date. Entries entered newest first no longer make the wrong price apply after the change date.
+- [#128](https://github.com/ssenart/gazpar2haws/issues/128): Costs already published are not recomputed when the pricing changes. To rebuild the history with the new prices, set `devices[].reset` to `true`, restart, then set it back to `false`.
+
+### Changed
+
+- The pricer uses Pydantic's `model_copy()` instead of the deprecated `copy()`, which removes the deprecation warnings raised by the test suite. No behavior change.
+
 ## [0.6.0] - 2026-11-03
 
 This release follows 0.5.0, and it contains breaking changes: read the **Breaking** entries under Changed before upgrading. The alpha sections below give the detail of each step. The one behavior to know about: a failed GrDF fetch is still logged and retried at the next `scan_interval` by default, as in 0.5.0. The `stop` behavior added in `0.5.1a8` is opt-in (`grdf.on_error: stop`).
