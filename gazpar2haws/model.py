@@ -293,6 +293,10 @@ class Pricing(BaseModel):
             if not isinstance(prices, list) or len(prices) == 0:
                 continue
 
+            # Sort by start date: end dates are derived from the next entry, so the list must be chronological
+            # whatever the order in which the user entered it.
+            prices.sort(key=lambda p: str(p.get("start_date", "")) if isinstance(p, dict) else str(p.start_date))
+
             if "start_date" not in prices[0]:
                 raise ValueError(f"Missing start_date in first element of {component_name}")
 

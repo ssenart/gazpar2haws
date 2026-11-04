@@ -456,9 +456,10 @@ class TestPricer:
             self._compute_cost(pricer, date(2023, 4, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6
         )
 
-        # After the date.
+        # After the date: August has 31 days, so the monthly subscription is 19.83 * 1.055 / 31 per day.
+        # Consumption: 58 * 0.07790 * 1.20 = 5.42184; subscription: 20.92065 / 31 = 0.674859.
         assert math.isclose(
-            self._compute_cost(pricer, date(2023, 8, 1), 58.0, QuantityUnit.KWH), 6.119195, rel_tol=1e-6
+            self._compute_cost(pricer, date(2023, 8, 1), 58.0, QuantityUnit.KWH), 6.096699677, rel_tol=1e-6
         )
 
     # ----------------------------------
@@ -596,17 +597,20 @@ class TestPricer:
             self._compute_cost(pricer, date(2023, 4, 1), 1476.0, QuantityUnit.KWH), 192.7735, rel_tol=1e-6
         )
 
-        # After the date but before base_energy_cost price change
+        # After the date but before base_energy_cost price change.
+        # August has 31 days: the monthly subscription is 10.20 / 31 per day (not 10.20 / 30 as in June).
+        # Total = 192.7735 - 10.20 / 30 + 10.20 / 31
         assert math.isclose(
-            self._compute_cost(pricer, date(2023, 8, 1), 1476.0, QuantityUnit.KWH), 192.7735, rel_tol=1e-6
+            self._compute_cost(pricer, date(2023, 8, 1), 1476.0, QuantityUnit.KWH), 192.762532258, rel_tol=1e-6
         )
 
         # After the base_energy_cost price change (2024-01-01: 0.065 instead of 0.06)
         # New base_energy_cost: 1476 * 0.065 * 1.20 = 115.128
         # Difference from old: 115.128 - 106.272 = 8.856
-        # New total: 192.7735 + 8.856 = 201.6295
+        # New total: 192.7735 + 8.856 = 201.6295, corrected for January (31 days, not June's 30):
+        # 201.6295 - 10.20 / 30 + 10.20 / 31 = 201.618532
         assert math.isclose(
-            self._compute_cost(pricer, date(2024, 1, 1), 1476.0, QuantityUnit.KWH), 201.6295, rel_tol=1e-6
+            self._compute_cost(pricer, date(2024, 1, 1), 1476.0, QuantityUnit.KWH), 201.618532258, rel_tol=1e-6
         )
 
         # Verify cost breakdown has custom components

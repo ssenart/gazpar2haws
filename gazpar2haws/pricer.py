@@ -157,6 +157,10 @@ class Pricer:
         if composite_prices is None or len(composite_prices) == 0:
             raise ValueError("composite_prices is None or empty")
 
+        # Split time-based prices at calendar month boundaries, so that each piece is converted with the day count
+        # of its own month.
+        composite_prices = cls._split_by_calendar_month(composite_prices, end_date)
+
         # Convert all composite prices to target units
         composite_prices_converted = cls.convert(
             composite_prices, (target_price_unit, target_quantity_unit, target_time_unit)
@@ -180,6 +184,43 @@ class Pricer:
 
         # Fill the time component array (if present in the composite prices)
         cls._fill_composite_time_array(res, composite_prices_converted, vat_rate_array_by_id)
+
+        return res
+
+    # ----------------------------------
+    @classmethod
+    def _split_by_calendar_month(
+        cls, composite_prices: list[CompositePriceValue], end_date: date
+    ) -> list[CompositePriceValue]:
+        """Split time-based composite prices at the first day of each calendar month up to end_date.
+
+        A price per month (or per year) is converted to a daily amount with the day count of the month it applies
+        to. Splitting at month boundaries makes each piece use its own month, instead of the month where the price
+        period starts. Pieces follow the price list convention: a piece ends on the first day of the next piece,
+        which then overrides that day.
+        """
+        res = list[CompositePriceValue]()
+        for composite_price in composite_prices:
+            if composite_price.time_value is None:
+                res.append(composite_price)
+                continue
+
+            starts = [composite_price.start_date]
+            year, month = composite_price.start_date.year, composite_price.start_date.month
+            while True:
+                month += 1
+                if month > 12:
+                    year, month = year + 1, 1
+                boundary = date(year, month, 1)
+                if boundary > end_date:
+                    break
+                if composite_price.end_date is not None and boundary > composite_price.end_date:
+                    break
+                starts.append(boundary)
+
+            for index, start in enumerate(starts):
+                end = starts[index + 1] if index + 1 < len(starts) else composite_price.end_date
+                res.append(composite_price.model_copy(update={"start_date": start, "end_date": end}))
 
         return res
 
