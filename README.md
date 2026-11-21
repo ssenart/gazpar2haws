@@ -290,9 +290,9 @@ grdf.username: ${GRDF_USERNAME}
 grdf.password: ${GRDF_PASSWORD}
 grdf.pce_identifier: ${GRDF_PCE_IDENTIFIER}
 
-homeassistant.host: ${HA_HOST}
-homeassistant.port: ${HA_PORT}
-homeassistant.token: ${HA_TOKEN}
+homeassistant.host: ${HOMEASSISTANT_HOST}
+homeassistant.port: ${HOMEASSISTANT_PORT}
+homeassistant.token: ${HOMEASSISTANT_TOKEN}
 ```
 
 The history is uploaded on the entities with names:
@@ -650,6 +650,24 @@ In a Docker environment, the configurations files are instantiated by replacing 
 | HOMEASSISTANT_TOKEN  | Home Assistant access token                                                   | Yes      | -              |
 
 You can setup them directly in a docker-compose.yaml file (environment section) or from a Docker command line (-e option).
+
+> **Important - environment variables are only read on the first start.**
+> The application itself never reads `GRDF_PASSWORD` (or the other variables) at runtime: it only reads `config/secrets.yaml`.
+> The Docker entrypoint generates `config/secrets.yaml` and `config/configuration.yaml` from these variables **only if the files do not already exist** in the mounted `config` volume. They are never regenerated or overwritten afterwards.
+>
+> As a consequence, if you change `GRDF_PASSWORD` (e.g. after a GrDF password change) in your compose file or `.env` file, the container keeps using the old value stored in `config/secrets.yaml`, and GrDF answers `401 Authentication failed`. To apply the change, either edit `config/secrets.yaml` directly, or delete it and restart the container so it is regenerated from the environment variables.
+
+Minimal `config/secrets.yaml` (flat keys, quotes recommended, in particular if the value contains special characters such as `#`, `:` or `$`):
+
+```yaml
+grdf.username: "my.email@example.com"
+grdf.password: "my-grdf-password"
+grdf.pce_identifier: "0123456789"
+
+homeassistant.host: "homeassistant.local"
+homeassistant.port: "8123"
+homeassistant.token: "my-long-lived-access-token"
+```
 
 ## FAQ
 
