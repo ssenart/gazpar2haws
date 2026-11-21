@@ -154,21 +154,34 @@ homeassistant.token: "your-long-lived-access-token"
 
 ### How do I use environment variables in configuration?
 
-In `secrets.yaml`, use `${VARIABLE_NAME}` syntax:
+Gazpar2HAWS itself does **not** read environment variables: it only reads `secrets.yaml` (referenced from `configuration.yaml` with `!secret`). A `${VARIABLE_NAME}` placeholder in `secrets.yaml` is **not** expanded by the application.
+
+The substitution is done only by the Docker image (and the Home Assistant add-on) entrypoint, which runs `envsubst` on `secrets.template.yaml` to generate `config/secrets.yaml` **only if that file does not exist yet**. After the first start, `secrets.yaml` is the single source of truth and the environment variables are ignored.
+
+When running outside Docker, write the values directly in `secrets.yaml`:
 ```yaml
-grdf.username: "${GRDF_USERNAME}"
-grdf.password: "${GRDF_PASSWORD}"
-homeassistant.token: "${HA_TOKEN}"
+grdf.username: "your-email@example.com"
+grdf.password: "your-password"
+grdf.pce_identifier: "0123456789"
+homeassistant.host: "homeassistant.local"
+homeassistant.port: "8123"
+homeassistant.token: "your-token"
 ```
+Keys are flat (`grdf.password`, not nested). Quotes are recommended, and required if the value contains YAML special characters (`#`, `:`, `{`, leading `*`/`&`/`!`...).
 
-Then set environment variables before running:
-```bash
-export GRDF_USERNAME="your-email@example.com"
-export GRDF_PASSWORD="your-password"
-export HA_TOKEN="your-token"
-```
+### I changed my GrDF password but I still get "401 Authentication failed" in Docker
 
-For Docker, use the `environment` section in `docker-compose.yaml`.
+**Issue:** [#132](https://github.com/ssenart/gazpar2haws/issues/132)
+
+**Symptom:** the new password works on monespace.grdf.fr and you updated `GRDF_PASSWORD` in your `docker-compose.yaml` / `.env` file, but the log still shows `GrDF password challenge error body: ... errors.E0000004 ... Authentication failed` (HTTP 401).
+
+**Cause:** the container keeps using the old password stored in `config/secrets.yaml`. That file is generated from the environment variables only on the first start, and never regenerated while it exists in the mounted `config` volume. The `allowedFor: "none"` field in the error body is not significant: GrDF returns the same body for a wrong password and for an unknown identifier.
+
+**Solution:** do one of the following, then restart the container:
+- Edit `grdf.password` in `config/secrets.yaml`; or
+- Delete `config/secrets.yaml` so it is regenerated from the environment variables (the same applies to `config/configuration.yaml`, if you want it regenerated too).
+
+To check the credentials independently of the container, run `pygazpar auth check -u "your@email.fr"` and type the password by hand.
 
 ### What does "as_of_date" do?
 
