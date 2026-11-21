@@ -65,7 +65,7 @@ pricing:
 
 **Learn More:**
 - 📖 [Flexible Pricing Guide](docs/FLEXIBLE_PRICING_GUIDE.md) - Complete documentation
-- 📝 [Example 9](#example-9-flexible-pricing-with-custom-component-names-v050) - See it in action
+- 📝 [Migration examples](docs/FLEXIBLE_PRICING_GUIDE.md#migration-examples) - See it in action
 - 🔄 [CHANGELOG](CHANGELOG.md#050---2026-01-30) - Full release notes
 
 ---
